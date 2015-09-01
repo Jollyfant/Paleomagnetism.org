@@ -1,0 +1,634 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<HTML>
+
+<HEAD>
+<meta charset="utf-8"/>
+<meta name="description" content="Paleomagnetism.org: An open source tool for paleomagnetic analysis">
+<meta name="keywords" content="Paleomagnetism, Palaeomagnetism, Statistics, Analysis, Javascript, Magnetic">
+<meta name="author" content="Paleomagnetism.org">
+
+<link rel="shortcut icon" type="image/x-icon" href="icon.ico" />
+<title> Paleomagnetism.org ALPHA </title>
+
+<!-- Style Sheets -->
+<link href="./src/libs/notiny-master/src/notiny.css" rel="stylesheet"> <!-- Notification style sheet (Notiny) -->
+<link href="./src/libs/ui/jquery-ui.css" rel="stylesheet"> <!-- jQuery UI stylesheet -->
+<link href="./css/pMagJS.css" type="text/css" rel="stylesheet" /> <!-- paleomagnetism.org stylesheet -->
+
+<!-- Supporting Javascript Libraries -->
+<script src="./src/libs/jquery-1.11.1.js"></script> <!-- jQuery -->
+<script src="./src/libs/ui/jquery-ui.js"></script> <!-- jQuery UI -->
+<script src="./src/libs/highcharts2.src.js"></script> <!-- Highcharts Main -->
+<script src="./src/libs/highcharts-more.src.js"></script> <!-- Highcharts plugin for extra graphs -->
+<script src="./src/libs/heatmap.src.js"></script> <!-- HighCharts HeatMap Plugin -->
+<script src="./src/libs/exporting.src.js"></script> <!-- Highcharts figure exporting -->
+<script src="./src/libs/numeric-1.2.6.js"></script> <!-- Numeric JS to calculate principle components -->
+<script src="./src/libs/jquery.multiselect.js"></script> <!-- jQuery plugin for multiselect -->
+<script src="./src/libs/jquery-linedtextarea.js"></script> <!-- jQuery plugin for lined text-area -->
+<script src="./src/libs/notiny-master/src/notiny.js"></script> <!-- (notiny) notification plugin -->
+
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCvJEx8MlU2o1YwBkDMx-xzZzsw9-8ssDc"></script>
+
+<!-- Paleomagnetism.org Source Code -->
+<script src="./src/main.js"></script> <!-- Application Mainframe -->
+<script src="./src/core.js"></script> <!-- Mathematical core -->
+<script src="./src/graphs.js"></script> <!-- Graphing containers -->
+<script src="./src/jQueryInit.js"></script> <!-- jQuery UI DOM Element Definitions -->
+
+<!-- Modules -->
+<script src="./src/modules/EI.js"></script> <!-- EI Method (Inclination Shallowing) -->
+<script src="./src/modules/ExIm.js"></script> <!-- Import/Export -->
+<script src="./src/modules/googleMaps.js"></script> <!-- Google Maps module -->
+<script src="./src/modules/upload.js"></script> <!-- Drag and Drop plugin -->
+<script src="./src/modules/ctmd.js"></script> <!-- Mainframe -->
+<script src="./src/modules/apwp.js"></script> <!-- APWPs -->
+<script src="./src/modules/foldtest.js"></script> <!-- APWPs -->
+
+</HEAD>
+<BODY>
+
+<!-- ENTIRE BODY -->
+<div id="body_container" style="text-align: justify;">
+
+<div id="containerMap"></div>
+
+	<!-- HEADER -->
+	<div id="title" style="margin: 0 auto; padding: 5px; background-color: #fff">
+		<div style="display: inline-block; padding-right: 10px;">
+			<img style="margin: 0px; height: 60px;" src="./images/icon.png">
+		</div>		
+		<div id="wld" style="display: inline-block; float: right;"></div>
+	</div>
+
+	
+	<!-- MENU -->
+	<div style="background-color: #7798BF; color: white; padding: 10px;">
+		<a class="link" style="background: #DED;"><img height="16" width="16" src="./images/icon.ico" style="vertical-align: middle;">&nbsp Statistics Portal </a> 
+		<a class="link" href="./paldir.htm"> Interpretation Portal </a>
+		<a class="link" href="./cite.html"> Citation Information and Literature </a>
+		<a class="link" href="mailto:fort@paleomagnetism.org"> Contact </a>
+	</div>
+
+	<!-- ENCOMPASSING TABS DIV -->
+	<div id="tabs">
+		<ul>
+			<li><a href="#introductionTab" title="General information"> Introduction </a></li>
+			<li><a href="#directionTab" title="Directions and VGPs"> Geomagnetic Directions </a></li>
+			<li><a href="#tabs-3" title="Site Means"> Mean Directions </a></li>
+			<li><a href="#tabs-4" title="Google Maps site overview"> Map Overview and APWP</a></li>
+			<li><a href="#tabs-5" title="Common True Mean Direction"> Common True Mean Directions</a></li>
+			<li><a href="#tabs-6" title="Foldtest Module"> Foldtest Module</a></li>
+			<li><a href="#tabs-7" title="E/I Method"> Inclination Shallowing</a></li>
+			<li><a href="#tabs-8" title="Import and export data"> Advanced Options</a></li>
+		</ul>
+  
+		<!-- INTRODUCTION TAB -->
+		<div id="introductionTab">
+			<div class="information">
+				<h1>1. Introduction </h1>
+				<p> Welcome to Paleomagnetism.org; an online environment for paleomagnetic analysis. To get started, add your site data by clicking the button below.
+				<p> If you wish to use the interpretation portal go <a href="./paldir.htm">here</a>.
+				<h2> Data Handling <small> Add and remove sites </small> </h2>
+				<p>
+				<button id="add" title="Load new data to the application"> Add new site </button>
+				<p>
+				<select multiple id="introSel" class="siteSelector"></select>
+				<button id="delete" title="Delete the selected sites"> Delete Selected </button>	
+			</div>
+			<hr>
+		</div>
+  
+		<!-- MAGNETIC DIRECTION AND VGP MODULE -->
+		<div id="directionTab">
+			<div class="information">
+				<h1> 2. Geomagnetic Directions </h1>
+				<p> This module shows the geomagnetic directions for one or multiple sites in a geographic or corrected (tectonic) reference frame with untilted beddings.
+				<p>
+				<!-- Site selector and site combinations -->
+				<div style="display: inline-block">
+					<select multiple id="dirSel" title="" class="siteSelector"></select>
+					<div style="display: none;" id="saveGroupDiv">
+						<select multiple id="cutoffSelectorDirections" title="Select a cut-off">
+							<option value="45" selected="selected">45-Cutoff</option>
+							<option value="vandamme">Vandamme</option>
+							<option value="none">None</option>		
+						</select>
+						<button id="saveGroupButton" title="Site combinations are not saved automatically."> Save </button>
+					</div>
+					<div style="display: none;" id="cutoffGroupDiv">
+						<br><b> Cutoff </b>
+					</div>
+				</div>
+			</div>
+			<div id="magDirHide" style="display: none">
+				<p>
+				<div id="radio" title="Coordinate Reference Frame" class="updateDir" style="display: inline-block;">
+					<input type="radio" id="radio1" value="TECT" name="radio"> <label for="radio1"> Tectonic Coordinates </label>
+					<input type="radio" id="radio2" value="GEO" name="radio" checked> <label for="radio2"> Geographic Coordinates </label>
+				</div>
+				<p>
+				<div id="radioConfDir" title="Coordinate Reference Frame" class="updateDir" style="display: inline-block;">
+					<input type="radio" id="radioConfDir3" value="a95pole" name="radioConfDir" checked="checked"><label for="radioConfDir3">Fisher (A95)</label>
+					<input type="radio" id="radioConfDir1" value="a95" name="radioConfDir"> <label for="radioConfDir1"> Fisher (α95) </label>
+					<input type="radio" id="radioConfDir2" value="kent" name="radioConfDir"> <label for="radioConfDir2"> Kent Ellipse </label>
+				</div>
+			<p>
+			<!-- Parameter table (dynamic content) -->
+			<div id="dirInfo" style="text-align: center"></div>
+			<p>
+			<!-- Equal area projections (directions: left; VGPs: right) -->
+			<div id="directions" style="width: 100%; margin: 0 auto; text-align: center;">
+				<p>
+				<div id="magneticDirectionGraph" style="padding: 0px; display: inline-block; width:550px; height: 700px;"></div>
+				<div id="VGPPositionGraph" style="padding: 0px; display: inline-block; width:550px; height: 700px;"></div>
+				<p>
+				<div class="caption">
+					<div style="font-size: 15px;">
+						<b> Figure 1a, b </b> - lower hemisphere equal area projections showing ChRM directions (left) and relative VGP positions (right). The confidence envelope and parachutes are illustrated.
+					</div>
+				</div>
+			</div>
+			<hr>
+			<!-- Export All ChRM/VGP Figures -->
+			<button id="exportAll" style="display: inline-block;" title="Export ChRM and VGP Figure">Export VGP/ChRM Figure</button>
+			<!-- Literature References -->
+			<div class="literature"> 
+				<small><b> Related literature: </b> Dispersion on a sphere (Fisher, 1953); Paleomagnetism: Magnetic Domains to Geologic Terranes (Butler, 1992)</small> 
+			</div>  
+		</div>
+		</div>
+  
+		<!-- SITE MEAN MODULE -->
+		<div id="tabs-3">
+			<div class="information">
+				<h1> 3. Site Means Directions </h1>
+				<p> This module shows the geomagnetic directions for one or multiple sites in a geographic or corrected (tectonic) reference frame with untilted beddings. 
+				<!-- Site Selector -->
+				<p>
+				<select multiple id="meanSel" title="" class="siteSelector"></select>
+			</div>
+			<div id="meanDirHide" style="display: none">
+				<p>
+				<div id="radioConfMean" title="Confidence Envelope" class="updateMean" style="display: inline-block;">
+					<input type="radio" id="radioConfMean3" value="a95pole" name="radioConfMean"><label for="radioConfMean3">Fisher (A95)</label>
+					<input type="radio" id="radioConfMean1" value="a95" name="radioConfMean"><label for="radioConfMean1">Fisher (α95)</label>
+					<input type="radio" id="radioConfMean2" value="kent" name="radioConfMean"><label for="radioConfMean2">Kent Ellipse</label>
+				</div>
+				<p>
+				<!-- <input type="checkbox" id="meanRevFlag" class="updateMean"><label for="meanRevFlag">Directions to normal polarity</label> -->
+		
+			<p>
+			<!-- Parameter table (dynamic) -->		
+			<div id="meanTable" style="text-align: center"></div>
+
+			<p>
+			<!-- Direction Plots -->
+			<div id="meanDirections" style="width: 100%; margin: 0 auto; text-align: center;">
+				<div id="siteMean" style="padding: 0px; display: inline-block; width:550px; min-height: 700px;"></div>
+				<div id="siteMeanTC" style="padding: 0px; display: inline-block; width:550px; min-height: 700px;"></div>
+			</div>
+			<!-- Mean Figure Caption -->
+			<div class="caption">
+				<div id="meanInfo" style="margin: 10px; font-size: 15px;"><b> Figure 2 </b>- lower hemisphere equal area projections showing ChRM directions (left) and relative VGP positions (right). The confidence envelope and parachute are illustrated.</div>
+			</div>
+			<hr>
+			<!-- Export All Parameters (table) -->
+			<div style="float: left">
+				<button id="exportAllCsv" onClick="module.IO.table();" title="Export statistical parameters for all sites.">Export Full Parameter Data Table</button>
+				<button id="exportAllMean" style="display: inline-block;" title="Export ChRM and VGP Figure">Export Mean Figures</button>
+			</div>
+			<!-- Literature References -->
+			<div class="literature">
+				<p><small><b> Related literature: </b>Dispersion on a sphere (Fisher, 1953); Paleomagnetism: Magnetic Domains to Geologic Terranes (Butler, 1992) </small> 
+			</div>	
+		</div>
+		</div>
+
+		<!-- MAP OVERVIEW MODULE -->
+		<div id="tabs-4">
+			<div class="information">
+			
+				<h1> 4. Map Overview </h1>
+				<p> The map below illustrates vertical-axis rotations for the user specified sites including confidence parachutes.
+				<!-- Site Selector -->
+				<p><select multiple id="mapSel" title="" onClick="module.map.mapAddSites();" class="siteSelector"></select>
+			</div>
+			
+			<p>
+			<!-- map -->
+			<div id="wrapper">
+				<!-- Option Box (top left) -->
+				<div id="latandlon" >
+					<div style="margin: 5px;">
+						<b>Latitude: </b> &nbsp; <b id="latspan" ></b> &nbsp; &nbsp; <b>Longitude: </b> &nbsp; <b id="lngspan" ></b>
+					</div>
+					<hr>
+					<h2> Age Range <small> of sites </small> </h2>
+					<div id="ageRange" style=" margin: 10px; margin-left: 30px; margin-right: 30px;"></div>
+					<div id="ageRangeDisplay">0 to 600 Ma</div>
+					<hr>
+					<input type="checkbox" onClick="module.map.mapAddSites()" id="invFlag"><label for="invFlag"> Convert all directions to normal polarity </label>
+					<p>
+					<div id="mapRadio" style="display: inline-block;">
+						<input type="radio" id="mapRadio1" name="mapRadio" value="TECT"><label for="mapRadio1"> Tectonic </label>
+						<input type="radio" id="mapRadio2" name="mapRadio" checked value="GEO"><label for="mapRadio2"> Geographic </label>
+					</div>
+					<hr>
+					<h2> Expected Directions <small> of location </small></h2>
+					<p>					
+					<b>Lat </b><input type="text" id="palatLat" size="5"> <b>Lon </b><input type="text" id="palatLon" size="5">
+					<p>
+					<select multiple id="plateNames" class="triggerPoleUpdate" title="Select a plate">
+						<option value="AF" custom="false">Africa</option>
+						<option value="AR" custom="false">Arabia</option>
+						<option value="AU" custom="false">Australia</option>
+						<option value="CA" custom="false">Caribbean</option>
+						<option value="CH" custom="false">China Blocks & Amuria</option>
+						<option value="EA" custom="false">East Antarctica</option>
+						<option value="EU" custom="false">Eurasia</option>
+						<option value="GR" custom="false">Greenland</option>
+						<option value="IB" custom="false">Iberia</option>
+						<option value="IN" custom="false">India</option>
+						<option value="MA" custom="false">Madagascar</option>
+						<option value="NA" custom="false">North America</option>
+						<option value="PA" custom="false">Pacific</option>
+						<option value="SA" custom="false">South America</option>
+					</select>
+					<button id="addNewAPWP" style="display: inline-block;"> Add APWP </button>
+					<button id="removeAPWP" style="display: inline-block;"> Remove APWP </button>
+					<p>
+					APWP Reference Frames
+					<select multiple id="refFrame" class="triggerPoleUpdate" title="Select a reference frame">
+						<option value="torsvik2012" selected="selected">Torsvik et al., 2012</option>
+						<option value="besse2002">Besse and Courtillot, 2002</option>
+						<option value="kent2010">Kent and Irving, 2010</option>
+					</select>
+					<p><button id="requestAPWP" title="Calculate Paleolatitude">Calculate Expected Directions</button>
+				</div>
+				<div id="map-canvas" style="border: 1px solid rgb(119, 152, 191); height: 600px; width: 100%;"></div>
+			</div>
+			
+			<!-- Map Caption and information -->
+			<small> Tip: Press shift to snap age slider to 10 Myr increments; parachute color can be changed by clicking the markers. </small>
+			<div class="caption">
+				<p style="margin-top: 10px; margin-bottom: 10px; font-size: 15px;"><b> Figure 3 </b>- Google Maps overview of declinations with respective confidence parachutes (ΔDx).
+			</div>
+				<p>
+				<div id="poleTabs" style="display: none;">
+					<ul>
+					<li><a href="#palatTab" title="View expected paleolatitude">Expected Paleolatitude </a></li>
+					<li><a href="#decTab" title="View expected declination">Expected Declination </a></li>
+					<li><a href="#incTab" title="View expected inclination">Expected Inclination </a></li>
+					<li><a href="#mapTab" title="View Apparent Polar Wander Paths">Apparent Polar Wander Paths </a></li>
+					</ul>
+					<div id="palatTab">
+						<div id="palatContainer" style="height: 600px;"></div>
+					</div>
+					<div id="decTab">
+						<div id="decContainer" style="height: 600px;"></div>
+					</div>
+					<div id="incTab">
+						<div id="incContainer" style="height: 600px;"></div>
+					</div>
+					<div id="mapTab">
+						<div id="polePath" style="height: 1200px;"></div>
+					</div>
+				</div>
+				<div class="caption" id="poleTabCaption" style="display: none;">
+					<p style="margin-top: 10px; margin-bottom: 10px; font-size: 15px;"><b> Figure 4 </b>- Expected directions and APWPs for specified plates at chosen longitude, latitude.
+				</div>
+			<br>
+		</div>
+	
+		<!-- CTMD MODULE -->
+		<div id="tabs-5">
+			<div class="information">
+				<h1>5. Common True Mean Directions</h1>
+				<select multiple id="ctmdSel" title="" class="siteSelector"></select>
+				<p>
+				<input type="checkbox" id="tcFlagCTMD"><label for="tcFlagCTMD"> Use tectonic coordinates </label>
+				<input type="checkbox" id="VGPFlag"><label for="VGPFlag">Classify on VGP positions</label>
+				<div id="display: inline-block;">					
+					<button id="ctmdInit" onClick="module.CTMD.initialize();" title="Compute classifications for all permutations">Initialize CTMD test</button>
+					<div id="CTMDBar" title="CTMD Progress Bar" style="display: inline-block; vertical-align: middle;"><div id="CTMDPerc" class="barlabel"> 0 / 0 </div></div>
+				</div>
+			</div>
+			<div id="CTMDHide" style="display: none">
+			<div id="CTMDHeatMap" style="height: 900px; width: 800px; margin: 0 auto"></div>
+			<div style="display: inline-block;">
+			<div id="dlBootstrapXYZDiv" style="display: none;">
+			<hr>
+			<button id="dlBootstrapXYZ" style="margin: 0 auto;"> Download All Figures (.PDF) </button>
+			</div>
+			<div id="xContainer" style="width: 350px; display: inline-block;"></div>
+			<div id="yContainer" style="width: 350px; display: inline-block;"></div>
+			<div id="zContainer" style="width: 350px; display: inline-block;"></div>
+			</div>
+			<div id="CTMDInfo" style="margin: 10px; font-size: 15px;">
+				<div class="caption">
+				<p> <b>Figure 4</b> - Common true mean direction permutations for all sites.
+				</div>
+			</div>
+			<hr>
+			<div class="literature"><p> <small> <b>Related literature:</b> Classification of the reversal test in palaeomagnetism (McFadden and McElhinny, 1990) </small> </div>
+		</div>
+		</div>
+	
+		<!-- Foldtest Module -->  
+		<div id="tabs-6">
+			<div class="information">
+				<h1>4. Foldtest Module </h1>
+				This module allows the user to do a foldtest on a site or a group of sites.	With an increasing number of bootstraps the accuracy of the maximum unfolding and confidence limits will improve.
+				<p>
+				The foldtest uses the full unprocessed user data without an applied cutoff.
+				<p>
+				<select multiple id="foldSel" class="siteSelector"></select>
+				<div style="width: 200px; text-align: center;">
+					<div style="width: 200px;" id="unfoldingPercentage" title="The domain by which the directions will be unfolded"></div>
+					<div id="unfoldingPercentageRange" style="margin: 5px;">Unfolding Range: -50 to 150%</div>
+				</div>
+				<div>
+					<button val="50" class="bootstrapButtons" title="50 bootstraps">50</button>
+					<button val="100" class="bootstrapButtons" title="100 bootstraps">100</button>
+					<button val="250" class="bootstrapButtons" title="250 bootstraps">250</button>
+					<button val="500" class="bootstrapButtons" title="500 bootstraps">500</button>
+					<button val="1000" class="bootstrapButtons" title="1000 bootstraps">1000</button>
+					<input id="spinner" name="value" style="width: 30px;" title="Number of boostraps">
+				</div>
+				<p>
+				<div id="display: inline-block;">
+					<button id="foldtestInit" title="Begin bootstrapping. Depending on the number of bootstraps this may take some seconds"> Initialize foldtest </button>
+					<div id="progressbar" title="Foldtest Progress Bar" style="display: inline-block; vertical-align: middle;"><div id="foldPerc" class="barlabel">0%</div></div>
+				</div>
+			</div>
+			<div id="showFoldAreas" style="text-align: center; display: none; margin: 0 auto;">
+				<div id="containerFoldLeft" style="display: inline-block; width: 550px; min-height: 700px;"></div>
+				<div id="containerFoldRight" style="display: inline-block; width: 550px; min-height: 700px;"></div>
+			</div>
+			<p>
+			<div id="container5" style="z-index: 100; display: none; width: 100%; margin: 0 auto; height: 600px;"></div>
+			<small> Tip: Click the thick red line to view the magnetic directions for that particular percentage of unfolding </small>
+			<div id="foldtestInfo" style="margin: 10px; font-size: 15px; display: none;">
+				<div class="caption">
+					<b>Figure 5</b> - <b>a)</b> Equal area projections of the magnetic directions in geographic (left) and tectonic (right) coordinates <b>b)</b> Foldtest showing the cumulative distribution function of the maximum unfolding %. The first 25 bootstraps are shown. The plotband illustrates the bootstrapped confidence interval (2.5-97.5%). 
+				</div>
+			</div>
+			<p>
+			<hr>
+			<div class="literature"><p><small><b> Related literature: </b>The fold test: an eigen analysis approach (Tauxe and Watson, 1994)</small></div>
+		</div>
+	
+		<!-- EI Module -->
+		<div id="tabs-7">
+			<div class="information">
+				<h1>6. Inclination Shallowing</h1>
+				The inclination shallowing module unflattens observed inclinations in sediments to fit with the TK03.GAD Field Model <a title="Tauxe et al., (2008) Testing corrections for paleomagnetic inclination error in sedimentary rocks: A comparative approach">(Tauxe et al., 2008)</a> based on the relationship between the expected elongation (E) (τ<sub>2</sub>/τ<sub>3</sub>) and inclination. The flattening function of <a title="King (1995), The remanent magnetism of artificially deposited sediments">(King, 1955)</a> is applied.
+				<p>
+				<b> Data usage: </b>the inclination shallowing module use accepted directional data after the cutoff is applied from the sites selecte below. A minimum of 80 directions is required for the module to run.
+				<p>
+				<select multiple id="EISel" title="" class="siteSelector"></select>
+				<p>
+				<div id="display: inline-block;">
+					<button id="EIInit" onClick="module.EI.initialize();">Initialize EI Method</button> 
+					<div id="EIBar" style="display: inline-block; vertical-align: middle;"><div id="EIPerc" class="barlabel">0 / 5000</div></div>
+				</div>
+			</div>
+			
+			<p>
+			<div id="EIbootstraps"></div>
+			<div id="EICDF"></div>
+			<div id="EIInfo" style="margin: 10px; font-size: 15px; display: none;">
+				<div class="caption">
+					<b>Figure 6a, b</b> - (top) Elongation versus Inclination of the unflattened data. The original data is shown in a red line with 25 bootstraps. The TK03.GAD polynomial is also shown. (bottom) Cumulative distribution function of the unflattened inclination with 95% confidence. The blue and green line illustrate the inclination before and after unflattening.
+				</div>
+			</div>
+			<p>
+			<hr>
+			<div class="literature">
+				<p><small><b>Related literature:</b> <br>Testing corrections for paleomagnetic inclination error in sedimentary rocks: A comparative approach (Tauxe et al., 2008)
+				<br>The remanent magnetism of artificially deposited sediments (King, 1955)</small>
+			</div>
+		</div>
+	
+		<!-- Advanced Options Module -->
+		<div id="tabs-8">
+			<div class="information">
+				<h1>Advanced Options</h1>
+				<h2> Importing and Exporting <small> save or load instance </small> </h2>
+				<p> 
+				<!-- Exporting -->
+				Data can be imported and exported from and to the custom <b>.pmag</b> format. This save can be loaded and used in other instances. The exported file is a JSON encoded plain text object and can be opened with any text editor.
+				<p>
+				<button id="exportData" title="Export all sites from this instance.">Export Data</button>
+			
+				<!-- Importing -->
+				<!-- Hide the browse file from the users view using display: none - link the browse-click button using jQuery  (not pretty but works!) -->
+				<input style="display: none" id="file-type" type="file" size="4" name="file" onChange="module.IO.importing(event)"/>
+				<button id="importData" type="button" onClick="$('#file-type').click();" title="Import a previously exported file.">Import Data</button>
+				<p>
+				<h2> Edit site meta data <small> change site location and age </small> </h2>
+				<p>
+				Site meta-data (location and age) can be changed 
+				<p>
+				<button id="editMeta" title="Edit site meta data.">Edit</button>
+				<p>
+			
+				<!-- Invisible Bucket to capture all charts when exporting all! -->
+				<div id="chartBucket" style="display: none;"></div>
+	
+				<!-- Edit for site meta-data -->
+				<div id="editMetaDialog" class="dialog">
+					<h2> Edit site meta data <small> Select a site </small></h2> 
+					<p>
+					<div style="display: inline-block">
+						<select multiple id="metaSel" class="siteSelector"></select>
+					</div>
+					<div id="editMetaContent" style="display: none">
+						<p>
+						<div style="padding: 5px; padding-left: 20px; border: 1px dotted rgb(119, 152, 191); overflow: hidden;">
+							<div style="padding: 0px; float: left; text-align: right;">							
+								<p><b> Latitude </b><input type="text" id="siteLatEdit" size="5" title="Please enter a value between [-90, 90]">
+								<p><b> Longitude </b><input type="text" id="siteLngEdit" size="5" title="Please enter a value between [-180, 180]">
+							</div>
+							<div style="padding: 10px; float: right; overflow:auto; text-align: right;">
+								<b> Author </b><input type="text" id="editAuthorID" size="20" title="Enter your name/publication">	
+								<p><b>Description </b><input type="text" size="40" id="siteDescEdit" title="Enter a site descrition/additional information">
+								<p><b>Age: <input type="text" size="5" id="siteAgeEdit">
+								from <input type="text" id="siteMinAgeEdit" size="5"> to: <input id="siteMaxAgeEdit" type="text" size="5"> (Ma) </b>
+								<p>
+								<b> Age presets </b> <select multiple class="ageNames" id="ageNamesEdit" title="Select an age preset">
+									<option value="Blank"> Select an Age </option>
+									<option value="Holocene">Holocene</option>
+									<option value="Pleistocene">Pleistocene</option>
+									<option value="Pliocene">Pliocene</option>
+									<option value="Miocene">Miocene</option>
+									<option value="Oligocene">Oligocene</option>
+									<option value="Eocene">Eocene</option>
+									<option value="Paleocene">Paleocene</option>
+									<option value="Cretaceous">Cretaceous</option>
+									<option value="Jurassic">Jurassic</option>
+									<option value="Triassic">Triassic</option>
+									<option value="Permian">Permian</option>
+									<option value="Carboniferous">Carboniferous</option>
+									<option value="Devonian">Devonian</option>
+									<option value="Silurian">Silurian</option>
+									<option value="Ordovician">Ordovician</option>
+									<option value="Cambrian">Cambrian</option>
+								</select>
+								<p>
+							</div>
+						</div>
+						<div style="width: 100%; clear: both; overflow: auto;">
+							<p>
+						</div>
+						<button id="confirmEdit">Confirm Edit</button>
+						<div id="editInfo" style="display: inline-block"></div>
+					</div>
+				</div>
+				
+				<h2> Other Options <small> projection and cutoff </small> </h2>
+				<p> The default projection type for the hemispheres is equal area. Checking the following box will change the type of projection to equal angle.
+				<p><input type="checkbox" id="projFlag" autocomplete="off"> <label for="projFlag"><b> Use equal angle projection </b></label> <!-- Swap between equal area/equal angle -->
+				<p> Color mean directions individually
+				<p><input type="checkbox" id="colorFlag" autocomplete="off"> <label for="colorFlag"><b> Color mean directions individually </b></label> <!-- Fixed colors or not -->
+	
+				<p>
+				<!-- Instance resetting -->
+				<h2> Reset Application </h2>
+				<p>
+				<div style="display: inline-block">
+					Clearing location storage will remove all saved sites and reload the application. Please remember to <b><a id="exportHighlight" href="#">export</a></b> your instance before resetting the application if you wish to save your data.
+				</div>
+				<p>
+				<button id="clrStorage" title="Clearing location storage removes all saved information of this instance.">Reset Application and Clear Local Storage</button>
+				<p>		
+			</div>
+		</div>
+	</div>
+
+	<div id="addSiteGroup" class="dialog">
+		<b>Enter a new name: </b> <input style="text" id="saveGroupName">
+		<p> <input type="checkbox" id="excludeRejected"><label for="excludeRejected"> <b> Exclude rejected directions </b> </label>
+	</div>
+
+	<div id="addAPWP" class="dialog">
+		<h2> Add Custom APWP <small> Apparant Polar Wander Path </small> </h2>
+		<div style="border: 1px dotted rgb(119, 152, 191); padding-left: 20px;">
+			<p> In this window please input the specified parameters if you wish to add your own APWP. The APWP should already be transformed to your site coordinates.
+			<p><b> Input parameters: </b>
+			<br> Latitude, longitude, A95, age
+			<p>
+		</div>
+		<p>
+		<textarea id="APWPZone" rows="5" style="width: 570px;"></textarea>
+		<small>Input parameters must be delimited by a comma or single white space.</small>
+		<div style="padding: 10px; border: 1px dotted rgb(119, 152, 191); display: inline-block;">
+			<b>APWP name </b><input type="text" id="APWPName" title="Enter a name">
+			<button id="confirmAPWP">Add APWP</button>
+		</div>
+	</div>
+	
+	
+	<div id="input" class="dialog" title="Data Input">
+	<h1> Select Data Input Type:</h1>
+	<div style="display: inline-block;">
+		<select id="siteType" style="width: 300px">
+			<option value="dir">Magnetic Directions</option>
+			<option value="lit">Literature Directions</option>
+			<option value="int">Interpreted Directions</option>
+		</select>
+	</div>
+	<div id="siteInfo" style="display: inline-block;">
+		<input type="radio" id="simple" name="radio2" checked><label for="simple">Simple Options</label>
+		<input type="radio" id="extra" name="radio2"><label for="extra">Advanced Options</label>
+	</div>
+	<p>
+	<div id="adv" style="overflow: hidden; width: 100%;">
+		<div style="padding: 5px; padding-left: 20px; border: 1px dotted rgb(119, 152, 191); overflow: hidden;">
+			<h2> Advanced Options <small> Site and author information (optional)</small> </h2>
+			<br>
+			<div style="padding: 5px; float: left; overflow: auto; text-align: right;">
+				<b> Site latitude </b><input type="text" size="5" id="siteLat" title="Enter site latitude between -90 and 90 degrees">
+				<p><b> Site longitude </b><input type="text" size="5" id="siteLng" title="Enter site longitude between -180 and 180 degrees">
+				<p><b> Age </b><input type="text" id="siteAge" size="5" title="Enter site age in Myr"> 
+				<b>	from </b><input type="text" size="5" id="siteBoundMin" title="Enter site minimum age in Myr"><b> to </b><input type="text" size="5" id="siteBoundMax" title="Enter site maximum age in Myr"><b> (Ma)</b>
+			</div>
+			<div style="padding: 5px; float: right; overflow:auto; text-align: right;">
+				<b>Author </b><input type="text" size="20" id="authorID" title="Enter your name/publication">
+				<p><b>Description </b><input type="text" size="20" id="siteDesc" title="Enter a site descrition/additional information">
+				<p>	
+				<select multiple class="ageNames" id="ageNames" title="Select an age preset">
+					<option value="Blank"> Select an Age </option>
+					<option value="Holocene">Holocene</option>
+					<option value="Pleistocene">Pleistocene</option>
+					<option value="Pliocene">Pliocene</option>
+					<option value="Miocene">Miocene</option>
+					<option value="Oligocene">Oligocene</option>
+					<option value="Eocene">Eocene</option>
+					<option value="Paleocene">Paleocene</option>
+					<option value="Cretaceous">Cretaceous</option>
+					<option value="Jurassic">Jurassic</option>
+					<option value="Triassic">Triassic</option>
+					<option value="Permian">Permian</option>
+					<option value="Carboniferous">Carboniferous</option>
+					<option value="Devonian">Devonian</option>
+					<option value="Silurian">Silurian</option>
+					<option value="Ordovician">Ordovician</option>
+					<option value="Cambrian">Cambrian</option>
+				</select>
+			</div>
+		</div>
+	</div>
+	<p>
+	<div class="dir box">
+		<h2> Magnetic Directions <small> Input Data </small></h2>
+		<p><b> Input parameters: </b>
+		<br> Declination, Inclination, <u title="Input convention: LHR (dip direction - 90°)">Bedding Strike</u><sup><b>T</b></sup>, Bedding Dip, Sample Name
+	</div>
+	<div class="lit box">
+		<h2> Literature Directions <small> Input Data </small> </h2>
+		<p><b> Input parameters: </b>
+		<br> Declination, Inclination, Number of Samples (N), Kappa (κ) </p>
+		<div id="sampleFish" style="display: inline-block;">
+			<input type="radio" value="fishVGP" id="fishVGP" name="radioSample" checked><label for="fishVGP"> Fisherian VGPs </label>
+			<input type="radio" value="fishDIR" id="fishDIR" name="radioSample"><label for="fishDIR"> Fisherian Directions </label>
+		</div>
+	</div>
+	<div class="int box">
+		<h2> Interpreted Directions <small> Input Data </small> </h2>
+		<p> Directions interpreted in the interpretation portal can be found here. Currently, great circle fits are not included.
+		<p> <select multiple id="interpretedSites"> </select>
+		<button id="deleteInterpretation"> Delete </button>
+		<div id="interpretationInfo"></div>
+	</div>
+	<p>
+	<input type="checkbox" hidden='true' id="append" >
+	<textarea id="dropZone" rows="5" style="width: 570px;"></textarea>
+	<small>Input parameters must be delimited by a comma or single white space. Drag and drop data from file or enter manually. </small>
+	<p>
+	<div id="nameDiv" style="padding: 10px; border: 1px dotted rgb(119, 152, 191); display: inline-block;">
+		<b>Site name </b><input type="text" id="siteName" title="Enter a site name">
+		<select multiple id="cutoffSelector" title="Select an age preset">
+			<option value="45" selected="selected">45-Cutoff</option>
+			<option value="vandamme">Vandamme</option>
+			<option value="none">None</option>		
+		</select>
+		<button id="confirm">Add site</button>
+	</div>
+</div>
+
+<!-- FOOTER -->
+<div id="footer" class="textplot" style="margin: 10px;">
+	<small> © 2015 Paleomagnetism.org. Please <a href="./cite.html">cite</a> all contributors if you use this application for your research.
+	<p><b>Disclaimer:</b> Paleomagnetism.org is an open-source initiative licensed under the <a href="https://www.gnu.org/licenses/gpl.html">GNU General Public License v3.0</a>. All data processing is handled on the client-side within your browser. Graph exporting is delivered via the Highcharts content delivery network under the Highcharts <a href="http://www.highcharts.com/docs/export-module/privacy-disclaimer/">exporting privacy policy</a>.
+	<hr>
+	<div style="text-align: right; display: inline-block;">
+		<a href="http://www.uu.nl/"><img style="margin: 0px; height: 60px;" src="./images/UU.png"></a>
+		<a href="http://erc.europa.eu/"><img style="margin: 0px; height: 60px;" src="./images/ERC.png"></a>
+		<a href="http://www.nwo.nl/"><img style="margin: 0px; height: 60px;" src="./images/logo NWO_plain.png"></a>
+	</div>
+</div>
+
+</body>
+</html>

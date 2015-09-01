@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<HTML>
+
+<HEAD>
+<meta charset="utf-8"/>
+<meta name="description" content="Paleomagnetism.org: An open source tool for paleomagnetic analysis">
+<meta name="keywords" content="Paleomagnetism, Palaeomagnetism, Statistics, Analysis, Javascript, Magnetic">
+<meta name="author" content="Paleomagnetism.org">
+
+<link rel="shortcut icon" type="image/x-icon" href="icon.ico" />
+<title> Paleomagnetism.org ALPHA </title>
+
+<script src="./src/libs/jquery-1.11.1.js"></script> <!-- jQuery -->
+<script src="./src/libs/ui/jquery-ui.js"></script> <!-- jQuery UI -->
+
+<!-- Style Sheets -->
+<link href="./src/libs/notiny-master/src/notiny.css" rel="stylesheet"> <!-- Notification style sheet (Notiny) -->
+<link href="./src/libs/ui/jquery-ui.css" rel="stylesheet"> <!-- jQuery UI stylesheet -->
+<link href="./css/pMagJS.css" type="text/css" rel="stylesheet" /> <!-- paleomagnetism.org stylesheet -->
+
+<script>
+
+$(function() {
+	$("#contact").button({
+		icons: { primary: "ui-icon-mail-closed"}
+	});
+	$("#statistics").button({
+		icons: { primary: "ui-icon-extlink"}
+	});	
+	$("#interpretations").button({
+		icons: { primary: "ui-icon-extlink"}
+	});
+});
+
+</script>
+
+</HEAD>
+
+
+<style>
+li {
+	padding: 5px;
+}
+
+</style>
+<BODY>
+<!-- ENTIRE BODY -->
+<div id="body_container" style="text-align: justify;">
+
+
+	<!-- HEADER -->
+	<div id="title" style="margin: 0 auto; padding: 5px; background-color: #fff">
+		<div style="display: inline-block; padding-right: 10px;">
+			<img style="margin: 0px; height: 60px;" src="./images/icon.png">
+		</div>
+	</div>
+
+	
+	<!-- MENU CONTACT -->
+	<div style="background-color: #7798BF; color: white; padding: 10px;">
+		<a class="link" href="./pmagJS.html"> Statistics Portal </a> 
+		<a class="link" href="./paldir.htm"> Interpretation Portal </a>
+		<a class="link" style="background: #DED;"><img src="./images/icon.ico" height="16" width="16" style="vertical-align: middle;">&nbsp Citation Information and Literature </a>
+		<a class="link" href="mailto:fort@paleomagnetism.org"> Contact </a>
+	</div>
+	<div class="information" style="margin: 10px; font-size: 12px; font-family: Helvetica,Arial,sans-serif;">
+		<h1>1. Citation Information </h1>
+			<p> If you use this application for your research please cite the following publications:
+			<h2> Paleomagnetism.org </h2>
+			<ul> 
+				<li> Paleomagnetism.org (ours)
+			</ul>
+			<h2> General Literature </h2>
+			<ul> 
+				<li> Tauxe, L., Banerjee, S.K., Butler, R.F. and van der Voo R, Essentials of Paleomagnetism, 3rd Web Edition (2014) - <b> See also: </b> Lisa Tauxe, Essentials of Paleomagnetism, 2010
+				<li> R. Fisher. Dispersion on a Sphere Proceedings of the Royal Society, A: 217: 295-305 (1953)
+				<li> Butler, R.F. Paleomagnetism: magnetic domains to geologic terranes [b] (1992)
+			</ul>
+			<h2> Map and APWP Module </h2>
+			<ul> 
+				<li> Torsvik et al., Phanerozoic polar wander, palaeogeography and dynamics Source of the Document Earth-Science Reviews 114 (3-4), pp. 325-368 (2012)
+				<li> Besse, J., Courtillot, V. Apparent and true polar wander and the geometry of the geomagnetic field over the last 200 Myr Journal of Geophysical Research: Solid Earth 107 (11), pp. EPM 6-1 - 6-31 (2002)
+				<li> Kent, D.V., Irving, E. Influence of inclination error in sedimentary rocks on the Triassic and Jurassic apparent pole wander path for North America and implications for Cordilleran tectonics Journal of Geophysical Research: Solid Earth 115 (10), B10103 (2010)
+				<li> van Hinsbergen et al., A Paleolatitude Calculator for Paleoclimate Studies (model version 1.2), PLOS ONE (2015)
+			</ul>
+			<h2> CTMD Module </h2>
+			<ul> 
+				<li>  McFadden, P.L., McElhinny, M.W. Classification of the reversal test in palaeomagnetism Geophysical Journal International 103 (3), pp. 725-729 (1990)
+				<li>  Tauxe, L. Essentials of Paleomagnetism, 2010. University of California press.
+			</ul>
+			<h2> Foldtest Module </h2>
+			<ul> 
+				<li> Tauxe, L., Watson, G.S. The fold test: an eigen analysis approach Earth and Planetary Science Letters 122 (3-4), pp. 331-341 (1994)
+			</ul>
+			<h2> Inclination Shallowing Module </h2>
+			<ul> 
+				<li> Tauxe, L., Kodama, K., & Kent, D. V. Testing corrections for paleomagnetic inclination error in sedimentary rocks: a comparative approach. Phys. Earth Planet. Int., 169, 152–165. (2008)
+				<li> Tauxe, L. & Kent, D. V. A simplified statistical model for the geomagnetic field and the detection of shallow bias in paleomagnetic inclinations: Was the ancient magnetic field dipolar? Timescales of the Paleomagnetic Field, volume 145 (pp. 101–116) (2004)
+				<li> R. F. King The Remanent Magnetism of Artificially Deposited Sediments Mon. Nat. Roy. astr. Soc., Geophys. Suppl., 7, 115–134. (1955)
+			</ul>
+			<h2> Interpretation Portal </h2>
+			<ul> 
+				<li> McFadden, P.L., McElhinny, M.W. The combined analysis of remagnetization circles and direct observations in palaeomagnetism Earth and Planetary Science Letters 87 (1-2), pp. 161-17241 (1988)
+				<li> Kirschvink, J.L. The least-squares line and plane and the analysis of palaeomagnetic data. Geophysical Journal, Royal Astronomical Society 62 (3), pp. 699-718 (1980)
+				<li> Zijderveld, J.D.A. (1967):  A.C. demagnetization of rocks: analysis of results. In D.W. Collinson, K.M. Crees and S.K. Runcorn (Eds.) Methods in Paleomagnetism (pp. 254-286). Elsevier, Amsterdam.
+			</ul>
+	</div>
+	
+		<hr>
+		
+	<!-- FOOTER -->
+<!-- FOOTER -->
+<div id="footer" class="textplot" style="margin: 10px;">
+	<small> © 2015 Paleomagnetism.org. Please <a href="./cite.html">cite</a> all contributors if you use this application for your research.
+	<p><b>Disclaimer:</b> Paleomagnetism.org is an open-source initiative licensed under the <a href="https://www.gnu.org/licenses/gpl.html">GNU General Public License v3.0</a>. All data processing is handled on the client-side within your browser. Graph exporting is delivered via the Highcharts content delivery network under the Highcharts <a href="http://www.highcharts.com/docs/export-module/privacy-disclaimer/">exporting privacy policy</a>.
+	<hr>
+	<div style="text-align: right; display: inline-block;">
+		<a href="http://www.uu.nl/"><img style="margin: 0px; height: 60px;" src="./images/UU.png"></a>
+		<a href="http://erc.europa.eu/"><img style="margin: 0px; height: 60px;" src="./images/ERC.png"></a>
+		<a href="http://www.nwo.nl/"><img style="margin: 0px; height: 60px;" src="./images/logo NWO_plain.png"></a>
+	</div>
+</div>
+
+</div>
+
+</body>
+</html>

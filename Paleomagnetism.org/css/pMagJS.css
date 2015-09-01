@@ -1,0 +1,258 @@
+.connectedSortable {
+    border: 2px dotted #eee;
+    min-width: 120px;
+    min-height: 20px;
+    list-style-type: none;
+    margin: 0;
+    padding: 5px 0 0 0;
+    float: left;
+    margin: 10px;
+}
+
+ .link {
+	padding: 5px;
+	margin: 20px;
+	font-size: 12px;
+	border: 1px dashed #DDD;
+	border-radius: 10px;
+	padding-left: 20px;
+	padding-right: 20px;
+	line-height: 36px;
+	background: white;
+	text-decoration: none;
+	color: #7798BF;
+	font-weight: bold;
+}
+
+.ui-multiselect {  
+	height: 26px;
+	text-align: center;
+}
+  
+# ageNames {
+	width: 100px !important;
+}
+
+.ui-multiselect  span{  
+	font-style: italic;
+}
+  
+hr {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(119, 152, 191, 0.75), rgba(0, 0, 0, 0));
+	height: 2px;
+}
+
+	
+  li .handle { background: #f8f8f8; position: absolute; left: 0; top: 0; bottom: 0; padding:8px; }
+  
+  li .ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled {
+  color: #444;
+	font-size: 14px;
+	 border: 1px solid #DDD;
+	opacity: 1;
+	margin: 10px;
+	text-align: center;
+  }
+
+  
+  .ui-sortable-handle {
+  background-color: #ggg;
+
+  }
+  
+  
+  .connectedSortable li {
+
+    margin: 0 5px 5px 5px;
+    padding: 5px;
+    font-size: 10px;
+    min-width: 120px;
+	
+  }
+
+#sorts {
+	overflow: auto; <!-- -fixes issues in Chrome/Android -->
+}
+
+#wrapper {
+	position: relative; 
+}
+
+#percentageProgress { width: 50px; margin: 0 auto; }
+
+#latandlon {
+		width: 250px;
+		text-align: center;
+		padding: 2px;
+        float:left;
+        font-size: 11px;
+        color: #111144;
+        background-color: #E3EEFE;
+        filter: alpha(opacity=75);  /* internet explorer */
+        -khtml-opacity: 0.75;      /* khtml, old safari */
+        -moz-opacity: 0.75;       /* mozilla, netscape */
+        opacity: 0.75;           /* fx, safari, opera */
+        border: 2px solid #FFFFFF;
+        border-radius: 5px 5px 5px 5px;
+        position: absolute;
+        margin: 10px;
+        z-index:99;
+}
+
+  .ui-tooltip {
+    padding: 5px;
+	border: 0px solid #FFF;
+  }
+
+  
+body {
+	color: #37405F;
+	margin: 0;
+	padding: 0;
+	overflow-y: scroll;
+	background-color: #7798BF;
+	font-size: 16px;
+	font-family: Trebuchet MS, Verdana, sans-serif;
+}
+
+.textplot {
+	padding: 10px;
+}
+
+
+div#body_container, div#footer_container {
+
+	background-color: #fff;
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 1200px;
+	box-shadow: 0px 0px 5px white;
+}
+
+.literature {
+	display: inline-block;
+	float: right;
+	text-align: right;
+
+}
+
+#EIBar, #progressbar, #CTMDBar, #exportBar {
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+    vertical-align: middle;
+	width: 50%; 
+	}
+
+.barlabel {
+
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    vertical-align: middle;
+	font-family: "Open Sans", sans-serif;
+	color: #585F69;
+	font-size: 14px;
+	font-weight: bold;
+	top: 3px;
+}
+
+.caption {
+	border-left: 5px solid rgb(119, 152, 191);
+	padding: 0px;
+	text-align: left;
+	padding-left: 10px;
+}
+
+.information {
+	width: 500px;
+	border-left: 5px solid rgb(119, 152, 191);
+	padding: 15px;
+}
+
+h1 {
+
+border-left: 6px solid rgb(119, 152, 191);
+padding: 0px;
+padding-left: 10px;
+color: #585F69;
+
+}
+
+h2 {
+
+font-family: "Open Sans", sans-serif;
+border-bottom: 2px solid rgb(119, 152, 191);
+display: inline-block;
+padding-bottom: 0px;
+color: #585F69;
+}
+
+h2 small {
+	font-size: 12px;
+	color: #999;
+}
+
+select {
+		width: 100px;
+	}
+	
+	.box {
+     padding: 10px;
+	 padding-left: 20px;
+     display: none;
+     border: 1px dotted rgb(119, 152, 191);
+ }
+ 
+ .wrapper {
+	display: inline-block;
+ }
+ 
+ .dot {
+     padding: 20px;
+     margin-top: 20px;
+     border: 1px dotted rgb(119, 152, 191);
+ }
+
+.ui-selectmenu-button{
+   vertical-align : middle;
+}
+
+.ui-tabs .ui-tabs-hide {
+position: absolute; !important
+left: -10000px; !important
+}
+
+#dirDat {
+	overflow-x: hidden;
+    border: 1px dashed rgba(119, 152, 191, 0.5);
+	overflow-y: scroll;
+	max-height: 200px;
+}
+
+table.sample {
+	width: 100%;
+	text-align: left;
+	padding: 10px;
+	font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+	border-spacing: 2px;
+	background-color: #FFF;
+	border-collapse: separate;
+}
+table.sample th {
+	border-width: 1px;
+	padding: 1px;
+	text-align: left;
+	border-style: none;
+	border-color: white;
+	font-size: 16px;
+}
+table.sample td {
+
+	border-width: 1px;
+	padding: 1px;
+	border-style: none;
+	border-color: white;
+}

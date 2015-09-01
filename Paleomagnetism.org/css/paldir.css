@@ -1,0 +1,43 @@
+#specimenScroller {
+  width: 100%;
+  text-align: center;
+  font-size: 22px;
+}
+
+#specimenScrollerInner {
+  display: inline-block;
+}
+
+#left, #right {
+	width: 75px;
+	height: 75px;
+}
+
+#infoTable td{
+    word-wrap:break-word;
+	font-style:none;
+}
+
+.ui-multiselect {
+	height: 75px !important;
+	font-size: 20px;
+	vertical-align: middle;
+	}
+	
+li.selected {
+background-color: rgba(119, 152, 191, 0.25);
+}
+
+#stepWalk {
+list-style-type: none;
+text-align: center;
+font-weight: bold;
+font-family: monospace;
+font-size: 16px;
+}
+
+#infoTable {
+	text-align: left;
+	border: 1px dashed rgb(119, 152, 191);
+	table-layout: fixed;
+}
