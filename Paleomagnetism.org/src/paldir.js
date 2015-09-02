@@ -76,20 +76,21 @@ $(function() {
 			
 			//Get specimen
 			var sample = getSampleIndex();
-			//Redraw equal area projection
+			
 			if(data != null || data.length !== 0) {
 				return;
 			}
 			
+			//Redraw the equal area projection and set hover after redraw
 			eqAreaFoldLeft(data[sample]);
-			setHoverRadius($(liSelected).index()-1, liSelected); //Set hover after redraw
+			setHoverRadius($(liSelected).index()-1, liSelected);
 		}
 	});
 	
 	//Clear all stickies and empty array
 	$("#removeSticky").click( function () {
 		notify('success', 'Stickies have been removed.');
-		globalSticky = [];
+		globalSticky = new Array();
 	});
 	
 	//Tabs initialization and functions
@@ -2682,6 +2683,293 @@ function exportInterpretation () {
 
 
 
+/*
+ * Importing parser for Utrecht format
+ *
+ */
+function importUtrecht(applicationData, text) {
+	
+	"use strict";
+	
+	//Split by 9999 on new line (which indicates end of specimen)
+	//Fixed problem where script would split on every 9999 (also sample intensities)
+	var blocks = text.split(/9999[\n\r]/);
+	var nSpecimens = blocks.length - 1;
+	var nSamples = nSpecimens;
+	
+	//Loop over all data blocks and split by new lines
+	for(var i = 0; i < nSpecimens; i++) {
+		
+		var parameters = blocks[i].split('\n');
+		
+		//First and final can be ignored
+		parameters.pop();
+		parameters.shift();
+		
+		//parsedData is the bucket that contains directional data
+		var parsedData = new Array();
+		var skip = false;
+		
+		for(var j = 0; j < parameters.length; j++) {
+		
+			var parameterPoints = parameters[j].split(/[,\s\t]+/); //Split by commas
+			
+			//Get specimen name, core and bedding orientation from Utrecht format contained in first row of datablock (there j = 0)
+			//Check if NaN (number("")) becomes NaN is field is empty -> simply set value to 0.
+			if(j === 0) {
+			
+				var name = parameterPoints[0].replace(/['"]+/g, ''); //Remove quotes (for TH-demag, samples are written as ""SS1.1"". Not very nice.);
+				
+				//Check if sample with name exists -> append copy text
+				for(var k = 0; k < applicationData.length; k++) {
+					if(name === applicationData[k].name) {
+						var skip = true;
+					}
+				}						
+				
+				var coreAzi = Number(parameterPoints[2]);	
+				if(isNaN(coreAzi)) {
+					coreAzi = 0;
+				}
+				var coreDip = Number(parameterPoints[3]);
+				if(isNaN(coreDip)) {
+					coreDip = 0;
+				}
+				var bedStrike = Number(parameterPoints[5]);
+				if(isNaN(bedStrike)) {
+					bedStrike = 0;
+				}
+				var bedDip = Number(parameterPoints[6]);
+				if(isNaN(bedDip)) {
+					bedDip = 0;
+				}
+				
+			} else {
+			
+				//Removes double spaced characters
+				parameterPoints = $.grep(parameterPoints, function(n) { 
+					return n
+				});
+				
+				//Push particular specimen to parsed data (UTRECHT format uses a, b, c coordinate system which is equal to -y, z, -x)
+				//visible and include methods indicate whether particular step is shown in graphs or included for PCA.
+				parsedData.push({
+					'visible'	: true, 
+					'include'	: false,
+					'step'		: parameterPoints[0],
+					'x'			: Number(-parameterPoints[2]),
+					'y'			: Number(parameterPoints[3]),
+					'z'			: Number(-parameterPoints[1]),
+					'a95'		: parameterPoints[4],
+					'info'		: parameterPoints[5] + ' at ' + parameterPoints[6]
+				});
+			}
+		}
+		
+		if(skip) {
+			notify('failure', 'Found duplicate ' + name + '; skipping specimen');
+			nSamples--;
+			continue;
+		}
+		
+		//Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
+		data.push({
+			'GEO'			: new Array(),
+			'TECT'			: new Array(),
+			'interpreted'	: false,
+			'name'			: name,
+			'coreAzi'		: Number(coreAzi),
+			'coreDip'		: Number(coreDip),
+			'bedStrike'		: Number(bedStrike),
+			'bedDip'		: Number(bedDip),
+			'data'			: parsedData
+		})
+	}
+	
+	notify('success', 'Importing was succesful; added ' + nSamples + ' samples');
+	return applicationData;
+	
+}
+
+function importApplication(applicationData, text) {
+
+	importedData = JSON.parse(text);
+	var nSamples = importedData.length;
+	for(var i = 0; i < importedData.length; i++) {
+		var skip = false;
+		for(var l = 0; l < applicationData.length; l++) {
+			if(importedData[i].name === applicationData[l].name) {
+				var skip = true;
+			}
+		}
+		if(skip) {
+			nSamples--;
+			notify('failure', 'Found duplicate ' + importedData[i].name + '; skipping specimen');
+			continue;
+		}
+		applicationData.push(importedData[i]);
+	}
+	
+	notify('success', 'Importing was succesful; added ' + nSamples + ' samples');	
+	return applicationData;	
+}
+
+function importSpinner(applicationData, text) {
+
+	var sortedSamples = new Object();
+	var lines = text.split('\n');
+	
+	lines = $.grep(lines, function(n) { 
+		return n;
+	});	
+	
+	for(var i = 0; i < lines.length; i++) {
+		var lineParameters = lines[i].split(/[,\s\t]+/); //Split by commas
+		lineParameters = $.grep(lineParameters, function(n) { 
+			return n;
+		});
+		var sampleName = lineParameters[0];
+		if(sortedSamples.hasOwnProperty(sampleName)) {
+			sortedSamples[sampleName].push(lineParameters);
+		} else {
+			sortedSamples[sampleName] = new Array();
+		}
+	}
+	
+	//Get number of properties for sortedSamples object
+	var nSamples = Object.keys(sortedSamples).length 
+	
+	for(var i in sortedSamples) {
+	
+		var skip = false;
+		var sample = sortedSamples[i];
+		parsedData = [];
+		for(var j = 0; j < sample.length; j++) {
+			var power = sample[j][5];
+			if(isNaN(sample[j][2]) || isNaN(sample[j][3]) || isNaN(sample[j][4])) {
+				notify('failure', 'Spinner input file is not sane, please check if all input columns are delimited by a white space.');
+				return;
+			}
+			
+			//Check coordinate system for spinner
+			//In this application x - east; y - north; z - down;
+			parsedData.push({
+				'visible'	: true, 
+				'include'	: false,
+				'step'		: sample[j][1],
+				'x'			: Number(-sample[j][3] * Math.pow(10, power)),
+				'y'			: Number(sample[j][4] * Math.pow(10, power)),
+				'z'			: Number(-sample[j][2] * Math.pow(10, power)),
+				'a95'		: 1,
+				'info'		: 'No Information'
+			});
+		}
+		
+		//Check if sample with name exists -> append copy text
+		for(var k = 0; k < applicationData.length; k++) {
+			if(i == applicationData[k].name) {
+				var skip = true;
+			}
+		}	
+		
+		if(skip) {
+			notify('failure', 'Found duplicate ' + i + '; skipping specimen');
+			nSamples--;
+			continue;
+		}
+				
+		//Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
+		applicationData.push({
+			'GEO'			: [],
+			'TECT'			: [],
+			'interpreted'	: false,
+			'name'			: i,
+			'coreAzi'		: Number(0),
+			'coreDip'		: Number(90), //Set core
+			'bedStrike'		: Number(0),
+			'bedDip'		: Number(0),
+			'data'			: parsedData
+		})
+	}
+}
+
+function importingDefault ( applicationData, text ) {
+
+	var blocks = text.split(/9999[\n\r]/);
+	var nSamples = blocks.length; 
+	
+	for(var i = 0; i < blocks.length; i++) {
+
+		var lines = blocks[i].split('\n');
+		lines = $.grep(lines, function(n) { 
+			return n;
+		});
+		
+		var skip = false;
+		var parsedData = new Array();
+	
+		for(var j = 0; j < lines.length; j++) {
+
+			var parameters = lines[j].split(/[,\s\t]+/); //Split by commas
+			parameters = $.grep(parameters, function(n) { 
+				return n;
+			});
+		
+			if(j === 0) {
+				var name = parameters[0];
+				
+				//Check if sample with name exists -> append copy text
+				for(var k = 0; k < applicationData.length; k++) {
+					if(name == applicationData[k].name) {
+						var skip = true;
+					}
+				}
+				
+				var coreAzi = Number(parameters[1]);	
+				var coreDip = Number(parameters[2]);
+				var bedStrike = Number(parameters[3]);
+				var bedDip = Number(parameters[4]);
+				
+			} else {
+			
+				//Get Cartesian coordinates for declination, inclination and intensity
+				var CartesianCoordinates = cart(parameters[1], parameters[2], parameters[3]);
+			
+				parsedData.push({
+					'visible'	: true, 
+					'include'	: false,
+					'step'		: parameters[0],
+					'x'			: CartesianCoordinates.x,
+					'y'			: CartesianCoordinates.y,
+					'z'			: CartesianCoordinates.z,
+					'a95'		: parameters[4],
+					'info'		: parameters[5] ? parameters[5] : 'No Information'
+				});	
+			}
+		}
+		
+		if(skip) {
+			notify('failure', 'Found duplicate ' + name + '; skipping specimen');
+			nSamples--;
+			continue;
+		}
+		
+		applicationData.push({
+			'GEO'			: [],
+			'TECT'			: [],
+			'interpreted'	: false,
+			'name'			: name,
+			'coreAzi'		: coreAzi,
+			'coreDip'		: coreDip,
+			'bedStrike'		: bedStrike,
+			'bedDip'		: bedDip,
+			'data'			: parsedData
+		})
+	}
+	
+	notify('success', 'Importing was succesful; added ' + nSamples + ' samples');
+	return applicationData;
+}
 /* IMPORTING / PARSING FUNCTIONS
  * Description: Parses the Utrecht format to the Paleomagnetism.org format (interpretation portal)
  * Input: event (internal), format (the format to be parsed)
@@ -2693,341 +2981,63 @@ function exportInterpretation () {
  * DEFAULT - Simple default formatting (dec, inc, intensity - etc..)
  */
 function importing (event, format)  {
-	
-	$("#appBody").hide();
-	
-	//Filehandler API, handles file importing
+		
+	//Filehandler API; handles the file importing
     var input = event.target;
     var reader = new FileReader();
 	
 	//Single input
     reader.readAsText(input.files[0]);
-	reader.onload = function(){
+	reader.onload = function () {
 		
 		var text = reader.result;
 		
 		//Not appending, reset data array
 		var append = $('#appendFlag').prop('checked');
 		if(!append) {
-			data = [];
+			data = new Array();
 		}
-		
-		//Define global data bucket to capture application info
-				
-		//Remove all previous options from the specimen scroller
-		$('#specimens').find('option').remove().end();
-		$('#specimens').multiselect('refresh');
-		
-		//Start parsing Utrecht format
-		if(format == 'UTRECHT') {
-	
-			//Split by 9999 on new line (which indicates end of specimen)
-			//Fixed problem where script would split on every 9999 (also sample intensities)
-			var blocks = text.split(/9999[\n\r]/);
-			var nSamples = blocks.length - 1; //The final block can be ignored (END)
-			var nSpecimens = nSamples;
-			
-			//Loop over all data blocks and split by new lines
-			for(var i = 0; i < nSpecimens; i++) {
-				
-				var parameters = blocks[i].split('\n')
-				
-				//First and final can be ignored
-				parameters.pop();
-				parameters.shift();
-				
-				//parsedData is the bucket that contains directional data
-				var parsedData = [];
-				var skip = false;
-				
-				for(var j = 0; j < parameters.length; j++) {
-				
-					var parameterPoints = parameters[j].split(/[,\s\t]+/); //Split by commas
-					
-					//Get specimen name, core and bedding orientation from Utrecht format contained in first row of datablock (there j = 0)
-					//Check if NaN (number("")) becomes NaN is field is empty -> simply set value to 0.
-					if(j == 0) {
-					
-						var name = parameterPoints[0].replace(/['"]+/g, ''); //Remove quotes (for TH-demag, samples are written as ""SS1.1"". Not very nice.);
-						
-						//Check if sample with name exists -> append copy text
-						for(var k = 0; k < data.length; k++) {
-							if(name == data[k].name) {
-								var skip = true;
-							}
-						}						
-						
-						var coreAzi = Number(parameterPoints[2]);	
-						if(isNaN(coreAzi)) {
-							coreAzi = 0;
-						}
-						var coreDip = Number(parameterPoints[3]);
-						if(isNaN(coreDip)) {
-							coreDip = 0;
-						}
-						var bedStrike = Number(parameterPoints[5]);
-						if(isNaN(bedStrike)) {
-							bedStrike = 0;
-						}
-						var bedDip = Number(parameterPoints[6]);
-						if(isNaN(bedDip)) {
-							bedDip = 0;
-						}
-						
-					} else {
-					
-						//Removes double space characters
-						parameterPoints = $.grep(parameterPoints, function(n) { 
-							return n
-						});
-						
-						//Push particular specimen to parsed data (UTRECHT format uses a, b, c coordinate system which is equal to -y, z, -x)
-						//visible and include methods indicate whether particular step is shown in graphs or included for PCA.
-						parsedData.push({
-							'visible'	: true, 
-							'include'	: false,
-							'step'		: parameterPoints[0],
-							'x'			: Number(-parameterPoints[2]),
-							'y'			: Number(parameterPoints[3]),
-							'z'			: Number(-parameterPoints[1]),
-							'a95'		: parameterPoints[4],
-							'info'		: parameterPoints[5] + ' at ' + parameterPoints[6]
-						});
-					}
-				}
-				
-				if(skip) {
-					notify('failure', 'Found duplicate ' + name + '; skipping specimen');
-					nSamples--;
-					continue;
-				}
-				
-				//Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
-				data.push({
-					'GEO'			: [],
-					'TECT'			: [],
-					'interpreted'	: false,
-					'name'			: name,
-					'coreAzi'		: Number(coreAzi),
-					'coreDip'		: Number(coreDip),
-					'bedStrike'		: Number(bedStrike),
-					'bedDip'		: Number(bedDip),
-					'data'			: parsedData
-				})
-			}
 
-			//Standard application format, this is easy
+		//Parsing formats refer to own functions
+		//Contact us if you would like your custom format to be added
+		if(format === 'UTRECHT') {
+			data = importUtrecht(data, text);
 		} else if(format == 'APP') {
-			var nSamples = 0;
-			//Error catching if parsing is impossible -> file may be corrupt
-			try {
-				if(!append) {
-					data = JSON.parse(text); //parse JSON encoded object
-					for(var k = 0; k < data.length; k++) {
-						var skip = false;
-						for(var l = 0; l < data.length; l++) {
-							if(data[k] == data[l].name) {
-								var skip = true;
-							}
-						}
-						if(skip) {
-							notify('failure', 'Found duplicate ' + appendData[k].name + '; skipping specimen');
-							continue;
-						}
-						nSamples++;
-					}
-				} else {
-					var appendData = JSON.parse(text);
-					for(var k = 0; k < appendData.length; k++) {
-						var skip = false;
-						for(var l = 0; l < data.length; l++) {
-							if(appendData[k].name == data[l].name) {
-								var skip = true;
-							}
-						}
-						if(skip) {
-							notify('failure', 'Found duplicate ' + appendData[k].name + '; skipping specimen');
-							continue;
-						}
-						nSamples++;
-						data.push(appendData[k]);
-					}					
-				}
-			} catch (err) {
-				notify('failure', 'A critical error occured while parsing the data. The file may be corrupt: ' + err);
-			}
-			
-		//Magnetometer spinner input format
-		//This needs to be reviewed for coordinate systems and where to find bedding information/core information
+			data = importApplication(data, text);
 		} else if(format == 'SPINNER') {
 			notify('failure', 'Spinner input is currently not supported.');
 			return;
-			var sortedSamples = new Object();
-			var lines = text.split('\n');
-			
-			lines = $.grep(lines, function(n) { 
-				return n;
-			});	
-			
-			for(var i = 0; i < lines.length; i++) {
-				var lineParameters = lines[i].split(/[,\s\t]+/); //Split by commas
-				lineParameters = $.grep(lineParameters, function(n) { 
-					return n;
-				});
-				var sampleName = lineParameters[0];
-				if(sortedSamples.hasOwnProperty(sampleName)) {
-					sortedSamples[sampleName].push(lineParameters);
-				} else {
-					sortedSamples[sampleName] = new Array();
-				}
-			}
-			
-			//Get number of properties for sortedSamples object
-			var nSamples = Object.keys(sortedSamples).length 
-			
-			for(var i in sortedSamples) {
-			
-				var skip = false;
-				var sample = sortedSamples[i];
-				parsedData = [];
-				for(var j = 0; j < sample.length; j++) {
-					var power = sample[j][5];
-					if(isNaN(sample[j][2]) || isNaN(sample[j][3]) || isNaN(sample[j][4])) {
-						notify('failure', 'Spinner input file is not sane, please check if all input columns are delimited by a white space.');
-						return;
-					}
-					
-					//Check coordinate system for spinner
-					//In this application x - east; y - north; z - down;
-					parsedData.push({
-						'visible'	: true, 
-						'include'	: false,
-						'step'		: sample[j][1],
-						'x'			: Number(-sample[j][3] * Math.pow(10, power)),
-						'y'			: Number(sample[j][4] * Math.pow(10, power)),
-						'z'			: Number(-sample[j][2] * Math.pow(10, power)),
-						'a95'		: 1,
-						'info'		: 'No Information'
-					});
-				}
-				
-				//Check if sample with name exists -> append copy text
-				for(var k = 0; k < data.length; k++) {
-					if(i == data[k].name) {
-						var skip = true;
-					}
-				}	
-				
-				if(skip) {
-					notify('failure', 'Found duplicate ' + i + '; skipping specimen');
-					nSamples--;
-					continue;
-				}
-						
-				//Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
-				data.push({
-					'GEO'			: [],
-					'TECT'			: [],
-					'interpreted'	: false,
-					'name'			: i,
-					'coreAzi'		: Number(0),
-					'coreDip'		: Number(90), //Set core
-					'bedStrike'		: Number(0),
-					'bedDip'		: Number(0),
-					'data'			: parsedData
-				})
-			}
 		} else if(format == 'DEFAULT') {
+			data = importDefault(data, text);
+		}
 		
-			var blocks = text.split(/9999[\n\r]/);
-			var nSamples = blocks.length; 
-			
-			for(var i = 0; i < blocks.length; i++) {
-
-				var lines = blocks[i].split('\n')
-				lines = $.grep(lines, function(n) { 
-					return n;
-				});
-				
-				var skip = false;
-				parsedData = [];
+		//Refresh the specimen scroller with the new data
+		refreshSpecimenScroller();
 	
-				for(var j = 0; j < lines.length; j++) {
-
-					var parameters = lines[j].split(/[,\s\t]+/); //Split by commas
-					parameters = $.grep(parameters, function(n) { 
-						return n;
-					});
-				
-					if(j == 0) {
-						var name = parameters[0];
-						
-						//Check if sample with name exists -> append copy text
-						for(var k = 0; k < data.length; k++) {
-							if(name == data[k].name) {
-								var skip = true;
-							}
-						}
-						
-						var coreAzi = Number(parameters[1]);	
-						var coreDip = Number(parameters[2]);
-						var bedStrike = Number(parameters[3]);
-						var bedDip = Number(parameters[4]);
-					} else {
-					
-						//Get Cartesian coordinates for declination, inclination and intensity
-						var CartesianCoordinates = cart(parameters[1], parameters[2], parameters[3]);
-					
-						parsedData.push({
-							'visible'	: true, 
-							'include'	: false,
-							'step'		: parameters[0],
-							'x'			: CartesianCoordinates.x,
-							'y'			: CartesianCoordinates.y,
-							'z'			: CartesianCoordinates.z,
-							'a95'		: parameters[4],
-							'info'		: parameters[5] ? parameters[5] : 'No Information'
-						});	
-					}
-				}
-				
-				if(skip) {
-					notify('failure', 'Found duplicate ' + name + '; skipping specimen');
-					nSamples--;
-					continue;
-				}
-				
-				data.push({
-					'GEO'			: [],
-					'TECT'			: [],
-					'interpreted'	: false,
-					'name'			: name,
-					'coreAzi'		: coreAzi,
-					'coreDip'		: coreDip,
-					'bedStrike'		: bedStrike,
-					'bedDip'		: bedDip,
-					'data'			: parsedData
-				})
-			}
-			
-
-		}
-		
-		//Add new specimens to the specimen scroller
-		for(var i = 0; i < data.length; i++) {
-			var name = data[i].name;
-			$('#specimens').append("<option custom=\"" + i + "\" value=\"" + name + "\">" + name + "</option>");
-		}
-		
-		//Notify user and refresh specimen scroller to force update
-		notify('success', 'Importing was succesful. Added ' + nSamples + ' new specimens.')
-		$("#ui-id-1").animate({"color": "white", "background-color": "rgb(191, 119, 152)"}, 2000);
-		$("#ui-id-1").animate({"color": "#7798BF", "background-color": "white"}, 2000);		
-		$('#specimens').multiselect('refresh');
-		
+		//Save application
 		setStorage();
 	
 	}
+}
+
+/*
+ * FUNCTION refreshSpecimenScroller
+ * Define global data bucket to capture application info
+ * Remove all previous options from the specimen scroller
+ * Add all the specimens to the specimen scroller
+ */
+var refreshSpecimenScroller = function () {
+
+	var capture = $("#specimens");
+	
+	capture.find('option').remove().end();
+	for(var i = 0; i < data.length; i++) {
+		var name = data[i].name;
+		capture.append("<option custom=\"" + i + "\" value=\"" + name + "\">" + name + "</option>");
+	}
+	
+	capture.multiselect('refresh');
+	
 }
 
 var clearStorage = function () {
