@@ -25,7 +25,8 @@
 
 //APPLICATION CODE START
 //Define some global variables to be used
-var li, liSelected, data;
+var li, liSelected;
+var data = new Array();
 var globalSticky = new Array();
 var exportData = new Array();
 
@@ -45,6 +46,48 @@ function getSampleIndex() {
 	
 }
 
+var getSelectedStep = function () {
+	
+	return parseInt($(liSelected).index() - 1);
+	
+}
+
+/*
+ * FUNCTION moveStep
+ * Description: moves the selected demagnetization step "up" or "down"
+ * Input: direction@string for direction to move ("up" or "down")
+ * Output: VOID
+ */
+function moveDemagnetizationStep ( direction ) {
+	
+	var index = getSelectedStep();
+	
+	//Remove selected class from this point
+	//Get previous or next point
+	//Check if we are at the top (or bottom for up) of the list, if so go to the end (begin)
+	if( direction === "down" ) {
+		liSelected.removeClass('selected');
+		next = liSelected.next();
+		if(index !== li.length - 1){
+			liSelected = next.addClass('selected');
+		} else {
+			liSelected = li.eq(0).addClass('selected');
+		}
+	} else if (direction === "up") {
+		liSelected.removeClass('selected'); 
+		next = liSelected.prev(); 
+		if(index !== 0){ 
+			liSelected = next.addClass('selected'); 
+		} else {
+			liSelected = li.last().addClass('selected');
+		}		
+	}
+	
+	//Set hover on the selected point
+	setHoverRadius();
+	
+}
+	
 //Fire on DOM ready
 $(function() {
 	
@@ -73,18 +116,18 @@ $(function() {
 				'inc': inclination
 			});
 			
-			notify('success', 'Sticky direction has been added.');
+			notify('success', 'Sticky direction has been added to equal area projection.');
 			
 			//Get specimen
 			var sample = getSampleIndex();
 			
-			if(data != null || data.length !== 0) {
+			if(data.length !== 0) {
 				return;
 			}
 			
 			//Redraw the equal area projection and set hover after redraw
 			eqAreaProjection(data[sample]);
-			setHoverRadius($(liSelected).index()-1);
+			setHoverRadius();
 		}
 	});
 	
@@ -92,13 +135,18 @@ $(function() {
 	$("#removeSticky").click( function () {
 		notify('success', 'Stickies have been removed.');
 		globalSticky = new Array();
+		
+		//Force update
+		eqAreaProjection(data[sample]);
+		setHoverRadius();
 	});
 	
 	//Tabs initialization and functions
     $('#tabs').tabs({
 		activate: function(event, ui) {
-			if(data != undefined) {
+			if(data.length !== 0) {
 				if(ui.newPanel.selector == '#fittingTab') {
+					//Redraw the interpretations to the equal area projection
 					$("#eqAreaFitted").hide();
 					plotInterpretations();
 				}
@@ -164,136 +212,114 @@ $(function() {
 	
 	//Fix for blurring tab after click (interferes with arrow key movement)
     $('#tabs a').click(function () {
-        $(this).blur(); //Deselect tab
+        $(this).blur(); //Deselect the tab
     })
 	
-	/* KEYBOARD HANDLER FOR PALEOMAGNETISM.ORG
+	/* 
+	 * Keyboard handler for Paleomagnetism.org: Interpretation portal
 	 */
 	$(document).keydown(function(e) {
-	
-		//Do nothing if no data is loaded
-		if(data === null || data === 'undefined' || data.length === 0) {
-			return;
-		}
 		
-		//Use arrow keys to skip through specimens or demagnetization stepss
+		//Allow left and right to be moved
+		//Delegate to the clicking the < (left) and > (right) button
 		switch(e.which) {
-			case 37: // left
-			case 65: // a
+			
+			//Left Arrow Key and A button
+			case 37: 
+			case 65:
 				e.preventDefault();
 				$("#left").click();
 			break;
-			case 39: // right
-			case 68: // d
+			
+			//Right Arrow Key and D button
+			case 39:
+			case 68:
 				e.preventDefault();
 				$("#right").click();
 			break;
-			case 56: //F8
-			case 104: //Number 8
-				e.preventDefault();
-				$("#tcViewFlag").prop("checked", !$("#tcViewFlag").prop("checked")).change(); //Toggle the tilt correction view flag
-			break;
 			
-			case 55:
-				e.preventDefault();
-				$("#specFlag").prop("checked", !$("#specFlag").prop("checked")).change(); //Toggle the flag
-			break;
-			
-			case 51: //F3
-			case 99: //Numpad 3
-				e.preventDefault();
-				$("#nFlag").prop("checked", !$("#nFlag").prop("checked")).change(); //Toggle the projection flag (Up/North <-> Up/West)
-			break;
-		}
-	});
-	
-	/* KEYBOARD HANDLER FOR PALEOMAGNETISM.ORG
-	 */
-	$(document).keydown(function(e) {
-	
-		if(data === null || data === undefined || data.length === 0) {
-			return;
 		}
 		
-		//There is a problem if li is undefined
-		if(li === undefined) {
-			return;
-		}
-			
-		var index = $(liSelected).index()-1;
+		var index = getSelectedStep();
 		var sample = getSampleIndex();
-		/* LEGACY CODE WHEN BUGS (NOT REQUIRED ANYMORE.. KEEP IT JUST TO BE SAFE)
-		if(index == -2) {
-			index = 1;
-			liSelected = li.first().addClass('selected');
-			if(e.which == 122) {
-				e.preventDefault();
-				data[sample].data[index-1].include = true;
-			}	
+
+		//Block all other keys until index and sample are both defined
+		//Undefined means that no specimen has been selected yet
+		if(index === undefined || sample === undefined) {
+			return;
 		}
-		*/
-		
+
+		//Other keys 
 		switch(e.which) {
-			case 38: // up
-			case 87: // w
+		
+			//Numpad 3 and 3
+			//Toggle the projection flag (Up/North - Up/West)
+			case 51:
+			case 99:
 				e.preventDefault();
-				if(liSelected){
-					liSelected.removeClass('selected'); //Remove selected class from this point
-					next = liSelected.prev(); //Get next (previous) point)
-					if(index+1 != 1){ //Check if we are at the top of the list, if so go to the end
-						liSelected = next.addClass('selected'); 
-					} else {
-						liSelected = li.last().addClass('selected');
-					}
-				} else {
-					liSelected = li.last().addClass('selected');
-				}
-			break;
-	
-			case 40: // down
-			case 83: // down
-				e.preventDefault();
-				if(liSelected){
-					liSelected.removeClass('selected');
-					next = liSelected.next();
-					if(index+1 != li.length){
-						liSelected = next.addClass('selected');
-					} else {
-						liSelected = li.first().addClass('selected');
-					}
-				} else {
-					liSelected = li.first().addClass('selected');
-				}
+				$("#nFlag").prop("checked", !$("#nFlag").prop("checked")).change(); 
 			break;
 			
-			//Z button (and -)
+			//Numpad 7 and 7
+			//Toggle the specimen coordinate flag
+			case 55:
+			case 53:
+				e.preventDefault();
+				$("#specFlag").prop("checked", !$("#specFlag").prop("checked")).change(); 
+			break;
+			
+			//Numpad 8 and 8
+			//Toggle the tilt correction view flag
+			case 56:
+			case 104:
+				e.preventDefault();
+				$("#tcViewFlag").prop("checked", !$("#tcViewFlag").prop("checked")).change(); 
+			break;
+
+			//Up Arrow Key and W button
+			case 38:
+			case 87:
+				e.preventDefault();
+				moveDemagnetizationStep("up");
+			break;
+	
+			//Down Arrow Key and S button
+			case 40: // down
+			case 83: // s
+				e.preventDefault();
+				moveDemagnetizationStep("down");
+			break;
+			
+			//Z button (and - (numpad))
 			case 90:
 			case 173:
 			case 109:
+			
 				e.preventDefault();
+				
+				//If step is not hidden, hide it showing "···" and set step visibility to false
+				//If it is hidden, replace the dots with the default text (demagnetization step)
 				if(!$(liSelected).hasClass('show')) {
 					liSelected.addClass('show');
 					$(liSelected).text('···');
-					data[sample].data[index].visible = false; //Display
+					data[sample].data[index].visible = false;
 				} else {
-					var kper = $(liSelected).attr('value');
+					var defaultText = $(liSelected).attr('value');
 					liSelected.removeClass('show');
-					$(liSelected).text(kper);
-					data[sample].data[index].visible = true; //Display
-				}
-				if($(liSelected).hasClass('use')) {
-					liSelected.removeClass('use');
-					data[sample].data[index].include = false; //use
-					//data[sample].interpreted = false;
-				}
-				liSelected.removeClass('selected');
-				next = liSelected.next();
-				if(index+1 != li.length){
-					liSelected = next.addClass('selected');
-				} else {
-					liSelected = li.eq(0).addClass('selected');
+					$(liSelected).text(defaultText);
+					data[sample].data[index].visible = true;
 				}
 				
+				//If the demagnetization step has class use, remove this class (we don't want hidden points to be included)
+				if($(liSelected).hasClass('use')) {
+					liSelected.removeClass('use');
+					data[sample].data[index].include = false;
+				}
+				
+				//Move down a single step
+				moveDemagnetizationStep("down");
+				
+				//Redraw all the charts when hiding steps
 				zijderveld(data[sample]);
 				intensity(data[sample]);
 				eqAreaProjection(data[sample]);
@@ -305,7 +331,11 @@ $(function() {
 			case 88:
 			case 107:
 			case 61:
+			
 				e.preventDefault();
+				
+				//Step currently not included and is not hidden, add a star (*) to the step and set include to true
+				//If the step is currently included, remove the star by resetting to the default value and set include to false
 				if(!$(liSelected).hasClass('use')) {
 					if(!$(liSelected).hasClass('show')) {
 						liSelected.addClass('use').append('*');
@@ -313,34 +343,35 @@ $(function() {
 					}
 				} else {
 					liSelected.removeClass('use');
-					var kper = $(liSelected).attr('value');
-					$(liSelected).text(kper);
+					var defaultText = $(liSelected).attr('value');
+					$(liSelected).text(defaultText);
 					data[sample].data[index].include = false; //Use
 				}
-				liSelected.removeClass('selected');
-				next = liSelected.next();
-				if(index+1 != li.length){
-					liSelected = next.addClass('selected');
-				} else {
-					liSelected = li.eq(0).addClass('selected');
-				}
+				
+				//Move demagnetization list down one step
+				moveDemagnetizationStep("down");
+				
 			break;
 			
 			//When an interpretation is made we have four options: (line + great circle) x ( anchor + no anchor )
 			//Furthermore, we do and save the interpretation in Geographic and Tectonic coordinates
+			//Procedure is as follows:
+			//1. Set anchor to selected (true or false)
+			//2. Interpret in Geographic coordinates through PCA routine (set tcFlag to false)
+			//3. Interpret in Tectonic coordinates PCA routine (set tcFlag to true)
 			case 49:
 			case 97:
 				e.preventDefault();
-				$("#anchor").prop("checked", false); //Anchor to false
-				$("#tcFlag").prop("checked", false); //First do interpretation in Geographic
-				$("#PCA").click();					//Interpretation
-				$("#tcFlag").prop("checked", true); //Go to tectonic coordinates
-				$("#PCA").click();					//Interpretation
+				$("#anchor").prop("checked", false);
+				$("#tcFlag").prop("checked", false);
+				$("#PCA").click();	
+				$("#tcFlag").prop("checked", true);
+				$("#PCA").click();
 			break;
 			case 50:
 			case 98:
 				e.preventDefault();
-				$("#anchor").prop("checked", true);	//With anchor
+				$("#anchor").prop("checked", true);
 				$("#tcFlag").prop("checked", false);
 				$("#PCA").click();
 				$("#tcFlag").prop("checked", true);
@@ -349,20 +380,20 @@ $(function() {
 			case 57:
 			case 105:
 				e.preventDefault();
-				$("#tcFlag").prop("checked", false);
 				$("#anchor").prop("checked", false);
-				$("#PCAGC").click(); //do PCA GC
+				$("#tcFlag").prop("checked", false);
+				$("#PCAGC").click();
 				$("#tcFlag").prop("checked", true);
-				$("#PCAGC").click(); //do PCA GC
+				$("#PCAGC").click();
 			break;
 			case 48:
 			case 96:
 				e.preventDefault();
-				$("#tcFlag").prop("checked", false);
 				$("#anchor").prop("checked", true);
-				$("#PCAGC").click(); //Do PCA great circle
+				$("#tcFlag").prop("checked", false);
+				$("#PCAGC").click();
 				$("#tcFlag").prop("checked", true);
-				$("#PCAGC").click(); //Do PCA great circle
+				$("#PCAGC").click(); 
 			break;		
 			
 			default: return; // Exit this handler for other keys
@@ -370,7 +401,6 @@ $(function() {
 		}
 		
 		//After pressing a key set the hover radius for the selected point
-		setHoverRadius($(liSelected).index()-1);
 		setStorage();
 		
 	});
@@ -455,41 +485,48 @@ $(function() {
 	
 	//Button handler for left-handed scrolling through specimens
 	$("#left").click( function () {
-		if(data !== null) {
-			var name = $('#specimens option:selected').prev().val(); //Get name of previous and check if not undefined (means we are at start)
-			if(name !== undefined) {
-				$('#specimens option:selected').prop('selected', false).prev().prop('selected', true); //Toggle current off and toggle previous on
-			} else {
-				$("#specimens")[0].selectedIndex = $('#specimens option').length - 1; //Go to the end
-			}
-			$("#specimens").multiselect('refresh');	//Update the box
-			
-			showData(getSampleIndex());	
-			
-			liSelected = li.first().addClass('selected');
-			setHoverRadius(0);
+		
+		if(data.length === 0) {
+			return;
 		}
+		
+		var name = $('#specimens option:selected').prev().val(); //Get name of previous and check if not undefined (means we are at start)
+		if(name !== undefined) {
+			$('#specimens option:selected').prop('selected', false).prev().prop('selected', true); //Toggle current off and toggle previous on
+		} else {
+			$("#specimens")[0].selectedIndex = $('#specimens option').length - 1; //Go to the end
+		}
+		$("#specimens").multiselect('refresh');	//Update the box
+		
+		showData(getSampleIndex());	
+
+		//Set the hover and selection on the first point of the series			
+		liSelected = li.first().addClass('selected');
+		setHoverRadius(0);
+		
 	});
 	
 	//Button handler for right-handed scrolling through specimens
 	$("#right").click( function () {
-	
-		if(data !== null) {
-			var name = $('#specimens option:selected').next().val();
-			if(name !== undefined) {
-				$('#specimens option:selected').prop('selected', false).next().prop('selected', true);
-			} else {
-				$("#specimens")[0].selectedIndex = 0 //Go to begin
-			}
-			$("#specimens").multiselect('refresh');	//Update the box
-			
-			showData(getSampleIndex());	
-	
-			liSelected = li.first().addClass('selected');
-			
-			//Set the hover on the first point of the series
-			setHoverRadius(0);
+		
+		if(data.length === 0) {
+			return;
+		}	
+		
+		var name = $('#specimens option:selected').next().val();
+		if(name !== undefined) {
+			$('#specimens option:selected').prop('selected', false).next().prop('selected', true);
+		} else {
+			$("#specimens")[0].selectedIndex = 0 //Go to begin
 		}
+		$("#specimens").multiselect('refresh');	//Update the box
+		
+		showData(getSampleIndex());	
+		
+		//Set the hover and selection on the first point of the series
+		liSelected = li.first().addClass('selected');
+		setHoverRadius(0);
+
 	});
 	
 	/* CHANGE EVENT: tilt correction flag/projection flag/label flag
@@ -508,7 +545,7 @@ $(function() {
 			eqAreaProjection(data[sample]);
 			
 			//Set hover on selected point
-			setHoverRadius($(liSelected).index()-1);
+			setHoverRadius();
 			
 			//Call drawStuff routine that puts interpreted components on the charts
 			drawStuff(sample);
@@ -526,8 +563,10 @@ $(function() {
 			var sample = getSampleIndex();
 			if(sample != null) {
 				showData(sample); //Call function to build application
-				liSelected = li.first().addClass('selected'); //Upon selecting a new specimen, set the first step selected
-				setHoverRadius(0); //Manually trigger hover on point 0 (start)
+				
+				//Set the hover and selection on the first point of the series
+				liSelected = li.first().addClass('selected');
+				setHoverRadius(0);
 			}
 		}
 	});
@@ -838,7 +877,7 @@ $(function() {
 		//Redraw the necessary charts
 		zijderveld(data[sample]);
 		eqAreaProjection(data[sample]);
-		setHoverRadius($(liSelected).index()-1);	
+		setHoverRadius();	
 
 		setStorage();
 		
@@ -1470,11 +1509,10 @@ function showData( sample ) {
 		var step = data[sample].data[i].step;
 		$('#stepWalk').append('<li value="' + step + '">' + step + '</li>');
 	}
-	
-	//Close the list
 	$('#stepWalk').append('<br>'); 
-	li = $("#stepWalk li") //Global
-	li.first().addClass('selected'); //Select first point
+	
+	//Define li for one step (global)
+	li = $("#stepWalk li") 
 	
 	//Loop over all steps and check for visible/include methods
 	//Having class "show" means hidden -- hopefully fix this someday (sorry)
@@ -1516,10 +1554,12 @@ function showData( sample ) {
  */
 var drawStuff = function ( sample ) {
 
+	//Get Boolean flags from the DOM
 	var tcFlag = $('#tcViewFlag').prop('checked');
 	var nFlag = $('#nFlag').prop('checked');	
 	var specFlag = $('#specFlag').prop('checked');
 	
+	//Do not draw if viewing in specimen coordinates
 	if(specFlag) {
 		return;
 	}
@@ -1755,7 +1795,7 @@ var removeComp = function (event) {
 	eqAreaProjection(data[sample]);
 	drawStuff(sample);
 
-	setHoverRadius($(liSelected).index()-1); //Set hover
+	setHoverRadius(); //Set hover
 	
 	//Check if no data and display NOT INTERPRETED sign
 	if(data[sample]['GEO'].length === 0 || data[sample]['TECT'].length === 0) {
@@ -2412,7 +2452,7 @@ function eqAreaProjection ( sample ) {
 
 	new Highcharts.Chart(chartOptions); //Initialize chart with specified options.;
 
-	if(globalSticky.length != 0) {
+	if(globalSticky.length !== 0) {
 		$("#eqAreaDirections").highcharts().addSeries({
 			color: 'gold',
 			type: 'scatter', 
@@ -2438,6 +2478,10 @@ function setHoverRadius (index) {
 
 	if(data.length === 0) {
 		return;
+	}
+
+	if(index === undefined) {
+		var index = getSelectedStep();
 	}
 	
 	//Get specimen name and capture charts to use
