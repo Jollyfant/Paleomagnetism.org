@@ -25,7 +25,7 @@
 
 //APPLICATION CODE START
 //Define some global variables to be used
-var li, liSelected;
+var li, liSelected, data;
 var globalSticky = new Array();
 var exportData = new Array();
 
@@ -454,12 +454,12 @@ $(function() {
 	
 	//Button handler for left-handed scrolling through specimens
 	$("#left").click( function () {
-		if(data != null) {
+		if(data !== null) {
 			var name = $('#specimens option:selected').prev().val(); //Get name of previous and check if not undefined (means we are at start)
-			if(name != undefined) {
+			if(name !== undefined) {
 				$('#specimens option:selected').prop('selected', false).prev().prop('selected', true); //Toggle current off and toggle previous on
 			} else {
-				$("#specimens")[0].selectedIndex = $('#specimens option').length-1; //Go to the end
+				$("#specimens")[0].selectedIndex = $('#specimens option').length - 1; //Go to the end
 			}
 			$("#specimens").multiselect('refresh');	//Update the box
 			
@@ -472,18 +472,21 @@ $(function() {
 	
 	//Button handler for right-handed scrolling through specimens
 	$("#right").click( function () {
-		if(data != null) {
+	
+		if(data !== null) {
 			var name = $('#specimens option:selected').next().val();
-			if(name != undefined) {
+			if(name !== undefined) {
 				$('#specimens option:selected').prop('selected', false).next().prop('selected', true);
 			} else {
-				$("#specimens")[0].selectedIndex = 0
+				$("#specimens")[0].selectedIndex = 0 //Go to begin
 			}
 			$("#specimens").multiselect('refresh');	//Update the box
 			
 			showData(getSampleIndex());	
 	
 			liSelected = li.first().addClass('selected');
+			
+			//Set the hover on the first point of the series
 			setHoverRadius(0);
 		}
 	});
@@ -504,10 +507,9 @@ $(function() {
 			eqAreaProjection(data[sample]);
 			
 			//Set hover on selected point
-			var index = $(liSelected).index()-1;
-			setHoverRadius(index);
+			setHoverRadius($(liSelected).index()-1);
 			
-			//Call drawstuff routine that puts interpreted components on the charts
+			//Call drawStuff routine that puts interpreted components on the charts
 			drawStuff(sample);
 		}
 	});
@@ -533,22 +535,25 @@ $(function() {
 	//PCA (line) and PCAGC (great circle)
 	$('#PCA, #PCAGC').click( function (event) {
 	
-		var spec = $('#specFlag').prop('checked');
-		if(spec) {
+		//Check if tc flag or anchor flag is checked
+		var tcFlag = $('#tcFlag').prop('checked');
+		var anchor = $('#anchor').prop('checked');
+		var specFlag = $('#specFlag').prop('checked');
+		var includeOrigin = $("#originFlag").prop('checked');
+	
+		//Do not allow interpretations made in specimen coordinates, notify user once and return
+		//If you must do interpretation in specimen coordinates, fill in 0, 90 for the core azimuth of your samples (this will make specimen equal to geographic coordinates)
+		if(specFlag) {
 			if(tcFlag) {
 				notify('failure', 'Cannot do interpretation in specimen coordinates');
 			}
 			return;
 		}
-	
-		//Check if tc flag or anchor flag is checked
-		var tcFlag = $('#tcFlag').prop('checked');
-		var anchor = $('#anchor').prop('checked');
-		var includeOrigin = $("#originFlag").prop('checked');
 		
 		var coordType = tcFlag ? 'TECT' : 'GEO';
 		
-		var typeFit = event.target.id; //Type is GC or DIR
+		//Type is GC or DIR
+		var typeFit = event.target.id; 
 		
 		//Capture specimen in samples variable
 		var sample = getSampleIndex();
@@ -558,13 +563,13 @@ $(function() {
 		zijderveld(data[sample]);
 		eqAreaProjection(data[sample]);
 		
-		var fdata = [];
-		var X = [];
+		var fdata = new Array();
+		var X = new Array();
 		var cm = [0, 0, 0]; //Vector for center of mass
 
 		//Data bucket
-		var dete = [];
-		var steps = [];
+		var dete = new Array();
+		var steps = new Array();
 		
 		//Loop over all data points and push to data bucket (if anchored, mirror all points)
 		for(var i = 0; i < samples.data.length; i++) {
@@ -736,19 +741,19 @@ $(function() {
 			
 			//Construct data object with relevant data
 			var dataObj = {
-				dec: wat.dec,
-				inc: wat.inc,
-				MAD: MAD,
-				cm: cm,
-				intensity: intensity,
-				type: setType,
-				forced: anchor,
-				remark: '',
-				origin: includeOrigin,
-				nSteps: steps.length,
-				minStep: steps[0],
-				maxStep: steps[steps.length-1],
-				steps: steps,
+				'dec': wat.dec,
+				'inc': wat.inc,
+				'MAD': MAD,
+				'cm': cm,
+				'intensity': intensity,
+				'type': setType,
+				'forced': anchor,
+				'remark': '',
+				'origin': includeOrigin,
+				'nSteps': steps.length,
+				'minStep': steps[0],
+				'maxStep': steps[steps.length-1],
+				'steps': steps,
 			};
 			
 			//Check if component already exists
@@ -790,25 +795,26 @@ $(function() {
 			//Write meta-data
 			samples.interpreted = true;
 			samples[coordType].push({
-				dec: wat.dec,
-				inc: wat.inc,
-				MAD: MAD,
-				cm: cm,
-				intensity: intensity,
-				type: setType,
-				origin: includeOrigin,
-				forced: anchor,
-				remark: '',
-				nSteps: steps.length,
-				minStep: steps[0],
-				maxStep: steps[steps.length-1],
-				steps: steps,
+				'dec': wat.dec,
+				'inc': wat.inc,
+				'MAD': MAD,
+				'cm': cm,
+				'intensity': intensity,
+				'type': setType,
+				'origin': includeOrigin,
+				'forced': anchor,
+				'remark': '',
+				'nSteps': steps.length,
+				'minStep': steps[0],
+				'maxStep': steps[steps.length-1],
+				'steps': steps,
 			});
 			
 			//Draw great circle, MAD ellipse, and tau3 principle comp.
 
 		}
 
+		//Only redraw once (this function is automatically called in both Geographic and Tectonic coordinates)
 		if(tcFlag) {
 			drawStuff( sample );
 		}
@@ -820,33 +826,32 @@ $(function() {
 
 		//Capture specimen in samples variable
 		var sample = getSampleIndex();
-		var samples = data[sample];
 		
-		samples.interpreted = false;
-		samples['TECT'] = new Array();
-		samples['GEO'] = new Array();
+		//Reset the interpretation arrays and set interpreted to false
+		data[sample].interpreted = false;
+		data[sample]['TECT'] = new Array();
+		data[sample]['GEO'] = new Array();
 		
-		//Draw the charts
+		showNotInterpretedBox();
+		
+		//Redraw the necessary charts
 		zijderveld(data[sample]);
 		eqAreaProjection(data[sample]);
-		$('.ui-multiselect').css('color', 'rgb(191, 119, 152)'); //Not interpreted: red and big red box "NOT INTERPRETED"
-		$("#update").html('<div style="width: 300px; margin: 0 auto; text-align: center; border: 1px solid red; background-color: rgba(255,0,0,0.1"><h2> Not interpreted </h2></div>');
-		
-		$("#clrIntBox").hide();
-		
 		setHoverRadius($(liSelected).index()-1);	
-		
+
 		setStorage();
 		
 	});
 	
-	//Initialize the application
+	//Initialize the Paldir application
 	initialize();
 	
 });
 
 function initialize() {
 
+	"use strict";
+	
 	//Get data from the local storage
 	if(localStorage) {
 		data = JSON.parse(localStorage.getItem('InterPortal'));
@@ -856,22 +861,14 @@ function initialize() {
 	}
 	
 	if(data != null) {
-		var nSamples = data.length;
 		
-		//Remove all previous options from the specimen scroller
-		$('#specimens').find('option').remove().end();
-	
-		//Add new specimens to the specimen scroller
-		for(var i = 0; i < data.length; i++) {
-			var name = data[i].name;
-			$('#specimens').append("<option custom=\"" + i + "\" value=\"" + name + "\">" + name + "</option>");
-		}
+		refreshSpecimenScroller();
 		
 		//Notify user and refresh specimen scroller to force update
-		notify('success', 'Importing was succesful. Added ' + nSamples + ' new specimens.')		
-		$('#specimens').multiselect('refresh');
+		notify('success', 'Importing was succesful. Added ' + data.length + ' new specimens.')	
+		
 	} else {
-		data = [];
+		data = new Array();
 		notify('success', 'Welcome to the Paleomagnetism.org interpretation portal!');
 		setTimeout(function(){ 
 			notify('success', 'Before starting, please import some data in the advanced options tab.');
@@ -888,18 +885,16 @@ function initialize() {
  */
 function fitCirclesToDirections() {
 
-	exportData = [];
+	"use strict";
+	
+	exportData = new Array();
 	
 	//Get coordinate reference frame; fitting great circles must be done in tectonic coordinates and geographic coordinates seperated
 	var coordType = $("#coordinates input[type='radio']:checked").val();
-	if(coordType == 'GEO') {
-		var coordinateNice = 'Geographic Coordinates';
-	} else if(coordType == 'TECT') {
-		var coordinateNice = 'Tectonic Coordinates';
-	}
+	var coordinateNice = coordType === 'GEO' ? 'Geographic Coordinates' : 'Tectonic Coordinates';
 	
-	var fitData = [];
-	var pointsSet = [];
+	var fitData = new Array()
+	var pointsSet = new Array();
 	var isSet = false;
 
 	//Loop over all interpreted components
@@ -921,29 +916,22 @@ function fitCirclesToDirections() {
 						'sample': sample
 					});
 					
-					//Check if negative, then put fillColor to white
-					if(inc < 0) {
-						color = 'white';
-					} else {
-						color = 'rgb(119, 152, 191)';
-					}
-					
-					row = [sample, 0, dec, inc, 's'];
+					var row = [sample, 0, dec, inc, 's'];
 					isSet = true;
 					
 					//Highcharts data array for plotting set points
 					pointsSet.push({
 						'x': dec,
-						'sample': sample,
 						'y': eqArea(inc),
 						'inc': inc,
+						'sample': sample,
 						'marker': {
-							'fillColor' : color,
+							'fillColor' : inc < 0 ? 'white' : 'rgb(119, 152, 191)',
 							'lineColor' : 'rgb(119, 152, 191)',
 							'lineWidth' : 1,
 						}
 					});
-				} else if(data[i][coordType][j].type == 'GC') {
+				} else if(data[i][coordType][j].type === 'GC') {
 					row = [sample, 0, dec, inc, 0];	//Format used by the fitting function function that fits great circles to set points	
 				}
 				fitData.push(row);
@@ -1303,6 +1291,8 @@ function fitCirclesToDirections() {
  */
 function vClose (xCircle, yCircle, zCircle, v1, v2, v3) {
 
+	"use strict";
+	
 	var lambda = v1 * xCircle + v2 * yCircle + v3 * zCircle;
 	var beta = Math.sqrt(1 - lambda*lambda);
 	
@@ -1320,8 +1310,10 @@ function vClose (xCircle, yCircle, zCircle, v1, v2, v3) {
  */
 function getPlaneData ( dirIn, type, MAD, signInc ) {
 
-	var mDec = dirIn.dec
-	var mInc = dirIn.inc
+	"use strict";
+	
+	var mDec = dirIn.dec;
+	var mInc = dirIn.inc;
 	
 	if(signInc != undefined) {
 		if(signInc < 0) {
@@ -1334,7 +1326,7 @@ function getPlaneData ( dirIn, type, MAD, signInc ) {
 	
 	var incSign = (Math.abs(mInc)/mInc); // 1 or -1 depending on inclination polarity
 	
-	if(mInc == 0) {
+	if(mInc === 0) {
 		incSign = 1;
 	}
 		
@@ -1354,7 +1346,7 @@ function getPlaneData ( dirIn, type, MAD, signInc ) {
 	
 	var iPoint = ((nPoints-1)/2);
 	
-	R = [[0,0,0],[0,0,0],[0,0,0]];
+	var R = [[0,0,0],[0,0,0],[0,0,0]];
 
 	/*
  	 * Cartesian coordinates and construct rotation matrix Rij 
@@ -1400,13 +1392,13 @@ function getPlaneData ( dirIn, type, MAD, signInc ) {
 	// the resulting vector contains the ellipse position in local coordinates.
 	// X is mapped on R-coordinates of v
 
-	v = [0,0,0];
+	var v = [0,0,0];
 	var doOnce = true;
 	var doOnce2 = true;
 	
-	for(i=0; i<nPoints; i++){
+	for(var i=0; i<nPoints; i++){
 
-		psi = ((i)*Math.PI/iPoint);
+		var psi = ((i)*Math.PI/iPoint);
 		
 		if(type == 'GC') {
 			v[1] = Math.cos(psi);
@@ -1419,7 +1411,7 @@ function getPlaneData ( dirIn, type, MAD, signInc ) {
 		}
 
  		// Matrix multiplication V'j = RjiVi (sum i);	
-		eli = [0,0,0];
+		var eli = [0,0,0];
 		for(var j=0;j<3;j++){
 			for(var k=0;k<3;k++){ 
 				eli[j]=eli[j] + R[j][k]*v[k];
@@ -1451,6 +1443,7 @@ function getPlaneData ( dirIn, type, MAD, signInc ) {
 		}	
 
 	}
+	
 	mySeries.push(null);
 	mySeries2.push(null);
 	
@@ -1463,11 +1456,10 @@ function getPlaneData ( dirIn, type, MAD, signInc ) {
  * Output: VOID (creates list and plots)
  */ 
 function showData( sample ) {
+
+	"use strict";
 	
-	li = $("#stepWalk li") //Global
-	li.first().addClass('selected'); //Select first point
-	
-	if(data == null || data.length == 0) {
+	if(data === null || data.length === 0) {
 		return;
 	}
 	
@@ -1475,15 +1467,16 @@ function showData( sample ) {
 	$('#stepWalk').html('<h2>Steps</h2>');
 	for(var i = 0; i < data[sample].data.length; i++) {
 		var step = data[sample].data[i].step;
-		$('#stepWalk').append('<li value="' + step + '">' + step + '</li>'); //Append a list item for each step
+		$('#stepWalk').append('<li value="' + step + '">' + step + '</li>');
 	}
 	
-	//Close list
+	//Close the list
 	$('#stepWalk').append('<br>'); 
 	li = $("#stepWalk li") //Global
 	li.first().addClass('selected'); //Select first point
 	
 	//Loop over all steps and check for visible/include methods
+	//Having class "show" means hidden -- hopefully fix this someday (sorry)
 	for(var i = 0; i < data[sample].data.length; i++) {
 		if(!data[sample].data[i].visible) {
 			li.eq(i).addClass('show');
@@ -1495,13 +1488,7 @@ function showData( sample ) {
 		}
 	}
 	
-	var tcFlag = $('#tcViewFlag').prop('checked');
-	
-	if(tcFlag) {
-		var coordType = 'TECT';
-	} else {
-		var coordType = 'GEO';
-	}
+	var coordType = $('#tcViewFlag').prop('checked') ? 'TECT' : 'GEO';
 	
 	//Draw the charts
 	zijderveld(data[sample]);
@@ -1510,36 +1497,31 @@ function showData( sample ) {
 
 	//Check if the sample has been previously interpreted
 	if(data[sample].interpreted) {
-		$('.ui-multiselect').css('color', 'rgb(119, 191, 152)'); //Set specimen scroller color to green
-		if(data[sample][coordType][0].type == 'dir') {
-			drawStuff( sample, 'dir' ) //Draw directions
-		} else {
-			drawStuff ( sample, 'GC' )	//Draw a plane
-		}
+		$('.ui-multiselect').css('color', 'rgb(119, 191, 152)'); //Set the specimen scroller color to green
+		drawStuff( sample ) //Draw directions
 	} else {
-		$('.ui-multiselect').css('color', 'rgb(191, 119, 152)'); //Not interpreted: red and big red box "NOT INTERPRETED"
-		$("#update").html('<div style="width: 300px; margin: 0 auto; text-align: center; border: 1px solid red; background-color: rgba(255,0,0,0.1"><h2> Not interpreted </h2></div>');
-		$("#clrIntBox").hide();
+		showNotInterpretedBox();
 	}
 	
 	//Show the main body containing all graphs
 	$("#appBody").show();
 }
 
-/* FUNCTION drawStuff
- * Description: draws a plane in eqArea projection
+/*
+ * FUNCTION drawStuff
+ * Description: draws interpretations on plots
  * Input: sample index (specimen)
  * Output: VOID (Adds series to existing chart)
  */
 var drawStuff = function ( sample ) {
+
+	var tcFlag = $('#tcViewFlag').prop('checked');
+	var nFlag = $('#nFlag').prop('checked');	
+	var specFlag = $('#specFlag').prop('checked');
 	
-	var spec = $('#specFlag').prop('checked');
-	if(spec) {
+	if(specFlag) {
 		return;
 	}
-	
-	var tcFlag = $('#tcViewFlag').prop('checked');
-	var nFlag = $('#nFlag').prop('checked');
 	
 	if(tcFlag) {
 		var coordType = 'TECT';
@@ -1549,12 +1531,12 @@ var drawStuff = function ( sample ) {
 		var coordinates = 'Geographic';
 	}
 	
-	if(data[sample].interpreted) {	
+	if(data[sample].interpreted) {
 	
-		//Update parameter table
+		//Update the parameter table
 		$("#update").html('<p> <table class="sample" id="infoTable"><tr><th> Component </th> <th> Type </th> <th> Declination </th> <th> Inclination </th> <th> Intensity (A/m) </th> <th> MAD </th> <th> Coordinates </th> <th> Remark </th> <th> Remove </th> </tr>');
 		
-		//Loop over all interpretations in a particular coordinate reference frame
+		//Loop over all interpretations in a particular coordinate reference frame (either Tectonic or Geographic)
 		for(var i = 0; i < data[sample][coordType].length; i++) {
 		
 			//Get remark, if none put default message
@@ -1570,18 +1552,19 @@ var drawStuff = function ( sample ) {
 			var bStrike = data[sample].bedStrike;
 			var bDip = data[sample].bedDip;
 			
-			//Declination and Inclination or prinicple component (can be either t1 or t3)
+			//Declination and Inclination of the principle component (can be either t1 or t3)
 			var PCADirection = {
-				dec: data[sample][coordType][i].dec, 
-				inc: data[sample][coordType][i].inc
+				'dec': data[sample][coordType][i].dec, 
+				'inc': data[sample][coordType][i].inc
 			};
 			
 			var MAD = data[sample][coordType][i].MAD;
 			var intensity = data[sample][coordType][i].intensity;
 			
-			//Transform center of mass to proper projection.
-			//Don't do this if anchored (direction of of {0, 0, 0} is NaN)
+			//Transform the centre of mass to proper projection.
+			//Don't do this if anchored (direction of {0, 0, 0} is NaN)
 			if(nFlag) {
+				//Subtract 90 from the declination and transform centre of mass if not forced
 				var v1 = cart(PCADirection.dec-90, PCADirection.inc);
 				if(!data[sample][coordType][i].forced) {
 					var temp = new dir(cm[0], cm[1], cm[2]);
@@ -1592,153 +1575,158 @@ var drawStuff = function ( sample ) {
 				var v1 = cart(PCADirection.dec, PCADirection.inc);	
 			}
 			
-			var noteType = data[sample][coordType][i].type;
+			//Get the type of the PC (direction or great circle
 			var type = data[sample][coordType][i].type;
+		
+			//Draw a line
+			//Center of mass + and - the scaled principle component. Not very pretty but works for drawing a line.
+			if(type === 'dir') {
 			
+				//Scale by the intensity
+				var scaling = intensity*100;
+				
+				//Add line for declination
+				var lineFit = [[cm[0]+v1.x*scaling, -cm[1]-v1.y*scaling], [cm[0]-v1.x*scaling, -cm[1]+v1.y*scaling]];
+				$("#zijderveldPlot").highcharts().addSeries({
+					'name': 'Declination (PCA) #' + (i+1),
+					'data': lineFit,
+					'enableMouseTracking': false,
+					'lineWidth': 1,
+					'color': 'green',
+					'marker': {
+						'enabled' : false
+					}
+				});
+				
+				//Add line for inclination
+				var lineFit = [[cm[0]+v1.x*scaling, -cm[2]-v1.z*scaling], [cm[0]-v1.x*scaling, -cm[2]+v1.z*scaling]];
+				$("#zijderveldPlot").highcharts().addSeries({
+					'name': 'Inclination (PCA) #' + (i+1),
+					'data': lineFit,
+					'lineWidth': 1,
+					'enableMouseTracking': false,
+					'color': 'red',
+					'marker': {
+						'enabled': false
+					}
+				});
+				
+				//Add the point for given PC line in the equal area projection
+				$("#eqAreaDirections").highcharts().addSeries({
+					'name': 'Linear Fit #' + (i+1),
+					'data': [{'x': PCADirection.dec, 'y': eqArea(PCADirection.inc), 'inc': PCADirection.inc, 'name': 'Linear Fit #' + (i+1)}],
+					'type': 'scatter',
+					'zIndex': 100,
+					'marker': {
+						'symbol': 'circle',
+						'lineColor': 'rgb(191, 119, 152)',
+						'lineWidth': 1,
+						'fillColor': PCADirection.inc < 0 ? 'white' : 'rgb(191, 119, 152)'
+					},
+				});
+				
+			} else if(type === 'GC') {
+			
+				//Add the plane defined by t3 to the equal area projection
+				var planeFit = getPlaneData(PCADirection, 'GC');
+				$("#eqAreaDirections").highcharts().addSeries({
+					'lineWidth': 1,
+					'id': 'plane',
+					'dashStyle': 'ShortDash',
+					'enableMouseTracking': false,
+					'color': 'red',
+					'marker': {
+						'enabled': false
+					},
+					'type': 'line', 
+					'name': 'Planar Fit #' + (i+1), 
+					'data': planeFit.one
+				});
+				
+				$("#eqAreaDirections").highcharts().addSeries({
+					'lineWidth': 1,
+					'linkedTo': ':previous',
+					'enableMouseTracking': false,
+					'color': 'red',
+					'marker': {
+						'enabled': false
+					},
+					'type': 'line', 
+					'name': 'Planar Fit', 
+					'data': planeFit.two
+				});
+			
+				//Add tau3 to the equal area projection
+				$("#eqAreaDirections").highcharts().addSeries({
+					'name': '\u03C4' + '3 #' + (i+1),
+					'type': 'scatter',
+					'marker': {
+						'symbol': 'circle',
+						'lineColor': 'red',
+						'lineWidth': 1,
+						'fillColor': 'white'
+					},
+					'data': [{
+						'x': PCADirection.dec, 
+						'y': eqArea(PCADirection.inc),
+						'inc': PCADirection.inc,
+						'name': '\u03C4' + '3 #' + (i+1),
+					}]
+				});
+				
+				//Add the MAD angle around t3
+				var planeData = getPlaneData(PCADirection, 'MAD', MAD);	
+				$("#eqAreaDirections").highcharts().addSeries({
+					'lineWidth': 1,
+					'id': 'MAD',
+					'dashStyle': 'ShortDash',
+					'enableMouseTracking': false,
+					'color': 'red',
+					'marker': {
+						'enabled': false
+					},
+					'type': 'line', 
+					'name': 'MAD Angle #' + (i+1), 
+					'data': planeData.one
+				});
+				
+				$("#eqAreaDirections").highcharts().addSeries({
+					'lineWidth': 1,
+					'linkedTo': ':previous',
+					'dashStyle': 'ShortDash',
+					'enableMouseTracking': false,
+					'lineColor': 'red',
+					'type': 'line', 
+					'name': 'MAD Angle', 
+					'data': planeData.two,
+					'marker': {
+						'enabled': false
+					},
+				});
+			
+			}
+	
+			//Add information on forcing or including origin to type label (shown in table)
 			if(data[sample][coordType][i].forced) {
-				noteType += ' (forced)';
+				type += ' (forced)';
 			}
 
 			if(data[sample][coordType][i].origin) {
-				noteType += ' (origin)';
+				type += ' (origin)';
 			}
 			
-			//Draw a line
-			//Center of mass + and - scaled principle component. Not very pretty but works!
-			if(type == 'dir') {
-			
-				var scaling = intensity*100; //Scale by intensity
-				
-				var lineFit = [[cm[0]+v1.x*scaling, -cm[1]-v1.y*scaling], [cm[0]-v1.x*scaling, -cm[1]+v1.y*scaling]];
-				$("#zijderveldPlot").highcharts().addSeries({
-					name: 'Declination (PCA) #' + (i+1),
-					data: lineFit,
-					enableMouseTracking: false,
-					lineWidth: 1,
-					color: 'green',
-					marker: {
-						enabled : false
-					}
-				});
-				
-				var lineFit = [[cm[0]+v1.x*scaling, -cm[2]-v1.z*scaling], [cm[0]-v1.x*scaling, -cm[2]+v1.z*scaling]];
-				$("#zijderveldPlot").highcharts().addSeries({
-					name: 'Inclination (PCA) #' + (i+1),
-					data: lineFit,
-					lineWidth: 1,
-					enableMouseTracking: false,
-					color: 'red',
-					marker: {
-						enabled : false
-					}
-				});
-	
-				var fillColor = 'rgb(191, 119, 152)';
-				if(PCADirection.inc < 0) {
-					fillColor = 'white';
-				}
-				
-				$("#eqAreaDirections").highcharts().addSeries({
-					name: 'Linear Fit #' + (i+1),
-					data: [{x: PCADirection.dec, y: eqArea(PCADirection.inc), inc: PCADirection.inc, name: 'Linear Fit #' + (i+1)}],
-					type: 'scatter',
-					zIndex: 100,
-					marker: {
-						symbol: 'circle',
-						lineColor: 'rgb(191, 119, 152)',
-						lineWidth: 1,
-						fillColor: fillColor
-					},
-				});
-				
-			} else if(type == 'GC') {
-				var planeFit = getPlaneData(PCADirection, 'GC');
-				$("#eqAreaDirections").highcharts().addSeries({
-					lineWidth: 1,
-					id: 'plane',
-					dashStyle: 'ShortDash',
-					enableMouseTracking: false,
-					color: 'red',
-					marker: {
-						enabled: false
-					},
-					type: 'line', 
-					name: 'Planar Fit #' + (i+1), 
-					data: planeFit.one
-				});
-				
-				$("#eqAreaDirections").highcharts().addSeries({
-					lineWidth: 1,
-					linkedTo: ':previous',
-					enableMouseTracking: false,
-					color: 'red',
-					marker: {
-						enabled: false
-					},
-					type: 'line', 
-					name: 'Planar Fit', 
-					data: planeFit.two
-				});
-			
-				var planeData = getPlaneData(PCADirection, 'MAD', MAD);	
-				$("#eqAreaDirections").highcharts().addSeries({
-					lineWidth: 1,
-					id: 'MAD',
-					dashStyle: 'ShortDash',
-					enableMouseTracking: false,
-					color: 'red',
-					marker: {
-						enabled: false
-					},
-					type: 'line', 
-					name: 'MAD Angle #' + (i+1), 
-					data: planeData.one
-				});
-				$("#eqAreaDirections").highcharts().addSeries({
-					lineWidth: 1,
-					linkedTo: ':previous',
-					dashStyle: 'ShortDash',
-					enableMouseTracking: false,
-					lineColor: 'red',
-					type: 'line', 
-					name: 'MAD Angle', 
-					data: planeData.two,
-					marker: {
-						enabled: false
-					},
-				});
-			
-				$("#eqAreaDirections").highcharts().addSeries({
-					name: '\u03C4' + '3 #' + (i+1),
-					type: 'scatter',
-					marker: {
-						symbol: 'circle',
-						lineColor: 'red',
-						lineWidth: 1,
-						fillColor: 'white'
-					},
-					data: [{
-						x: PCADirection.dec, 
-						y: eqArea(PCADirection.inc),
-						inc: PCADirection.inc,
-						name: '\u03C4' + '3 #' + (i+1),
-					}]
-				});
-			
-			}
-			$("#infoTable").append('<tr> <td> Component #' + (i+1) + '</td> <td> ' + noteType + '<td> ' + PCADirection.dec.toFixed(1) + ' </td> <td> ' + PCADirection.inc.toFixed(1) + ' </td> <td> ' + intensity.toFixed(1) + '</td> <td> ' + MAD.toFixed(1) + '</td> <td> ' + coordinates + ' </td> <td> <a comp="' + (i+1) + '" onClick="changeRemark(event)">' + remark + '</a> </td> <td> <b><a style="color: rgb(191, 119, 152); cursor: pointer; border-bottom: 1px solid rgb(191, 119, 152);" comp="' + (i+1) + '" id="del'+(i+1)+'" onClick="removeComp(event)">Delete</a></b> </td> </tr>');
+			//Update table with information on interpretations
+			$("#infoTable").append('<tr> <td> Component #' + (i+1) + '</td> <td> ' + type + '<td> ' + PCADirection.dec.toFixed(1) + ' </td> <td> ' + PCADirection.inc.toFixed(1) + ' </td> <td> ' + intensity.toFixed(1) + '</td> <td> ' + MAD.toFixed(1) + '</td> <td> ' + coordinates + ' </td> <td> <a comp="' + (i+1) + '" onClick="changeRemark(event)">' + remark + '</a> </td> <td> <b><a style="color: rgb(191, 119, 152); cursor: pointer; border-bottom: 1px solid rgb(191, 119, 152);" comp="' + (i+1) + '" id="del'+(i+1)+'" onClick="removeComp(event)">Delete</a></b> </td> </tr>');
 			$("#clrIntBox").show();
+			
 		}
 		
 	$("#update").append('</table>');
 	$("#update").append('<small><b>Note: </b> the MAD is not reliable for forced directions. For great circles, the specified direction is the pole to the requested plane.</small>');
 	
 	} else {
-		$('.ui-multiselect').css('color', 'rgb(191, 119, 152)'); //Not interpreted: red and big red box "NOT INTERPRETED"
-		$("#update").html('<div style="width: 300px; margin: 0 auto; text-align: center; border: 1px solid red; background-color: rgba(255,0,0,0.1"><h2> Not interpreted </h2></div>');
-		$("#clrIntBox").hide();
+		showNotInterpretedBox();
 	}
-
 
 }
 
@@ -1749,16 +1737,17 @@ var drawStuff = function ( sample ) {
  */
 var removeComp = function (event) {
 	
+	"use strict";
+	
 	//Get the index of the component (passed through comp attribute of button)
-	var index = $(event.target).attr("comp");
+	var index = $(event.target).attr("comp") - 1;
 	
 	//Capture specimen in samples variable
 	var sample = getSampleIndex();
-	var samples = data[sample];
 	
 	//Remove component from saves in both tectonic and geographic coordinates
-	var removed = samples['GEO'].splice(index-1, 1);
-	var removed = samples['TECT'].splice(index-1, 1);
+	data[sample]['GEO'].splice(index, 1);
+	data[sample]['TECT'].splice(index, 1);
 
 	//Redraw charts and components
 	zijderveld(data[sample]);
@@ -1768,15 +1757,25 @@ var removeComp = function (event) {
 	setHoverRadius($(liSelected).index()-1); //Set hover
 	
 	//Check if no data and display NOT INTERPRETED sign
-	if(samples['GEO'].length === 0 || samples['TECT'].length === 0) {
-		samples.interpreted = false;
-		$('.ui-multiselect').css('color', 'rgb(191, 119, 152)'); //Not interpreted: red and big red box "NOT INTERPRETED"
-		$("#update").html('<div style="width: 300px; margin: 0 auto; text-align: center; border: 1px solid red; background-color: rgba(255,0,0,0.1"><h2> Not interpreted </h2></div>');	
-		$("#clrIntBox").hide();
+	if(data[sample]['GEO'].length === 0 || data[sample]['TECT'].length === 0) {
+		data[sample].interpreted = false;
+		showNotInterpretedBox();
 	}
 	
 	//Save session
 	setStorage();
+	
+}
+
+/* Description: shows the big red not interpreted box
+ */
+var showNotInterpretedBox = function () {
+
+	"use strict";
+	
+	$('.ui-multiselect').css('color', 'rgb(191, 119, 152)'); 
+	$("#update").html('<div style="width: 300px; margin: 0 auto; text-align: center; border: 1px solid red; background-color: rgba(255,0,0,0.1"><h2> Not interpreted </h2></div>');	
+	$("#clrIntBox").hide();
 	
 }
 
@@ -1787,12 +1786,12 @@ var removeComp = function (event) {
  */
 var changeRemark = function (event) {
 
-	var index = event.target.getAttribute('comp');
+	"use strict";
+	
+	var index = event.target.getAttribute('comp') - 1;
 	
 	//Capture specimen in samples variable
 	var sample = getSampleIndex();
-	var samples = data[sample];
-		
 	var text = prompt("Please enter a note below.");
 	
 	//Don't change note is cancel is pressed.
@@ -1800,17 +1799,18 @@ var changeRemark = function (event) {
 		return;
 	}
 	
-	if(text != "") {
+	//If text is not empty, otherwise put the default remark
+	if(text !== "") {
 		event.target.innerHTML = text;
-		samples['GEO'][index-1].remark = text;
-		samples['TECT'][index-1].remark = text;
+		data[sample]['GEO'][index].remark = text;
+		data[sample]['TECT'][index].remark = text;
 	} else {
 		event.target.innerHTML = 'Click to Change';
-		samples['GEO'][index-1].remark = '';
-		samples['TECT'][index-1].remark = '';
+		data[sample]['GEO'][index].remark = '';
+		data[sample]['TECT'][index].remark = '';
 	}
 	
-	//Save session
+	//Save the session
 	setStorage();
 	
 }
@@ -1821,11 +1821,13 @@ var changeRemark = function (event) {
  */
 var rotateGeo = function(azi, pl, data){
 	
+	"use strict";
+	
 	//Convert to radians
 	var azi = azi*rad;
 	var pl = pl*rad;
 
-	//Vector with x, y, z coordinates
+	//Vector k with x, y, z coordinates
 	var k = [
 		data[0], 
 		data[1], 
@@ -1850,11 +1852,13 @@ var rotateGeo = function(azi, pl, data){
 		}
 	}
 	
-	return new dir(v[0], v[1], v[2]);
+	return dir(v[0], v[1], v[2]);
 }
 
 var rotateTect = function(str, he, data){
 
+	"use strict";
+	
 	var dec = data[0];
 	var inc = data[1];
 	
@@ -1877,33 +1881,33 @@ var rotateTect = function(str, he, data){
 	var R = [[0,0,0],[0,0,0],[0,0,0]];
 
 	//Construct Rotation Matrix (A.13)
-	R[0][0]=Math.cos(phi)
-	R[1][0]=0
-	R[2][0]=Math.sin(phi)
+	R[0][0] = Math.cos(phi)
+	R[1][0] = 0
+	R[2][0] = Math.sin(phi)
 
-	R[0][1]=0
-	R[1][1]=1
-	R[2][1]=0
+	R[0][1] = 0
+	R[1][1] = 1
+	R[2][1] = 0
 
-	R[0][2]=-Math.sin(phi)
-	R[1][2]=0
-	R[2][2]=Math.cos(phi)
+	R[0][2] = -Math.sin(phi)
+	R[1][2] = 0
+	R[2][2] = Math.cos(phi)
 
 	//Directions to Cartesian coordinates
 	var v = [coords.x, coords.y , coords.z]	
 
-		//v' (v_prime) becomes the coordinate vector after rotation.
-		var vP = [0,0,0];
-		for(var j=0;j<3;j++){
-			for(var k=0;k<3;k++){ 
-      			vP[j]=vP[j] + R[j][k]*v[k]; //V'j = Rjk*Vk (sum over k);
-			}
+	//v' becomes the coordinate vector after rotation.
+	var vP = [0,0,0];
+	for(var j=0;j<3;j++){
+		for(var k=0;k<3;k++){ 
+      		vP[j]=vP[j] + R[j][k]*v[k]; //V'j = Rjk*Vk (sum over k);
 		}
+	}
 
 	//Find new direction from the rotated Cartesian coordinates.
-	var temp = new dir(vP[0],vP[1],vP[2]);
+	var temp = dir(vP[0],vP[1],vP[2]);
 
-	//Similarily to the first step, as the final step we rotate the directions back to their initial declinations. Keep declination within bounds.
+	//Similarly to the first step, as the final step we rotate the directions back to their initial declinations. Keep declination within bounds.
 	temp.dec = (temp.dec + str)%360;
 	
 	return [temp.dec, temp.inc, data[2], data[3], data[4]];
@@ -1917,6 +1921,8 @@ var rotateTect = function(str, he, data){
  */
 function zijderveld ( samples ) {
 
+	"use strict";
+	
 	//Specimen metadata (core and bedding orientations)
 	var coreBedding = samples.coreAzi;
 	var coreDip = samples.coreDip;
@@ -1929,12 +1935,6 @@ function zijderveld ( samples ) {
 	var enableLabels = $('#labelFlag').prop('checked');
 	var specFlag = $('#specFlag').prop('checked');
 	
-	//Parameters to scale axes (min, max)
-	var xs = new Array();
-	var yz = new Array();
-	maxz = 0;
-	maxx = 0;
-
 	//Check if user wants to view in specimen coordinates, put the core bedding to 0 and core azimuth to 90;
 	if(specFlag) {
 		var coreBedding = 0;
@@ -1947,6 +1947,10 @@ function zijderveld ( samples ) {
 	//Data buckets for inclination/declination lines
 	var decDat = new Array();
 	var incDat = new Array();
+	
+	//Parameters to scale axes (min, max)
+	var valuesX = new Array();
+	var valuesY = new Array();	
 	
 	//Loop over all points and do rotations if requested (e.g. Specimen, Geographic, or Tectonic coordinates in N/Up or W/Up projection)
 	for(var i = 0; i < samples.data.length; i++) {
@@ -1972,21 +1976,31 @@ function zijderveld ( samples ) {
 				var projectionInformation = 'Up/West';				
 			}
 			
-			//Declination is x, -y plane and Inclination is x, -z plane
-			decDat.push({'x': carts.x, 'y': -carts.y, 'step': samples.data[i].step});
-			incDat.push({'x': carts.x, 'y': -carts.z, 'step': samples.data[i].step});
+			//Declination is x, -y plane
+			decDat.push({
+				'x': carts.x, 
+				'y': -carts.y, 
+				'step': samples.data[i].step
+			});
+			
+			//Inclination is x, -z plane
+			incDat.push({
+				'x': carts.x, 
+				'y': -carts.z, 
+				'step': samples.data[i].step
+			});
 			
 			//Push the values for x and (y, z) to arrays. At the end we determine the maximum/minimum from these arrays. 
-			xs.push(Math.abs(carts.x));
-			yz.push(Math.abs(carts.y), Math.abs(carts.z));
+			valuesX.push(Math.abs(carts.x));
+			valuesY.push(Math.abs(carts.y), Math.abs(carts.z));
 			
 		}
 	}
 
 	//Obtain the maximum and minimum values which will be used as the graph boundaries
 	//The Zijderveld diagram will always be a square
-	maximumX = Math.max.apply(Math, xs);
-	maximumY = Math.max.apply(Math, yz);
+	var maximumX = Math.max.apply(Math, valuesX);
+	var maximumY = Math.max.apply(Math, valuesY);
 	
    var chartOptions = {
 		chart: {
@@ -2133,6 +2147,8 @@ function zijderveld ( samples ) {
  */
 function intensity ( sample ) {
 
+	"use strict";
+	
 	//For the xAxis we use a category (based on strings, not a numerical scale)
 	//Often the step is identified with numbers and letters (e.g. 200mT), this makes it difficult to get a numerical xAxis
 	//Disadvantage of this is that "distance" between steps is always standard and not representative of actual distance
