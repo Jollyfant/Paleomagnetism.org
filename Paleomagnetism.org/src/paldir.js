@@ -82,8 +82,8 @@ $(function() {
 			}
 			
 			//Redraw the equal area projection and set hover after redraw
-			eqAreaFoldLeft(data[sample]);
-			setHoverRadius($(liSelected).index()-1, liSelected);
+			eqAreaProjection(data[sample]);
+			setHoverRadius($(liSelected).index()-1);
 		}
 	});
 	
@@ -295,7 +295,7 @@ $(function() {
 				
 				zijderveld(data[sample]);
 				intensity(data[sample]);
-				eqAreaFoldLeft(data[sample]);
+				eqAreaProjection(data[sample]);
 				drawStuff( sample );
 				
 			break;
@@ -369,7 +369,7 @@ $(function() {
 		}
 		
 		//After pressing a key set the hover radius for the selected point
-		setHoverRadius($(liSelected).index()-1, liSelected);
+		setHoverRadius($(liSelected).index()-1);
 		setStorage();
 		
 	});
@@ -466,7 +466,7 @@ $(function() {
 			showData(getSampleIndex());	
 			
 			liSelected = li.first().addClass('selected');
-			setHoverRadius(0, liSelected);
+			setHoverRadius(0);
 		}
 	});
 	
@@ -484,7 +484,7 @@ $(function() {
 			showData(getSampleIndex());	
 	
 			liSelected = li.first().addClass('selected');
-			setHoverRadius(0, liSelected);
+			setHoverRadius(0);
 		}
 	});
 	
@@ -501,11 +501,11 @@ $(function() {
 			
 			//Redraw Zijderveld and eqArea projection
 			zijderveld(data[sample]);
-			eqAreaFoldLeft(data[sample]);
+			eqAreaProjection(data[sample]);
 			
 			//Set hover on selected point
 			var index = $(liSelected).index()-1;
-			setHoverRadius(index, liSelected);
+			setHoverRadius(index);
 			
 			//Call drawstuff routine that puts interpreted components on the charts
 			drawStuff(sample);
@@ -524,7 +524,7 @@ $(function() {
 			if(sample != null) {
 				showData(sample); //Call function to build application
 				liSelected = li.first().addClass('selected'); //Upon selecting a new specimen, set the first step selected
-				setHoverRadius(0, liSelected); //Manually trigger hover on point 0 (start)
+				setHoverRadius(0); //Manually trigger hover on point 0 (start)
 			}
 		}
 	});
@@ -556,7 +556,7 @@ $(function() {
 	
 		//Draw the charts
 		zijderveld(data[sample]);
-		eqAreaFoldLeft(data[sample]);
+		eqAreaProjection(data[sample]);
 		
 		var fdata = [];
 		var X = [];
@@ -828,13 +828,13 @@ $(function() {
 		
 		//Draw the charts
 		zijderveld(data[sample]);
-		eqAreaFoldLeft(data[sample]);
+		eqAreaProjection(data[sample]);
 		$('.ui-multiselect').css('color', 'rgb(191, 119, 152)'); //Not interpreted: red and big red box "NOT INTERPRETED"
 		$("#update").html('<div style="width: 300px; margin: 0 auto; text-align: center; border: 1px solid red; background-color: rgba(255,0,0,0.1"><h2> Not interpreted </h2></div>');
 		
 		$("#clrIntBox").hide();
 		
-		setHoverRadius($(liSelected).index()-1, liSelected);	
+		setHoverRadius($(liSelected).index()-1);	
 		
 		setStorage();
 		
@@ -1506,7 +1506,7 @@ function showData( sample ) {
 	//Draw the charts
 	zijderveld(data[sample]);
 	intensity(data[sample]);
-	eqAreaFoldLeft(data[sample]);
+	eqAreaProjection(data[sample]);
 
 	//Check if the sample has been previously interpreted
 	if(data[sample].interpreted) {
@@ -1762,10 +1762,10 @@ var removeComp = function (event) {
 
 	//Redraw charts and components
 	zijderveld(data[sample]);
-	eqAreaFoldLeft(data[sample]);
+	eqAreaProjection(data[sample]);
 	drawStuff(sample);
 
-	setHoverRadius($(liSelected).index()-1, liSelected); //Set hover
+	setHoverRadius($(liSelected).index()-1); //Set hover
 	
 	//Check if no data and display NOT INTERPRETED sign
 	if(samples['GEO'].length === 0 || samples['TECT'].length === 0) {
@@ -2227,51 +2227,67 @@ function intensity ( samples ) {
 	new Highcharts.Chart(chartOptions);
 }
 
-/* FUNCTION eqAreaFoldLeft
+/* 
+ * FUNCTION eqAreaProjection
  * Description: Handles plotting for equal area projection
  * Input: sample index
  * Output: VOID (plots chart)
  */
-function eqAreaFoldLeft ( samples ) {
+function eqAreaProjection ( sample ) {
 	
-	var dataBucket = [];
-	var cBed = samples.coreAzi;
-	var cDip = samples.coreDip;
-	var bStrike = samples.bedStrike;
-	var bDip = samples.bedDip;
+	//Get the bedding and core parameters from the sample object
+	var coreBedding = sample.coreAzi;
+	var coreDip = sample.coreDip;
+	var beddingStrike = sample.bedStrike;
+	var beddingDip = sample.bedDip;
+	
+	//Get the Boolean flags for the graph
 	var enableLabels = $('#labelFlag').prop('checked');
 	var tcFlag = $('#tcViewFlag').prop('checked');
+	var specFlag = $('#specFlag').prop('checked');
 	
-	var information = '(Geographic)';
-	var spec = $('#specFlag').prop('checked');
+	//Check if user wants to view in specimen coordinates, put the core bedding to 0 and core azimuth to 90;
+	if(specFlag) {
+		var coreBedding = 0;
+		var coreDip = 90;
+		var information = '(Specimen)';
+	} else {
+		var information = '(Geographic)';
+	}
+	
+	// Format a Highcharts data bucket for samples that are visible
+	var dataSeries = new Array();
+	for(var i = 0; i < sample.data.length; i++) {
+		if(sample.data[i].visible) {
 			
-	for(var i = 0; i < samples.data.length; i++) {
-		if(samples.data[i].visible) {
-		
-			if(!spec) {
-				var rotated = rotateGeo(cBed, cDip-90, [samples.data[i].x, samples.data[i].y, samples.data[i].z]);
-				if(tcFlag) {
-					var rotated = rotateTect(bStrike+90, bDip+90, [rotated.dec, rotated.inc, 0, 0, 0]);
-					rotated.dec = rotated[0];
-					rotated.inc = rotated[1];
-					var information = '(Tectonic)';
-				}
-			} else {
-				var rotated = dir(samples.data[i].x, samples.data[i].y, samples.data[i].z);
-				var information = '(Specimen)';
-			}
+			//Rotate samples to geographic coordinates using the core orientation parameters
+			var direction = rotateGeo(coreBedding, coreDip-90, [sample.data[i].x, sample.data[i].y, sample.data[i].z]);
 			
-			if(rotated.inc < 0) {
-				var color = 'white'
-			} else {
-				var color = 'rgb(119, 152, 191)'
+			//If a tilt correction is requested, rotate again
+			//Only do this if NOT viewing in specimen coordinates
+			if(tcFlag && !specFlag) {
+				var directionTectonic = rotateTect(beddingStrike+90, beddingDip+90, [direction.dec, direction.inc, 0, 0, 0]);
+				direction.dec = directionTectonic[0];
+				direction.inc = directionTectonic[1];
+				var information = '(Tectonic)';
 			}
-
-			dataBucket.push({marker: { fillColor: color, lineWidth: 1, lineColor: 'rgb(119, 152, 191)' }, x: rotated.dec, y: eqArea(rotated.inc), inc: rotated.inc, step: samples.data[i].step});
+	
+			dataSeries.push({
+				'x': direction.dec, 
+				'y': eqArea(direction.inc), 
+				'inc': direction.inc, 
+				'step': sample.data[i].step,
+				'marker': { 
+					'fillColor': direction.inc < 0 ? 'white' : 'rgb(119, 152, 191)', 
+					'lineWidth': 1, 
+					'lineColor': 'rgb(119, 152, 191)' 
+				}, 
+			});
 		}
 	}
 	
-	dataBucket.push({x: null, y: null});
+	//Prevent making a connection between first - last data point
+	dataSeries.push({x: null, y: null});
 	
 	var chartOptions = {
 		chart: {
@@ -2280,7 +2296,7 @@ function eqAreaFoldLeft ( samples ) {
 			polar: true,
 			animation: false,
         	renderTo: 'eqAreaDirections', //Container that the chart is rendered to.
-			events: {			//Work around to resize markers on exporting from radius 2 (tiny preview) to 4 (normalized) Fixes [#0011]
+			events: {					//Work around to resize markers on exporting from radius 2 (tiny preview) to 4 (normalized) Fixes [#0011]
                 load: function () {
                     if (this.options.chart.forExport) {
 					for(var i = 0; i < this.series[0].data.length; i++) {
@@ -2297,7 +2313,7 @@ function eqAreaFoldLeft ( samples ) {
 			},
 		},
 		title: {
-			text: 'Equal Area Projection (' + samples.name + ')'
+			text: 'Equal Area Projection (' + sample.name + ')'
 		},
 		subtitle: {
 			text: '<b>' + information + '</b>'
@@ -2370,8 +2386,8 @@ function eqAreaFoldLeft ( samples ) {
 			id: 'Directions',
 			type: 'scatter',
 			zIndex: 100,
-			data: dataBucket
-		},{
+			data: dataSeries
+		}, {
 			name: 'Directions',
 			enableMouseTracking: false,
 			marker: {
@@ -2379,7 +2395,7 @@ function eqAreaFoldLeft ( samples ) {
 			},
 			linkedTo: 'Directions',
 			type: 'line', 
-			data: dataBucket		
+			data: dataSeries		
 		}],
 	};
 
@@ -2399,55 +2415,71 @@ function eqAreaFoldLeft ( samples ) {
 	}
 }
 
-/* Logic to handle increased radius size on hover
- * In the Highcharts series, we only save points to be displayed and not all points including the ones that are hidden.
- * We are required to count the number of hidden points and find the Highcharts index as a function of this.
+/* 
+ * FUNCTION setHoverRadius
+ * Description: logic to handle increased radius size on the selected points
+ * 			  : In the Highcharts series for a graph we only save points to be displayed and not all points including the ones that are hidden.
+ * 			  : Therefore, We are required to count the number of hidden points and find the Highcharts index as a function of this.
+ * Input: index of the point being hovered on
+ * Output: VOID (updates Highcharts graphs)
  */
-function setHoverRadius (index, liSelected) {
+function setHoverRadius (index) {
 
-	if(data.length != 0) {
-		//Get specimen name and capture charts to use
-		var sample = getSampleIndex();
-		
-		var chart = $("#zijderveldPlot").highcharts(); //Capture Zijderveld plot
-		var chart2 = $("#eqAreaDirections").highcharts(); //Capture eqArea plot
-		var chart3 = $("#intensityPlot").highcharts(); //Capture eqArea plot
-	
-		var lineColor = "rgb(119, 152, 191)";
-		
-		//Reset all data points to marker radius 2 (4) (default)
-		for(var i = 0; i < chart.series[0].data.length; i++) {
-			var color = chart2.series[0].data[i].marker.fillColor;
-			chart.series[2].data[i].update({marker: {radius: 2}}, false);
-			chart.series[3].data[i].update({marker: {radius: 2}}, false);
-			chart2.series[0].data[i].update({marker: {radius: 4, lineWidth: 1, lineColor: lineColor, fillColor: color}}, false);
-			chart3.series[0].data[i].update({marker: {radius: 4}}, false);
-		}
-	
-		//If we are hovering over a visible point (option has class show when it is hidden; good job)
-		if(!$(liSelected).hasClass('show')) {		
-			var skip = 0;	//Skip will capture the number of hidden points
-			for(var i = 0; i < data[sample].data.length; i++) { //Begin looping over all data points for particular specimen
-				if(data[sample].data[i].visible) {	//Check if particular point i is visible
-					if(i == index) {	//Check if this point i is the index we are hovering on
-						var color = chart2.series[0].data[i-skip].marker.fillColor;
-						chart.series[2].data[index-skip].update({marker: {radius: 4}}, true);	//Set the marker radius and return function (Zijderveld declination)
-						chart.series[3].data[index-skip].update({marker: {radius: 4}}, true);	//(Zijderveld Inclination)
-						chart2.series[0].data[index-skip].update({marker: {zIndex: 100, radius: 6, lineWidth: 1, lineColor: lineColor, fillColor: color}}, true);	//(EqArea Inclination)
-						chart3.series[0].data[index-skip].update({marker: {radius: 6}}, true);	//Intensity plot
-						return; //Ok we found our point, return and the point in the highcharts series will be index - i;
-					}
-				} else {
-					skip++;	//We found a hidden point so increment skip
-				}
-			}		
-		}
-		
-		//Redraw charts at the end (redrawing it at every update will be much slower)
-		chart.redraw();
-		chart2.redraw();	
-		chart3.redraw();
+	if(data.length === 0) {
+		return;
 	}
+	
+	//Get specimen name and capture charts to use
+	var sample = getSampleIndex();
+	
+	//Capture the three graphs in the main body
+	var zijderveld = $("#zijderveldPlot").highcharts();
+	var equalArea = $("#eqAreaDirections").highcharts();
+	var intensity = $("#intensityPlot").highcharts();
+
+	var lineColor = "rgb(119, 152, 191)";
+	
+	//Reset all data points in three graphs to default marker radius
+	for(var i = 0; i < zijderveld.series[0].data.length; i++) {
+		
+		//Update zijderveld diagram series 2 and 3 (these are the markers; series 0 and 1 are the lines without markers)
+		//the update method takes an argument false, meaning it will NOT redraw after the update (we do this manually at the end)
+		zijderveld.series[2].data[i].update({'marker': {'radius': 2}}, false);
+		zijderveld.series[3].data[i].update({'marker': {'radius': 2}}, false);
+		
+		//For the equal area projection we are required to account for the fillColor of the marker (either white (negative) or blue (positive))
+		var color = equalArea.series[0].data[i].marker.fillColor;
+		equalArea.series[0].data[i].update({'marker': {'radius': 4, 'lineWidth': 1, 'lineColor': lineColor, 'fillColor': color}}, false);
+	
+		intensity.series[0].data[i].update({'marker': {'radius': 4}}, false);
+	}
+	
+	//If we are hovering over a visible point (option has class show when it is hidden; good job)
+	//Skip will capture the number of hidden points
+	//Check if particular point i is visible
+	//Check if this point i is the index we are hovering on, if so update that particular point and return the function
+	//If we find the index, return the function
+	var skip = 0;
+	for(var i = 0; i < data[sample].data.length; i++) {
+		if(data[sample].data[i].visible) {	
+			if(i === index) {	
+				zijderveld.series[2].data[index-skip].update({'marker': {'radius': 4}}, true);	
+				zijderveld.series[3].data[index-skip].update({'marker': {'radius': 4}}, true);	
+				var color = equalArea.series[0].data[i-skip].marker.fillColor;
+				equalArea.series[0].data[index-skip].update({'marker': {'zIndex': 100, 'radius': 6, 'lineWidth': 1, 'lineColor': lineColor, 'fillColor': color}}, true);
+				intensity.series[0].data[index-skip].update({'marker': {'radius': 6}}, true);
+				return;
+			}
+		} else {
+			skip++;	//We found a hidden point so increment skip
+		}
+	}		
+	
+	//Redraw charts at the end if not hovering over a visible index
+	zijderveld.redraw();
+	equalArea.redraw();	
+	intensity.redraw();
+	
 }
 
 function dlItem ( string, extension ) {
@@ -2455,7 +2487,7 @@ function dlItem ( string, extension ) {
 	//Check if supported
 	downloadAttrSupported = document.createElement('a').download !== undefined;
 	
-	var blob = new Blob([string], { type: 'data:text/csv;charset=utf-8,'});
+	var blob = new Blob([string], {'type': 'data:text/csv;charset=utf-8'});
 	var csvUrl = URL.createObjectURL(blob);
 	var name = 'export';
 
@@ -2481,23 +2513,26 @@ function dlItem ( string, extension ) {
 	}
 }
 
-/* FUNCTION exporting
- * Handles exporting for custom paleomagnetism.org .dir format
+/* 
+ * FUNCTION exporting
+ * Description: handles exporting for custom Paleomagnetism.org .dir format
  * Input: NULL
- * Output: VOID
+ * Output: VOID (calls dlItem for downloading JSON formatted data object)
  */
 function exporting () {
 	
-	if(data != null) {
-		try {
-			var string = JSON.stringify(data)
-		} catch (err) {
-			notify('failure', 'A critical error has occured ' + err);
-		}
-		dlItem(string, 'dir');
-	} else {
+	if(data === null) {
 		notify('failure', 'There are no data for exporting.');
+		return;
 	}
+	
+	//Try to parse our data JSON object to a string and download it to a .dir file
+	try {
+		dlItem(JSON.stringify(data), 'dir');
+	} catch (err) {
+		notify('failure', 'A critical error has occured when exporting the data: ' + err);
+	}
+
 }
 
 /* FUNCTION getCSV
@@ -2540,8 +2575,7 @@ function exporting () {
 		
 			csv += this.userOptions.chart.coordinates;
 		
-			csv += lineDelimiter;	
-			csv += lineDelimiter;	
+			csv += lineDelimiter + lineDelimiter;	
 			
 			row = ['Specimen', 'Declination', 'Inclination', 'Type'];
 			csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
@@ -2565,8 +2599,8 @@ function exporting () {
 			csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
 		 }
 		 
-		 //For equal area projection
-		 if(this.userOptions.chart.id === 'eqAreaProjDir') {
+		
+		if(this.userOptions.chart.id === 'eqAreaProjDir') {
 			row = [ 'Step', 'Inclination', 'Declination' ];	
 			csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
 			
@@ -2574,7 +2608,7 @@ function exporting () {
 				row = [this.series[0].data[i].step, this.series[0].data[i].x, this.series[0].data[i].inc];
 				csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
 			}
-		 }
+		}
 		 
 		 //For intensity chart
 		 if(this.userOptions.chart.id === 'intensity') {
@@ -2642,43 +2676,55 @@ Highcharts.getOptions().exporting.buttons.contextButton.menuItems.push({
 	}
 });
 
+/*
+ * FUNCTION exportInterpretation
+ * Description: exports the interpretation to CSV file
+ * Input: NULL
+ * Output: VOID (calls dlItem to start download of formatted CSV)
+ */
 function exportInterpretation () {
-	if(data != null) {
-		csv = '';
+
+	"use strict";
 		
-		// Options
-		var itemDelimiter = '","';
-		var lineDelimiter = '\n';
+	var csv = '';
+	var noData = true;
 	
-		// Header row
-		row = ["Sample Name", "Declination", "Inclination", "Intensity", "MAD", "Forced", "Type", "Coordinates", "Bedding Strike", "Bedding Dip", "Num Step", "Min Step", "Max Step", "Remark"];
-		csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
-		
-		for(var i = 0; i < data.length; i++) {
-			if(data[i].interpreted) {
-				for(var j = 0; j < data[i]['GEO'].length; j++) {
-					var row = [];
-					row.push(data[i].name, data[i]['GEO'][j].dec, data[i]['GEO'][j].inc, data[i]['GEO'][j].intensity, data[i]['GEO'][j].MAD, data[i]['GEO'][j].forced, data[i]['GEO'][j].type, 'Geographic Coordinates', data[i].bedStrike, data[i].bedDip, data[i]['GEO'][j].nSteps, data[i]['GEO'][j].minStep, data[i]['GEO'][j].maxStep, data[i]['GEO'][j].remark);
-					csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
-				}
+	// Options
+	var itemDelimiter = '","';
+	var lineDelimiter = '\n';
+	
+	// Header row
+	row = ["Sample Name", "Declination", "Inclination", "Intensity", "MAD", "Forced", "Type", "Coordinates", "Bedding Strike", "Bedding Dip", "Num Step", "Min Step", "Max Step", "Remark"];
+	csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
+	
+	//Loop over the interpretations in Geographic Coordinates and add them to the CSV string
+	for(var i = 0; i < data.length; i++) {
+		if(data[i].interpreted) {
+			noData = false;
+			for(var j = 0; j < data[i]['GEO'].length; j++) {
+				var row = new Array();
+				row.push(data[i].name, data[i]['GEO'][j].dec, data[i]['GEO'][j].inc, data[i]['GEO'][j].intensity, data[i]['GEO'][j].MAD, data[i]['GEO'][j].forced, data[i]['GEO'][j].type, 'Geographic Coordinates', data[i].bedStrike, data[i].bedDip, data[i]['GEO'][j].nSteps, data[i]['GEO'][j].minStep, data[i]['GEO'][j].maxStep, data[i]['GEO'][j].remark);
+				csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
 			}
 		}
-		
-		csv += lineDelimiter;
-		
-		for(var i = 0; i < data.length; i++) {
+	}
+	csv += lineDelimiter;
+	
+	//Repeat procedure for interpretations made in Tectonic Coordinates
+	for(var i = 0; i < data.length; i++) {
+		if(data[i].interpreted) {
+			noData = false;
 			for(var j = 0; j < data[i]['TECT'].length; j++) {
-				var row = [];
+				var row = new Array();
 				row.push(data[i].name, data[i]['TECT'][j].dec, data[i]['TECT'][j].inc, data[i]['TECT'][j].intensity, data[i]['TECT'][j].MAD, data[i]['TECT'][j].forced, data[i]['TECT'][j].type, 'Tectonic Coordinates', data[i].bedStrike, data[i].bedDip, data[i]['TECT'][j].nSteps, data[i]['TECT'][j].minStep, data[i]['TECT'][j].maxStep, data[i]['TECT'][j].remark);
 				csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
 			}
 		}
-		
-		dlItem(csv, 'csv');
-		
-	} else {
-		notify('failure', 'There are no interpretations for exporting.');	
 	}
+	
+	//Check if data has been added
+	noData ? notify('failure', 'There are no interpretations for exporting.') : dlItem(csv, 'csv');
+	
 }
 
 
