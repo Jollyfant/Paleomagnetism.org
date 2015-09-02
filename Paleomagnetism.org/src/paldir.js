@@ -1909,96 +1909,85 @@ var rotateTect = function(str, he, data){
 	return [temp.dec, temp.inc, data[2], data[3], data[4]];
 }
 
-/* FUNCTION zijderveld
+/*
+ * FUNCTION zijderveld
  * Description: handles graphing for zijderveld plot
  * Input: samples (sample[sampleIndex])
  * Output: VOID (plots zijderveld graph)
  */
 function zijderveld ( samples ) {
 
+	//Specimen metadata (core and bedding orientations)
+	var coreBedding = samples.coreAzi;
+	var coreDip = samples.coreDip;
+	var beddingStrike = samples.bedStrike;
+	var beddingDip = samples.bedDip;
+	
+	//Get the Boolean flags
 	var nFlag = $('#nFlag').prop('checked');
 	var tcFlag = $('#tcViewFlag').prop('checked');
 	var enableLabels = $('#labelFlag').prop('checked');
-	
-	//Data buckets for inclination/declination lines
-	var decDat = [];
-	var incDat = [];
-	
-	//Specimen metadata (core and bedding orientations)
-	var cBed = samples.coreAzi;
-	var cDip = samples.coreDip;
-	var bStrike = samples.bedStrike;
-	var bDip = samples.bedDip;
+	var specFlag = $('#specFlag').prop('checked');
 	
 	//Parameters to scale axes (min, max)
-	var xs = [];
-	var yz = [];
+	var xs = new Array();
+	var yz = new Array();
 	maxz = 0;
 	maxx = 0;
-	var information = '(Geographic)';
+
+	//Check if user wants to view in specimen coordinates, put the core bedding to 0 and core azimuth to 90;
+	if(specFlag) {
+		var coreBedding = 0;
+		var coreDip = 90;
+		var coordinateInformation = '(Specimen)';
+	} else {
+		var coordinateInformation = '(Geographic)';
+	}
 	
-	//For all steps
+	//Data buckets for inclination/declination lines
+	var decDat = new Array();
+	var incDat = new Array();
+	
+	//Loop over all points and do rotations if requested (e.g. Specimen, Geographic, or Tectonic coordinates in N/Up or W/Up projection)
 	for(var i = 0; i < samples.data.length; i++) {
 		if(samples.data[i].visible) {
 		
-			var spec = $('#specFlag').prop('checked');
-			if(!spec) {
-				//Rotate to geographic coordinates
-				var rotated1 = rotateGeo(cBed, cDip-90, [samples.data[i].x, samples.data[i].y, samples.data[i].z]);
-				
-				//Also rotated to tectonic coordinates
-				if(tcFlag) {
-					var information = '(Tectonic)';
-					var rotated = rotateTect(bStrike+90, bDip+90, [rotated1.dec, rotated1.inc, 0, 0, 0]);
-					if(nFlag) {
-						var carts = new cart(rotated[0]-90, rotated[1], rotated1.R);
-						var subtitle = 'Up/North'	
-					} else {
-						var carts = new cart(rotated[0], rotated[1], rotated1.R);		
-						var subtitle = 'Up/West'					
-					}
-				} else {
-					if(nFlag) {
-						var carts = new cart(rotated1.dec-90, rotated1.inc, rotated1.R);
-						var subtitle = 'Up/North'	
-					} else {
-						var carts = new cart(rotated1.dec, rotated1.inc, rotated1.R);	
-						var subtitle = 'Up/West'					
-					}
-				}
+			//Rotate to geographic coordinates
+			var direction = rotateGeo(coreBedding, coreDip-90, [samples.data[i].x, samples.data[i].y, samples.data[i].z]);
+			
+			//Rotate to tectonic coordinates if requested and not viewing in specimen coordinates
+			if(tcFlag && !specFlag) {
+				var coordinateInformation = '(Tectonic)';
+				var directionTectonic = rotateTect(beddingStrike+90, beddingDip+90, [direction.dec, direction.inc, 0, 0, 0]);
+				direction.dec = directionTectonic[0];
+				direction.inc = directionTectonic[1];
+			}
+			
+			//Check the projection flag, if we wish to show Up/North subtract 90 from the declination
+			if(nFlag) {
+				var carts = new cart(direction.dec-90, direction.inc, direction.R);
+				var projectionInformation = 'Up/North';	
 			} else {
-				var information = '(Specimen)';
-				var direc = dir(samples.data[i].x, samples.data[i].y, samples.data[i].z);
-				if(nFlag) {
-					var carts = new cart(direc.dec-90, direc.inc, direc.R);
-					var subtitle = 'Up/North'	
-				} else {
-					var carts = new cart(direc.dec, direc.inc, direc.R);	
-					var subtitle = 'Up/West'					
-				}
+				var carts = new cart(direction.dec, direction.inc, direction.R);	
+				var projectionInformation = 'Up/West';				
 			}
-
-			//Declination is x, -y plane
-			//Inclination is x, -z plane
-			decDat.push({x: carts.x, y: -carts.y, step: samples.data[i].step});
-			incDat.push({x: carts.x, y: -carts.z, step: samples.data[i].step});
 			
-			xs.push(carts.x);
-			yz.push(carts.y, carts.z);
+			//Declination is x, -y plane and Inclination is x, -z plane
+			decDat.push({'x': carts.x, 'y': -carts.y, 'step': samples.data[i].step});
+			incDat.push({'x': carts.x, 'y': -carts.z, 'step': samples.data[i].step});
 			
-			//Check max
-			if(Math.abs(carts.x) > maxx) {
-				maxx = Math.abs(carts.x);
-			}
-			if(Math.abs(carts.z) > maxz) {
-				maxz = Math.abs(carts.z);
-			}
-			if(Math.abs(carts.y) > maxz) {
-				maxz = Math.abs(carts.y);
-			}
+			//Push the values for x and (y, z) to arrays. At the end we determine the maximum/minimum from these arrays. 
+			xs.push(Math.abs(carts.x));
+			yz.push(Math.abs(carts.y), Math.abs(carts.z));
+			
 		}
 	}
 
+	//Obtain the maximum and minimum values which will be used as the graph boundaries
+	//The Zijderveld diagram will always be a square
+	maximumX = Math.max.apply(Math, xs);
+	maximumY = Math.max.apply(Math, yz);
+	
    var chartOptions = {
 		chart: {
 			animation: false,
@@ -2030,15 +2019,15 @@ function zijderveld ( samples ) {
 			}
 		},
 		subtitle: {
-			text: '<b>' + information + '</b><br>' + subtitle
+			text: '<b>' + coordinateInformation + '</b><br>' + projectionInformation
 		},
         xAxis: {
             gridLineWidth: 0,
             lineColor: 'black',
             crossing: 0,
-			min: -maxx,
+			min: -maximumX,
+			max: maximumX,
 			tickWidth: 0,
-			max: maxx,
             opposite: true,
 			title: {
                 enabled: false
@@ -2048,8 +2037,8 @@ function zijderveld ( samples ) {
 			}
         },
         yAxis: {
-			min: -maxz,
-			max: maxz,
+			min: -maximumY,
+			max: maximumY,
 		    gridLineWidth: 0,
 			lineWidth: 1,
 			minRange: 10,
@@ -2142,20 +2131,23 @@ function zijderveld ( samples ) {
  * Input: sample index
  * Output: VOID (plots Intensity)
  */
-function intensity ( samples ) {
+function intensity ( sample ) {
 
-	var dataBucket = [];
-	var cBed = samples.coreAzi;
-	var cDip = samples.coreDip;
-	var categories = [];
-	var specimenVolume = 10.5; //cc
+	//For the xAxis we use a category (based on strings, not a numerical scale)
+	//Often the step is identified with numbers and letters (e.g. 200mT), this makes it difficult to get a numerical xAxis
+	//Disadvantage of this is that "distance" between steps is always standard and not representative of actual distance
+	var categories = new Array();
 	
-	for(var i = 0; i < samples.data.length; i++) {
-		if(samples.data[i].visible) {
-			var R = Math.sqrt(samples.data[i].x*samples.data[i].x + samples.data[i].y*samples.data[i].y+samples.data[i].z*samples.data[i].z);
-			var step = Number(samples.data[i].step);
-			categories.push(samples.data[i].step);
-			dataBucket.push(R/specimenVolume);		
+	//Reduce the intensity by diving by the sample volume (default at 10.5cc)
+	var specimenVolume = 10.5;
+	
+	//Construct the data series for Highcharts, only interested in the intensity so use the Pythagorean Thereom.
+	var dataSeries = new Array();
+	for(var i = 0; i < sample.data.length; i++) {
+		if(sample.data[i].visible) {
+			var R = Math.sqrt(sample.data[i].x*sample.data[i].x + sample.data[i].y*sample.data[i].y+sample.data[i].z*sample.data[i].z);
+			categories.push(sample.data[i].step);
+			dataSeries.push(R/specimenVolume);		
 		}
 	}
 	
@@ -2176,7 +2168,7 @@ function intensity ( samples ) {
 			}
 		},
 		title: {
-			text: 'Intensity Diagram (' + samples.name + ')'
+			text: 'Intensity Diagram (' + sample.name + ')'
 		},
         yAxis: {
 	        title: {
@@ -2220,11 +2212,13 @@ function intensity ( samples ) {
 			}
        	 },
         series: [{
-            name: samples.name,
-            data: dataBucket
+            name: sample.name,
+            data: dataSeries
         }]
     }
+	
 	new Highcharts.Chart(chartOptions);
+	
 }
 
 /* 
@@ -3028,6 +3022,8 @@ function importingDefault ( applicationData, text ) {
  */
 function importing (event, format)  {
 		
+	$("#appBody").hide();
+	
 	//Filehandler API; handles the file importing
     var input = event.target;
     var reader = new FileReader();
