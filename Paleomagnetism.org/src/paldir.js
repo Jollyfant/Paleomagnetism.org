@@ -60,6 +60,8 @@ var getSelectedStep = function () {
  */
 function moveDemagnetizationStep ( direction ) {
 	
+	"use strict";
+	
 	var index = getSelectedStep();
 	
 	//Remove selected class from this point
@@ -67,7 +69,7 @@ function moveDemagnetizationStep ( direction ) {
 	//Check if we are at the top (or bottom for up) of the list, if so go to the end (begin)
 	if( direction === "down" ) {
 		liSelected.removeClass('selected');
-		next = liSelected.next();
+		var next = liSelected.next();
 		if(index !== li.length - 1){
 			liSelected = next.addClass('selected');
 		} else {
@@ -75,14 +77,14 @@ function moveDemagnetizationStep ( direction ) {
 		}
 	} else if (direction === "up") {
 		liSelected.removeClass('selected'); 
-		next = liSelected.prev(); 
+		var previous = liSelected.prev(); 
 		if(index !== 0){ 
-			liSelected = next.addClass('selected'); 
+			liSelected = previous.addClass('selected'); 
 		} else {
 			liSelected = li.last().addClass('selected');
 		}		
 	}
-	
+		
 	//Set hover on the selected point
 	setHoverRadius();
 	
@@ -316,14 +318,14 @@ $(function() {
 					data[sample].data[index].include = false;
 				}
 				
-				//Move down a single step
-				moveDemagnetizationStep("down");
-				
 				//Redraw all the charts when hiding steps
 				zijderveld(data[sample]);
 				intensity(data[sample]);
 				eqAreaProjection(data[sample]);
 				drawStuff( sample );
+				
+				//Move down a single step
+				moveDemagnetizationStep("down");
 				
 			break;
 			
