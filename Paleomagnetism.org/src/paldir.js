@@ -123,22 +123,25 @@ $(function() {
 			//Get specimen
 			var sample = getSampleIndex();
 			
-			if(data.length !== 0) {
+			if(data.length === 0) {
 				return;
 			}
 			
 			//Redraw the equal area projection and set hover after redraw
 			eqAreaProjection(data[sample]);
+			drawInterpretations( sample );
 			setHoverRadius();
 		}
 	});
 	
 	//Clear all stickies and empty array
 	$("#removeSticky").click( function () {
+		
 		notify('success', 'Stickies have been removed.');
 		globalSticky = new Array();
 		
 		//Force update
+		var sample = getSampleIndex();
 		eqAreaProjection(data[sample]);
 		setHoverRadius();
 	});
@@ -322,7 +325,7 @@ $(function() {
 				zijderveld(data[sample]);
 				intensity(data[sample]);
 				eqAreaProjection(data[sample]);
-				drawStuff( sample );
+				drawInterpretations( sample );
 				
 				//Move down a single step
 				moveDemagnetizationStep("down");
@@ -549,8 +552,8 @@ $(function() {
 			//Set hover on selected point
 			setHoverRadius();
 			
-			//Call drawStuff routine that puts interpreted components on the charts
-			drawStuff(sample);
+			//Call drawInterpretations routine that puts interpreted components on the charts
+			drawInterpretations(sample);
 		}
 	});
 
@@ -635,7 +638,7 @@ $(function() {
 		
 		//For specimen get core parameters 
 		var cBed = samples.coreAzi;
-		var cDip = samples.coreDip;
+		var cDip = samples.coreDip - 90;
 		var Nrec = dete.length;
 		var bedStrike = samples.bedStrike;
 		var bedDip = samples.bedDip;
@@ -644,7 +647,7 @@ $(function() {
 		if(Nrec < 2) {
 			if(tcFlag) {
 				notify('failure', 'A minimum of two points are required. Select points by pressing +.');
-				drawStuff( sample );
+				drawInterpretations( sample );
 			}
 			return;
 		}	
@@ -657,12 +660,12 @@ $(function() {
 			if(dete[i][0] === 0 && dete[i][1] === 0 && dete[i][2] === 0) {
 				var rotated1 = {'dec': 0, 'inc': 0 , 'R': 0}
 			} else {
-				var rotated1 = rotateGeo(cBed, cDip-90, dete[i]);
+				var rotated1 = rotateGeographic(cBed, cDip, dete[i]);
 			}
 			
 			//if tc is selected, rotate to tectonic coordinates
 			if(tcFlag) {
-				var rotated = rotateTect(bedStrike+90, bedDip+90, [rotated1.dec, rotated1.inc, 0, 0, 0]);
+				var rotated = rotateTectonic(bedStrike+90, bedDip+90, [rotated1.dec, rotated1.inc, 0, 0, 0]);
 				var dataD = [rotated[0], rotated[1], rotated1.R];
 			} else {
 				var dataD = [rotated1.dec, rotated1.inc, rotated1.R];
@@ -858,7 +861,7 @@ $(function() {
 
 		//Only redraw once (this function is automatically called in both Geographic and Tectonic coordinates)
 		if(tcFlag) {
-			drawStuff( sample );
+			drawInterpretations( sample );
 		}
 		
 	});
@@ -1539,7 +1542,7 @@ function showData( sample ) {
 	//Check if the sample has been previously interpreted
 	if(data[sample].interpreted) {
 		$('.ui-multiselect').css('color', 'rgb(119, 191, 152)'); //Set the specimen scroller color to green
-		drawStuff( sample ) //Draw directions
+		drawInterpretations( sample ) //Draw directions
 	} else {
 		showNotInterpretedBox();
 	}
@@ -1549,12 +1552,14 @@ function showData( sample ) {
 }
 
 /*
- * FUNCTION drawStuff
- * Description: draws interpretations on plots
+ * FUNCTION drawInterpretations
+ * Description: Draws interpretations on plots
  * Input: sample index (specimen)
- * Output: VOID (Adds series to existing chart)
+ * Output: VOID (Adds series to existing charts)
  */
-var drawStuff = function ( sample ) {
+var drawInterpretations = function ( sample ) {
+
+	"use strict";
 
 	//Get Boolean flags from the DOM
 	var tcFlag = $('#tcViewFlag').prop('checked');
@@ -1566,219 +1571,228 @@ var drawStuff = function ( sample ) {
 		return;
 	}
 	
-	if(tcFlag) {
-		var coordType = 'TECT';
-		var coordinates = 'Tectonic';
-	} else {
-		var coordType = 'GEO';
-		var coordinates = 'Geographic';
+	//Get the coordinate reference frame (pretty too)
+	var coordType = tcFlag ? 'TECT' : 'GEO';
+	var coordinatesPretty = tcFlag ? 'Tectonic' : 'Geographic';
+	
+	//Quit if the sample has not been interpreted
+	if(!data[sample].interpreted) {
+		showNotInterpretedBox();
+		return;
 	}
 	
-	if(data[sample].interpreted) {
+	//Update the parameter table
+	$("#update").html('<p> <table class="sample" id="infoTable"><tr><th> Component </th> <th> Type </th> <th> Declination </th> <th> Inclination </th> <th> Intensity (A/m) </th> <th> MAD </th> <th> Coordinates </th> <th> Remark </th> <th> Remove </th> </tr>');
 	
-		//Update the parameter table
-		$("#update").html('<p> <table class="sample" id="infoTable"><tr><th> Component </th> <th> Type </th> <th> Declination </th> <th> Inclination </th> <th> Intensity (A/m) </th> <th> MAD </th> <th> Coordinates </th> <th> Remark </th> <th> Remove </th> </tr>');
-		
-		//Loop over all interpretations in a particular coordinate reference frame (either Tectonic or Geographic)
-		for(var i = 0; i < data[sample][coordType].length; i++) {
-		
-			//Get remark, if none put default message
-			var remark = data[sample][coordType][i].remark;
-			if(remark == '') {
-				remark = 'Click to Change';
-			}
-			
-			//Get the centre of mass
-			var cm = data[sample][coordType][i].cm;
-			
-			//Bedding strike and dip
-			var bStrike = data[sample].bedStrike;
-			var bDip = data[sample].bedDip;
-			
-			//Declination and Inclination of the principle component (can be either t1 or t3)
-			var PCADirection = {
-				'dec': data[sample][coordType][i].dec, 
-				'inc': data[sample][coordType][i].inc
-			};
-			
-			var MAD = data[sample][coordType][i].MAD;
-			var intensity = data[sample][coordType][i].intensity;
-			
-			//Transform the centre of mass to proper projection.
-			//Don't do this if anchored (direction of {0, 0, 0} is NaN)
-			if(nFlag) {
-				//Subtract 90 from the declination and transform centre of mass if not forced
-				var v1 = cart(PCADirection.dec-90, PCADirection.inc);
-				if(!data[sample][coordType][i].forced) {
-					var temp = new dir(cm[0], cm[1], cm[2]);
-					var temp2 = cart(temp.dec-90, temp.inc, temp.R);
-					var cm = [temp2.x, temp2.y, temp2.z];
-				}
-			} else {
-				var v1 = cart(PCADirection.dec, PCADirection.inc);	
-			}
-			
-			//Get the type of the PC (direction or great circle
-			var type = data[sample][coordType][i].type;
-		
-			//Draw a line
-			//Center of mass + and - the scaled principle component. Not very pretty but works for drawing a line.
-			if(type === 'dir') {
-			
-				//Scale by the intensity
-				var scaling = intensity*100;
-				
-				//Add line for declination
-				var lineFit = [[cm[0]+v1.x*scaling, -cm[1]-v1.y*scaling], [cm[0]-v1.x*scaling, -cm[1]+v1.y*scaling]];
-				$("#zijderveldPlot").highcharts().addSeries({
-					'name': 'Declination (PCA) #' + (i+1),
-					'data': lineFit,
-					'enableMouseTracking': false,
-					'lineWidth': 1,
-					'color': 'green',
-					'marker': {
-						'enabled' : false
-					}
-				});
-				
-				//Add line for inclination
-				var lineFit = [[cm[0]+v1.x*scaling, -cm[2]-v1.z*scaling], [cm[0]-v1.x*scaling, -cm[2]+v1.z*scaling]];
-				$("#zijderveldPlot").highcharts().addSeries({
-					'name': 'Inclination (PCA) #' + (i+1),
-					'data': lineFit,
-					'lineWidth': 1,
-					'enableMouseTracking': false,
-					'color': 'red',
-					'marker': {
-						'enabled': false
-					}
-				});
-				
-				//Add the point for given PC line in the equal area projection
-				$("#eqAreaDirections").highcharts().addSeries({
-					'name': 'Linear Fit #' + (i+1),
-					'data': [{'x': PCADirection.dec, 'y': eqArea(PCADirection.inc), 'inc': PCADirection.inc, 'name': 'Linear Fit #' + (i+1)}],
-					'type': 'scatter',
-					'zIndex': 100,
-					'marker': {
-						'symbol': 'circle',
-						'lineColor': 'rgb(191, 119, 152)',
-						'lineWidth': 1,
-						'fillColor': PCADirection.inc < 0 ? 'white' : 'rgb(191, 119, 152)'
-					},
-				});
-				
-			} else if(type === 'GC') {
-			
-				//Add the plane defined by t3 to the equal area projection
-				var planeFit = getPlaneData(PCADirection, 'GC');
-				$("#eqAreaDirections").highcharts().addSeries({
-					'lineWidth': 1,
-					'id': 'plane',
-					'dashStyle': 'ShortDash',
-					'enableMouseTracking': false,
-					'color': 'red',
-					'marker': {
-						'enabled': false
-					},
-					'type': 'line', 
-					'name': 'Planar Fit #' + (i+1), 
-					'data': planeFit.one
-				});
-				
-				$("#eqAreaDirections").highcharts().addSeries({
-					'lineWidth': 1,
-					'linkedTo': ':previous',
-					'enableMouseTracking': false,
-					'color': 'red',
-					'marker': {
-						'enabled': false
-					},
-					'type': 'line', 
-					'name': 'Planar Fit', 
-					'data': planeFit.two
-				});
-			
-				//Add tau3 to the equal area projection
-				$("#eqAreaDirections").highcharts().addSeries({
-					'name': '\u03C4' + '3 #' + (i+1),
-					'type': 'scatter',
-					'marker': {
-						'symbol': 'circle',
-						'lineColor': 'red',
-						'lineWidth': 1,
-						'fillColor': 'white'
-					},
-					'data': [{
-						'x': PCADirection.dec, 
-						'y': eqArea(PCADirection.inc),
-						'inc': PCADirection.inc,
-						'name': '\u03C4' + '3 #' + (i+1),
-					}]
-				});
-				
-				//Add the MAD angle around t3
-				var planeData = getPlaneData(PCADirection, 'MAD', MAD);	
-				$("#eqAreaDirections").highcharts().addSeries({
-					'lineWidth': 1,
-					'id': 'MAD',
-					'dashStyle': 'ShortDash',
-					'enableMouseTracking': false,
-					'color': 'red',
-					'marker': {
-						'enabled': false
-					},
-					'type': 'line', 
-					'name': 'MAD Angle #' + (i+1), 
-					'data': planeData.one
-				});
-				
-				$("#eqAreaDirections").highcharts().addSeries({
-					'lineWidth': 1,
-					'linkedTo': ':previous',
-					'dashStyle': 'ShortDash',
-					'enableMouseTracking': false,
-					'lineColor': 'red',
-					'type': 'line', 
-					'name': 'MAD Angle', 
-					'data': planeData.two,
-					'marker': {
-						'enabled': false
-					},
-				});
-			
-			}
+	//Loop over all interpretations in a particular coordinate reference frame (either Tectonic or Geographic)
+	for(var i = 0; i < data[sample][coordType].length; i++) {
 	
-			//Add information on forcing or including origin to type label (shown in table)
-			if(data[sample][coordType][i].forced) {
-				type += ' (forced)';
-			}
-
-			if(data[sample][coordType][i].origin) {
-				type += ' (origin)';
-			}
-			
-			//Update table with information on interpretations
-			$("#infoTable").append('<tr> <td> Component #' + (i+1) + '</td> <td> ' + type + '<td> ' + PCADirection.dec.toFixed(1) + ' </td> <td> ' + PCADirection.inc.toFixed(1) + ' </td> <td> ' + intensity.toFixed(1) + '</td> <td> ' + MAD.toFixed(1) + '</td> <td> ' + coordinates + ' </td> <td> <a comp="' + (i+1) + '" onClick="changeRemark(event)">' + remark + '</a> </td> <td> <b><a style="color: rgb(191, 119, 152); cursor: pointer; border-bottom: 1px solid rgb(191, 119, 152);" comp="' + (i+1) + '" id="del'+(i+1)+'" onClick="removeComp(event)">Delete</a></b> </td> </tr>');
-			$("#clrIntBox").show();
-			
+		//Get the user entered remark, if there is none put default message
+		var remark = data[sample][coordType][i].remark;
+		if(remark == '') {
+			remark = 'Click to Change';
 		}
 		
-	$("#update").append('</table>');
-	$("#update").append('<small><b>Note: </b> the MAD is not reliable for forced directions. For great circles, the specified direction is the pole to the requested plane.</small>');
+		//Get the centre of mass
+		var centerMass = data[sample][coordType][i].cm;
+		
+		//Declination and Inclination of the principle component (can be either t1 or t3)
+		var PCADirection = {
+			'dec': data[sample][coordType][i].dec, 
+			'inc': data[sample][coordType][i].inc
+		};
+		
+		var MAD = data[sample][coordType][i].MAD;
+		var intensity = data[sample][coordType][i].intensity;
+		
+		//Transform the centre of mass to proper projection.
+		//Don't do this if anchored (direction of {0, 0, 0} is NaN)
+		if(nFlag) {
+			//Subtract 90 from the declination and transform centre of mass if not forced
+			var v1 = cart(PCADirection.dec-90, PCADirection.inc);
+			if(!data[sample][coordType][i].forced) {
+				var temp = new dir(centerMass[0], centerMass[1], centerMass[2]);
+				var temp2 = cart(temp.dec-90, temp.inc, temp.R);
+				var centerMass = [temp2.x, temp2.y, temp2.z];
+			}
+		} else {
+			var v1 = cart(PCADirection.dec, PCADirection.inc);	
+		}
+		
+		//Get the type of the principle component (direction (t1) or great circle (t3))
+		var type = data[sample][coordType][i].type;
 	
-	} else {
-		showNotInterpretedBox();
+		//Draw a line
+		//Center of mass + and - the scaled principle component. Not very pretty but works for drawing a line.
+		if(type === 'dir') {
+		
+			//Scale by the intensity
+			var scaling = intensity*100;
+			
+			//Add line for declination (x, y)
+			var lineFit = [{
+				'x': centerMass[0] + v1.x*scaling, 
+				'y': -centerMass[1] - v1.y*scaling
+			}, {
+				'x': centerMass[0] - v1.x*scaling, 
+				'y': -centerMass[1] + v1.y*scaling
+			}];
+			
+			$("#zijderveldPlot").highcharts().addSeries({
+				'name': 'Declination (PCA) #' + (i+1),
+				'data': lineFit,
+				'enableMouseTracking': false,
+				'lineWidth': 1,
+				'color': 'green',
+				'marker': {
+					'enabled' : false
+				}
+			});
+			
+			//Add line for inclination (x, z)
+			var lineFit = [{
+				'x': centerMass[0] + v1.x*scaling, 
+				'y': -centerMass[2] - v1.z*scaling
+			}, {
+				'x': centerMass[0] - v1.x*scaling, 
+				'y': -centerMass[2] + v1.z*scaling
+			}];
+			
+			$("#zijderveldPlot").highcharts().addSeries({
+				'name': 'Inclination (PCA) #' + (i+1),
+				'data': lineFit,
+				'lineWidth': 1,
+				'enableMouseTracking': false,
+				'color': 'red',
+				'marker': {
+					'enabled': false
+				}
+			});
+			
+			//Add the point for given PC line in the equal area projection
+			$("#eqAreaDirections").highcharts().addSeries({
+				'name': 'Linear Fit #' + (i+1),
+				'data': [{
+					'x': PCADirection.dec, 
+					'y': eqArea(PCADirection.inc), 
+					'inc': PCADirection.inc, 
+					'name': 'Linear Fit #' + (i+1)
+				}],
+				'type': 'scatter',
+				'zIndex': 100,
+				'marker': {
+					'symbol': 'circle',
+					'lineColor': 'rgb(191, 119, 152)',
+					'lineWidth': 1,
+					'fillColor': PCADirection.inc < 0 ? 'white' : 'rgb(191, 119, 152)'
+				},
+			});
+			
+		} else if(type === 'GC') {
+		
+			//Add the plane defined by t3 to the equal area projection
+			var planeFit = getPlaneData(PCADirection, 'GC');
+			$("#eqAreaDirections").highcharts().addSeries({
+				'lineWidth': 1,
+				'id': 'plane',
+				'dashStyle': 'ShortDash',
+				'enableMouseTracking': false,
+				'color': 'red',
+				'marker': {
+					'enabled': false
+				},
+				'type': 'line', 
+				'name': 'Planar Fit #' + (i+1), 
+				'data': planeFit.one
+			});
+			
+			$("#eqAreaDirections").highcharts().addSeries({
+				'lineWidth': 1,
+				'linkedTo': ':previous',
+				'enableMouseTracking': false,
+				'color': 'red',
+				'marker': {
+					'enabled': false
+				},
+				'type': 'line', 
+				'name': 'Planar Fit', 
+				'data': planeFit.two
+			});
+		
+			//Add tau3 to the equal area projection
+			$("#eqAreaDirections").highcharts().addSeries({
+				'name': '\u03C4' + '3 #' + (i+1),
+				'type': 'scatter',
+				'marker': {
+					'symbol': 'circle',
+					'lineColor': 'red',
+					'lineWidth': 1,
+					'fillColor': 'white'
+				},
+				'data': [{
+					'x': PCADirection.dec, 
+					'y': eqArea(PCADirection.inc),
+					'inc': PCADirection.inc,
+					'name': '\u03C4' + '3 #' + (i+1),
+				}]
+			});
+			
+			//Add the MAD angle around t3
+			var planeData = getPlaneData(PCADirection, 'MAD', MAD);	
+			$("#eqAreaDirections").highcharts().addSeries({
+				'lineWidth': 1,
+				'id': 'MAD',
+				'dashStyle': 'ShortDash',
+				'enableMouseTracking': false,
+				'color': 'red',
+				'marker': {
+					'enabled': false
+				},
+				'type': 'line', 
+				'name': 'MAD Angle #' + (i+1), 
+				'data': planeData.one
+			});
+			
+			$("#eqAreaDirections").highcharts().addSeries({
+				'lineWidth': 1,
+				'linkedTo': ':previous',
+				'dashStyle': 'ShortDash',
+				'enableMouseTracking': false,
+				'lineColor': 'red',
+				'type': 'line', 
+				'name': 'MAD Angle', 
+				'data': planeData.two,
+				'marker': {
+					'enabled': false
+				},
+			});
+		
+		}
+	
+		//Append information on forcing or including origin to type label (shown in table)
+		if(data[sample][coordType][i].forced) {
+			type += ' (forced)';
+		}
+		if(data[sample][coordType][i].origin) {
+			type += ' (origin)';
+		}
+		
+		//Update table with information on interpretations
+		$("#infoTable").append('<tr> <td> Component #' + (i+1) + '</td> <td> ' + type + '<td> ' + PCADirection.dec.toFixed(1) + ' </td> <td> ' + PCADirection.inc.toFixed(1) + ' </td> <td> ' + intensity.toFixed(1) + '</td> <td> ' + MAD.toFixed(1) + '</td> <td> ' + coordinatesPretty + ' </td> <td> <a comp="' + (i+1) + '" onClick="changeRemark(event)">' + remark + '</a> </td> <td> <b><a style="color: rgb(191, 119, 152); cursor: pointer; border-bottom: 1px solid rgb(191, 119, 152);" comp="' + (i+1) + '" id="del'+(i+1)+'" onClick="removeInterpretation(event)">Delete</a></b> </td> </tr>');
+		$("#clrIntBox").show();
+		
 	}
+		
+	$("#update").append('</table><small><b>Note: </b> the MAD is not reliable for forced directions. For great circles, the specified direction is the pole to the requested plane.</small>');
 
 }
 
-/* FUNCTION removeComp
+/* FUNCTION removeInterpretation
  * Description: removes interpreted component from memory
  * Input: button press event (tracks which component is pressed)
  * Output: VOID
  */
-var removeComp = function (event) {
+var removeInterpretation = function (event) {
 	
 	"use strict";
 	
@@ -1788,16 +1802,16 @@ var removeComp = function (event) {
 	//Capture specimen in samples variable
 	var sample = getSampleIndex();
 	
-	//Remove component from saves in both tectonic and geographic coordinates
+	//Remove (splice) component from saves in both tectonic and geographic coordinates
 	data[sample]['GEO'].splice(index, 1);
 	data[sample]['TECT'].splice(index, 1);
 
-	//Redraw charts and components
+	//Redraw equal area projection and Zijderveld charts and add remaining components
 	zijderveld(data[sample]);
 	eqAreaProjection(data[sample]);
-	drawStuff(sample);
+	drawInterpretations(sample);
 
-	setHoverRadius(); //Set hover
+	setHoverRadius(); 
 	
 	//Check if no data and display NOT INTERPRETED sign
 	if(data[sample]['GEO'].length === 0 || data[sample]['TECT'].length === 0) {
@@ -1810,7 +1824,11 @@ var removeComp = function (event) {
 	
 }
 
-/* Description: shows the big red not interpreted box
+/* 
+ * FUNCTION showNotInterpretedBox
+ * Description: shows the big red not interpreted box; interacts with the DOM
+ * Input: NULL
+ * Output: VOID
  */
 var showNotInterpretedBox = function () {
 
@@ -1822,7 +1840,8 @@ var showNotInterpretedBox = function () {
 	
 }
 
-/* FUNCTION changeRemark
+/* 
+ * FUNCTION changeRemark
  * Description: changes note for particular interpreted component
  * Input: button press event (tracks which component is pressed)
  * Output: VOID
@@ -1857,25 +1876,23 @@ var changeRemark = function (event) {
 	setStorage();
 	
 }
-/* FUNCTION rotateGeo
+
+/*
+ * FUNCTION rotateGeographic
  * Description: rotates specimens to geographic coordinates 
  * Input: azimuth, plunge, data (x, y, z)
  * Output: dec, inc, R of rotated vector
  */
-var rotateGeo = function(azi, pl, data){
+var rotateGeographic = function(azi, pl, data){
 	
 	"use strict";
 	
 	//Convert to radians
 	var azi = azi*rad;
 	var pl = pl*rad;
-
+	
 	//Vector k with x, y, z coordinates
-	var k = [
-		data[0], 
-		data[1], 
-		data[2]
-	];
+	var k = [data[0], data[1], data[2]];
 
 	//Rotation matrix for drilling correction
 	//Lisa Tauxe, A.13
@@ -1895,10 +1912,17 @@ var rotateGeo = function(azi, pl, data){
 		}
 	}
 	
+	//Return a direction with the rotated vector
 	return dir(v[0], v[1], v[2]);
 }
 
-var rotateTect = function(str, he, data){
+/*
+ * FUNCTION rotateTectonic
+ * Description: rotates specimens to geographic coordinates 
+ * Input: azimuth, plunge, data (x, y, z)
+ * Output: dec, inc, R of rotated vector
+ */
+var rotateTectonic = function(str, he, data){
 
 	"use strict";
 	
@@ -1913,7 +1937,7 @@ var rotateTect = function(str, he, data){
 	//See Lisa Tauxe, book: Sections: 9.3 + A.13
 
 	var theta = (str)*rad; //angle with North is equal to the declination of the mean vector.
-	var phi = (90-he)*rad; //phi ranges between 0 (up) and 180 (down).
+	var phi = (90 - he)*rad; //phi ranges between 0 (up) and 180 (down).
 
 	//Rotate all directions so the mean VGP faces north.
 	//We can simply substract the angle with North from all directions because the inclination will not change.
@@ -1968,7 +1992,7 @@ function zijderveld ( samples ) {
 	
 	//Specimen metadata (core and bedding orientations)
 	var coreBedding = samples.coreAzi;
-	var coreDip = samples.coreDip;
+	var coreDip = samples.coreDip - 90;
 	var beddingStrike = samples.bedStrike;
 	var beddingDip = samples.bedDip;
 	
@@ -1981,7 +2005,7 @@ function zijderveld ( samples ) {
 	//Check if user wants to view in specimen coordinates, put the core bedding to 0 and core azimuth to 90;
 	if(specFlag) {
 		var coreBedding = 0;
-		var coreDip = 90;
+		var coreDip = 0;
 		var coordinateInformation = '(Specimen)';
 	} else {
 		var coordinateInformation = '(Geographic)';
@@ -2000,12 +2024,12 @@ function zijderveld ( samples ) {
 		if(samples.data[i].visible) {
 		
 			//Rotate to geographic coordinates
-			var direction = rotateGeo(coreBedding, coreDip-90, [samples.data[i].x, samples.data[i].y, samples.data[i].z]);
+			var direction = rotateGeographic(coreBedding, coreDip, [samples.data[i].x, samples.data[i].y, samples.data[i].z]);
 			
 			//Rotate to tectonic coordinates if requested and not viewing in specimen coordinates
 			if(tcFlag && !specFlag) {
 				var coordinateInformation = '(Tectonic)';
-				var directionTectonic = rotateTect(beddingStrike+90, beddingDip+90, [direction.dec, direction.inc, 0, 0, 0]);
+				var directionTectonic = rotateTectonic(beddingStrike+90, beddingDip+90, [direction.dec, direction.inc, 0, 0, 0]);
 				direction.dec = directionTectonic[0];
 				direction.inc = directionTectonic[1];
 			}
@@ -2290,7 +2314,7 @@ function eqAreaProjection ( sample ) {
 	
 	//Get the bedding and core parameters from the sample object
 	var coreBedding = sample.coreAzi;
-	var coreDip = sample.coreDip;
+	var coreDip = sample.coreDip - 90;
 	var beddingStrike = sample.bedStrike;
 	var beddingDip = sample.bedDip;
 	
@@ -2302,7 +2326,7 @@ function eqAreaProjection ( sample ) {
 	//Check if user wants to view in specimen coordinates, put the core bedding to 0 and core azimuth to 90;
 	if(specFlag) {
 		var coreBedding = 0;
-		var coreDip = 90;
+		var coreDip = 0;
 		var information = '(Specimen)';
 	} else {
 		var information = '(Geographic)';
@@ -2314,12 +2338,12 @@ function eqAreaProjection ( sample ) {
 		if(sample.data[i].visible) {
 			
 			//Rotate samples to geographic coordinates using the core orientation parameters
-			var direction = rotateGeo(coreBedding, coreDip-90, [sample.data[i].x, sample.data[i].y, sample.data[i].z]);
+			var direction = rotateGeographic(coreBedding, coreDip, [sample.data[i].x, sample.data[i].y, sample.data[i].z]);
 			
 			//If a tilt correction is requested, rotate again
 			//Only do this if NOT viewing in specimen coordinates
 			if(tcFlag && !specFlag) {
-				var directionTectonic = rotateTect(beddingStrike+90, beddingDip+90, [direction.dec, direction.inc, 0, 0, 0]);
+				var directionTectonic = rotateTectonic(beddingStrike+90, beddingDip+90, [direction.dec, direction.inc, 0, 0, 0]);
 				direction.dec = directionTectonic[0];
 				direction.inc = directionTectonic[1];
 				var information = '(Tectonic)';
