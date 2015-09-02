@@ -42,6 +42,7 @@ function getSampleIndex() {
 	if(name != null) {
 		return parseInt($('#specimens option[value="' + name + '"]').attr('custom'));
 	}
+	
 }
 
 //Fire on DOM ready
