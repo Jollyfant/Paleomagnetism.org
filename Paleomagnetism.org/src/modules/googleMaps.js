@@ -90,7 +90,7 @@ module.map.mapAddSites = function() {
 	var ageMax = $( "#ageRange" ).slider( "values", 1);
 	
 	var inversionFlag = $('#invFlag').prop('checked');
-	var coordinates = $("#mapRadio input[type='radio']:checked").val()
+	var coordinates = $("#mapRadio input[type='radio']:checked").val();
 	
 	//Keep track of number of filtered sites (missing latitude/longitude or not within specified age bounds)
 	var nMissing = 0; 

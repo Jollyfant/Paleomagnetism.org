@@ -86,11 +86,11 @@ function jQueryInit () {
 		icons: { primary: "ui-icon-gear"}
 	});
 	
-	$("#radio1, #mapRadio1").button({
+	$("#radio1, #mapRadio1, #EIRadio1").button({
 		icons: { primary: "ui-icon-grip-dotted-horizontal"}
 	});
 	
-	$("#radio2, #mapRadio2").button({
+	$("#radio2, #mapRadio2, #EIRadio2").button({
 		icons: { primary: "ui-icon-grip-dotted-vertical"}
 	});
 	
@@ -223,6 +223,7 @@ function jQueryInit () {
 	$( "#sampleFish" ).buttonset();
 	$( "#radio" ).buttonset();
 	$( "#mapRadio" ).buttonset();
+	$( "#EIRadio" ).buttonset();
 	$( "#siteInfo" ).buttonset();	
 	$( "#radioConfDir" ).buttonset();	
 	$( "#radioConfMean" ).buttonset();	

@@ -97,8 +97,11 @@ function lastIndex( array ) {
 		return;
 	}
 	
+	var coordinates = $("#EIRadio input[type='radio']:checked").val();
+	var coordRef = coordinates === "TECT" ? 'dataTC' : 'data';
+	
 	//Get the accepted directions from the data block
-	var data = sites[siteNames[0]].data.dir.accepted;
+	var data = sites[siteNames[0]][coordRef].dir.accepted;
 	
 	//Get the absolute original inclination from the data set
 	var originalInclination = Math.abs(new fisher(data, 'dir', 'simple').mInc);
