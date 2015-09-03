@@ -29,7 +29,7 @@ module.CTMD.running = false;
 	 
 	"use strict";
 
-	var coordinates = $('#tcFlagCTMD').prop('checked') ? 'dataTC' : 'data';
+	var coordinates = $("#CTMDRadio input[type='radio']:checked").val() === "TECT" ? 'dataTC' : 'data';
 	
 	//Number of boostraps
 	var nBootstraps = 5000;
@@ -130,12 +130,8 @@ module.CTMD.initialize = function () {
 	}
 
 	//Get coordinate reference frame (tectonic or geographic)
-	var tcFlag = $('#tcFlagCTMD').prop('checked');
-	if(tcFlag) {
-		var coordinates = 'dataTC';
-	} else {
-		var coordinates = 'data';
-	}
+	var coordinates = $("#CTMDRadio input[type='radio']:checked").val() === "TECT" ? 'dataTC' : 'data';
+	console.log(coordinates);
 	
 	//Capture progress bar element
 	module.CTMD.bar = $("#CTMDBar");

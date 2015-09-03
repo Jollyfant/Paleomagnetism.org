@@ -307,7 +307,10 @@
 				<h1>5. Common True Mean Directions</h1>
 				<select multiple id="ctmdSel" title="" class="siteSelector"></select>
 				<p>
-				<input type="checkbox" id="tcFlagCTMD"><label for="tcFlagCTMD"> Use tectonic coordinates </label>
+				<div id="CTMDRadio" style="display: inline-block;">
+					<input type="radio" id="CTMDRadio1" name="CTMDRadio" value="TECT"><label for="CTMDRadio1"> Tectonic </label>
+					<input type="radio" id="CTMDRadio2" name="CTMDRadio" checked value="GEO"><label for="CTMDRadio2"> Geographic </label>
+				</div>
 				<input type="checkbox" id="VGPFlag"><label for="VGPFlag">Classify on VGP positions</label>
 				<div id="display: inline-block;">					
 					<button id="ctmdInit" onClick="module.CTMD.initialize();" title="Compute classifications for all permutations">Initialize CTMD test</button>
