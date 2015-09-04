@@ -2280,20 +2280,11 @@ function intensity ( sample ) {
 			text: "Paleomagnetism.org (Intensity Diagram)",
 			href: ''
 		},
-		plotOptions: {
-			line: {
-				marker: {
-					lineWidth: 1,
-					symbol: 'circle',
-					lineColor: 'rgb(119, 152, 191)',
-					fillColor: 'white'
-				}
+		plotOptions: { 
+			series : {
+				animation: false,
 			}
-		},
-		   plotOptions: { series : {
-            animation: false,
-			}
-       	 },
+       	},
         series: [{
             name: sample.name,
             data: dataSeries
