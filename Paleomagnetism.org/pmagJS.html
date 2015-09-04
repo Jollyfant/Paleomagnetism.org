@@ -311,7 +311,12 @@
 					<input type="radio" id="CTMDRadio1" name="CTMDRadio" value="TECT"><label for="CTMDRadio1"> Tectonic </label>
 					<input type="radio" id="CTMDRadio2" name="CTMDRadio" checked value="GEO"><label for="CTMDRadio2"> Geographic </label>
 				</div>
-				<input type="checkbox" id="VGPFlag"><label for="VGPFlag">Classify on VGP positions</label>
+				<p>
+				<div id="CTMDVGPRadio" style="display: inline-block;">
+					<input type="radio" id="CTMDVGPRadio1" name="CTMDVGPRadio" value="VGP"><label for="CTMDVGPRadio1"> Classify on Poles </label>
+					<input type="radio" id="CTMDVGPRadio2" name="CTMDVGPRadio" checked value="DIR"><label for="CTMDVGPRadio2"> Classify on Directions </label>
+				</div>
+				<p>
 				<div id="display: inline-block;">					
 					<button id="ctmdInit" onClick="module.CTMD.initialize();" title="Compute classifications for all permutations">Initialize CTMD test</button>
 					<div id="CTMDBar" title="CTMD Progress Bar" style="display: inline-block; vertical-align: middle;"><div id="CTMDPerc" class="barlabel"> 0 / 0 </div></div>

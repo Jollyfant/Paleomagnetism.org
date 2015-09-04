@@ -131,13 +131,12 @@ module.CTMD.initialize = function () {
 
 	//Get coordinate reference frame (tectonic or geographic)
 	var coordinates = $("#CTMDRadio input[type='radio']:checked").val() === "TECT" ? 'dataTC' : 'data';
-	console.log(coordinates);
 	
 	//Capture progress bar element
 	module.CTMD.bar = $("#CTMDBar");
 	
 	//Check whether user wants to compare VGP positions or directions
-	var VGPFlag = $('#VGPFlag').prop('checked');
+	var VGPFlag = $("#CTMDVGPRadio input[type='radio']:checked").val() === "VGP" ? true : false;
 	
 	//Number of permutations (triangular number: http://en.wikipedia.org/wiki/Triangular_number)
 	var length = (siteName.length-1);

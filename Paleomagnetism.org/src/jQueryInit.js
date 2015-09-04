@@ -90,6 +90,10 @@ function jQueryInit () {
 		icons: { primary: "ui-icon-grip-dotted-horizontal"}
 	});
 	
+	$("#CTMDVGPRadio1, #CTMDVGPRadio2").button({
+		icons: { primary: "ui-icon-gear"}
+	});
+	
 	$("#radio2, #mapRadio2, #EIRadio2, #CTMDRadio2").button({
 		icons: { primary: "ui-icon-grip-dotted-vertical"}
 	});
@@ -225,6 +229,7 @@ function jQueryInit () {
 	$( "#mapRadio" ).buttonset();
 	$( "#EIRadio" ).buttonset();
 	$( "#CTMDRadio" ).buttonset();
+	$( "#CTMDVGPRadio" ).buttonset();
 	$( "#siteInfo" ).buttonset();	
 	$( "#radioConfDir" ).buttonset();	
 	$( "#radioConfMean" ).buttonset();	
