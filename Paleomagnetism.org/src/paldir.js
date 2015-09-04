@@ -862,6 +862,7 @@ $(function() {
 		//Only redraw once (this function is automatically called in both Geographic and Tectonic coordinates)
 		if(tcFlag) {
 			drawInterpretations( sample );
+			setHoverRadius();
 		}
 		
 	});
