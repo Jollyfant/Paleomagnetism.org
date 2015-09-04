@@ -3,57 +3,57 @@
 <HTML>
 
 <HEAD>
-<meta charset="utf-8"/>
-<meta name="description" content="Paleomagnetism.org: An open source tool for paleomagnetic analysis">
-<meta name="keywords" content="Paleomagnetism, Palaeomagnetism, Statistics, Analysis, Javascript, Magnetic">
-<meta name="author" content="Paleomagnetism.org">
-
-<link rel="shortcut icon" type="image/x-icon" href="icon.ico" />
-<title> Paleomagnetism.org ALPHA </title>
-
-<!-- Style Sheets -->
-<link href="./src/libs/notiny-master/src/notiny.css" rel="stylesheet"> <!-- Notification style sheet (Notiny) -->
-<link href="./src/libs/jQuery/jquery-ui.css" rel="stylesheet"> <!-- jQuery UI stylesheet -->
-<link href="./css/pMagJS.css" type="text/css" rel="stylesheet" /> <!-- paleomagnetism.org stylesheet -->
-
-<!-- Supporting Javascript Libraries -->
-<script src="./src/libs/jQuery/jquery-1.11.1.js"></script> <!-- jQuery -->
-<script src="./src/libs/jQuery/jquery-ui.js"></script> <!-- jQuery UI -->
-<script src="./src/libs/Highcharts/highcharts.src.js"></script> <!-- Highcharts Main -->
-<script src="./src/libs/Highcharts/highcharts-more.src.js"></script> <!-- Highcharts plugin for extra graphs -->
-<script src="./src/libs/Highcharts/heatmap.src.js"></script> <!-- HighCharts HeatMap Plugin -->
-<script src="./src/libs/Highcharts/exporting.src.js"></script> <!-- Highcharts figure exporting -->
-<script src="./src/libs/numeric-1.2.6.js"></script> <!-- Numeric JS to calculate principle components -->
-<script src="./src/libs/jQuery/jquery.multiselect.js"></script> <!-- jQuery plugin for multiselect -->
-<script src="./src/libs/jQuery/jquery-linedtextarea.js"></script> <!-- jQuery plugin for lined text-area -->
-<script src="./src/libs/notiny-master/src/notiny.js"></script> <!-- (notiny) notification plugin -->
-
-<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCvJEx8MlU2o1YwBkDMx-xzZzsw9-8ssDc"></script>
-
-<!-- Paleomagnetism.org Source Code -->
-<script src="./src/main.js"></script> <!-- Application Mainframe -->
-<script src="./src/core.js"></script> <!-- Mathematical core -->
-<script src="./src/graphs.js"></script> <!-- Graphing containers -->
-<script src="./src/jQueryInit.js"></script> <!-- jQuery UI DOM Element Definitions -->
-
-<!-- Modules -->
-<script src="./src/modules/EI.js"></script> <!-- EI Method (Inclination Shallowing) -->
-<script src="./src/modules/ExIm.js"></script> <!-- Import/Export -->
-<script src="./src/modules/googleMaps.js"></script> <!-- Google Maps module -->
-<script src="./src/modules/upload.js"></script> <!-- Drag and Drop plugin -->
-<script src="./src/modules/ctmd.js"></script> <!-- Mainframe -->
-<script src="./src/modules/apwp.js"></script> <!-- APWPs -->
-<script src="./src/modules/foldtest.js"></script> <!-- APWPs -->
-
+	<!-- Meta-data -->
+	<meta charset="utf-8"/>
+	<meta name="description" content="Paleomagnetism.org: An open source tool for paleomagnetic analysis">
+	<meta name="keywords" content="Paleomagnetism, Palaeomagnetism, Statistics, Analysis, Javascript, Magnetic">
+	<meta name="author" content="Paleomagnetism.org">
+	
+	<link rel="shortcut icon" type="image/x-icon" href="icon.ico" />
+	<title> Paleomagnetism.org ALPHA </title>
+	
+	<!-- Style Sheets -->
+	<link href="./src/libs/notiny-master/src/notiny.css" rel="stylesheet"> <!-- Notification style sheet (Notiny) -->
+	<link href="./src/libs/jQuery/jquery-ui.css" rel="stylesheet"> <!-- jQuery UI stylesheet -->
+	<link href="./css/pMagJS.css" type="text/css" rel="stylesheet" /> <!-- paleomagnetism.org stylesheet -->
+	
+	<!-- Libraries -->
+	<script src="./src/libs/jQuery/jquery-1.11.1.js"></script> <!-- jQuery -->
+	<script src="./src/libs/jQuery/jquery-ui.js"></script> <!-- jQuery UI -->
+	<script src="./src/libs/Highcharts/highcharts.src.js"></script> <!-- Highcharts Main -->
+	<script src="./src/libs/Highcharts/highcharts-more.src.js"></script> <!-- Highcharts plugin for extra graphs -->
+	<script src="./src/libs/Highcharts/heatmap.src.js"></script> <!-- HighCharts HeatMap Plugin -->
+	<script src="./src/libs/Highcharts/exporting.src.js"></script> <!-- Highcharts figure exporting -->
+	<script src="./src/libs/numeric-1.2.6.js"></script> <!-- Numeric JS to calculate principle components -->
+	<script src="./src/libs/jQuery/jquery.multiselect.js"></script> <!-- jQuery plugin for multiselect -->
+	<script src="./src/libs/jQuery/jquery-linedtextarea.js"></script> <!-- jQuery plugin for lined text-area -->
+	<script src="./src/libs/notiny-master/src/notiny.js"></script> <!-- (notiny) notification plugin -->
+	<script src="./src/libs/upload.js"></script> <!-- Drag and Drop plugin -->
+	
+	<!-- Google Maps v3 API -->
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCvJEx8MlU2o1YwBkDMx-xzZzsw9-8ssDc"></script>
+	
+	<!-- Paleomagnetism.org Source Code -->
+	<script src="./src/main.js"></script> <!-- Application Mainframe -->
+	<script src="./src/core.js"></script> <!-- Mathematical core -->
+	<script src="./src/graphs.js"></script> <!-- Graphing containers -->
+	<script src="./src/jQueryInit.js"></script> <!-- jQuery UI DOM Element Definitions -->
+	
+	<!-- Paleomagnetism.org Modules -->
+	<script src="./src/modules/EI.js"></script> <!-- EI Method (Inclination Shallowing) -->
+	<script src="./src/modules/ExIm.js"></script> <!-- Import/Export -->
+	<script src="./src/modules/googleMaps.js"></script> <!-- Google Maps module -->
+	<script src="./src/modules/ctmd.js"></script> <!-- Mainframe -->
+	<script src="./src/modules/apwp.js"></script> <!-- APWPs -->
+	<script src="./src/modules/foldtest.js"></script> <!-- APWPs -->
 </HEAD>
+
 <BODY>
 
 <!-- ENTIRE BODY -->
 <div id="body_container" style="text-align: justify;">
 
-<div id="containerMap"></div>
-
-	<!-- HEADER -->
+	<!-- Paleomagnetism.org header -->
 	<div id="title" style="margin: 0 auto; padding: 5px; background-color: #fff">
 		<div style="display: inline-block; padding-right: 10px;">
 			<img style="margin: 0px; height: 60px;" src="./images/icon.png">
@@ -134,9 +134,11 @@
 					<input type="radio" id="radioConfDir2" value="kent" name="radioConfDir"> <label for="radioConfDir2"> Kent Ellipse </label>
 				</div>
 			<p>
+			
 			<!-- Parameter table (dynamic content) -->
 			<div id="dirInfo" style="text-align: center"></div>
 			<p>
+			
 			<!-- Equal area projections (directions: left; VGPs: right) -->
 			<div id="directions" style="width: 100%; margin: 0 auto; text-align: center;">
 				<p>
@@ -150,8 +152,10 @@
 				</div>
 			</div>
 			<hr>
+			
 			<!-- Export All ChRM/VGP Figures -->
 			<button id="exportAll" style="display: inline-block;" title="Export ChRM and VGP Figure">Export VGP/ChRM Figure</button>
+			
 			<!-- Literature References -->
 			<div class="literature"> 
 				<small><b> Related literature: </b> Dispersion on a sphere (Fisher, 1953); Paleomagnetism: Magnetic Domains to Geologic Terranes (Butler, 1992)</small> 

@@ -141,12 +141,12 @@ module.CTMD.initialize = function () {
 	//Number of permutations (triangular number: http://en.wikipedia.org/wiki/Triangular_number)
 	var length = (siteName.length-1);
 	var permutations = (length*(length+1)/2);
-	var data = [];
+	var data = new Array();
 
 	//Initial timing parameter
 	module.CTMD.timeInit = Date.now();
 
-	//We need to consider all possible permutations
+	//We need to consider all possible permutations in an asynchronous implementation
 	//(e.g. 1v2, 1v3, 1v4, 2v3, 2v4, 3v4)
 	//In other words: 
 	//Outer loop: let i run from 1 to (N - 1)
@@ -290,9 +290,9 @@ module.CTMD.monte = function (N, R, K, X, Y, Z) {
 	//Dot product between the two vectors
 	var dot = X[0]*X[1] + Y[0]*Y[1] + Z[0]*Z[1];
 	if(dot < 0) {
-		X[1] = -X[1]
-		Y[1] = -Y[1]
-		Z[1] = -Z[1]
+		X[1] = -X[1];
+		Y[1] = -Y[1];
+		Z[1] = -Z[1];
 	} else if(dot > 1) {
 		dot = 1;
 	}
