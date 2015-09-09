@@ -553,7 +553,18 @@ var addSiteCombination = function () {
 	metaData.type = 'Site Combination';
 	metaData.author = 'Unknown';
 	
+	//Ignore rejected samples if requested
 	var data = $("#excludeRejected").prop('checked') ? sites['TEMP'].data.dir.accepted : sites['TEMP'].userInput.data;
+	
+	// If checked, reverse all samples to normal polarity
+	if($("#reversePolarity").prop('checked')) {
+		for(var i = 0; i < data.length; i++) {
+			if(data[i][1] < 0) {
+				data[i][1] = Math.abs(data[i][1]);
+				data[i][0] = (data[i][0] + 180)%360;
+			}
+		}
+	}
 	
 	//Call site constructor with the updated metadata and directional data	
 	sites[name] = new site(metaData, data, true);
