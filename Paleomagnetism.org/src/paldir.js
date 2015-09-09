@@ -162,6 +162,28 @@ $(function() {
 			}
 		}
     });
+
+	
+	$('#input').dialog({
+		'width': 500,
+		'min-height': 100,
+		'draggable': false,
+		'resizable': false,
+		'autoOpen': false,
+		'modal': true,
+		'buttons': {
+			'Cancel': function () {
+				$(this).dialog("close");
+			}
+		}
+	});
+
+	$("#importFormats").selectmenu();
+	
+	//Open the data input dialog box		
+	$('#add').click(function () {
+		$( "#input" ).dialog( "open" );
+	});
 	
 	//Button definitions for jQuery UI
 	$("#saveInterpretation").button();
@@ -188,12 +210,7 @@ $(function() {
 	$("#exportInterpretation").button({
 		icons: { primary: "ui-icon-arrowthickstop-1-s"}
 	});
-	$("#importApplication").button({
-		icons: { primary: "ui-icon-arrowthickstop-1-n"}
-	});
-	$("#importUtrecht").button({
-		icons: { primary: "ui-icon-arrowthickstop-1-n"}
-	});
+
 	$("#clearStorage").button({
 		icons: { primary: "ui-icon-trash"}
 	});
@@ -211,14 +228,24 @@ $(function() {
 		.bind('mouseup', function() {
         $(this).blur();   
 	});
+	
+	$("#radio1").button({
+		icons: { primary: "ui-icon-grip-dotted-horizontal"}
+	});
+	
+	$("#radio2").button({
+		icons: { primary: "ui-icon-grip-dotted-vertical"}
+	});
+	
 	$( "#coordinates" ).buttonset();
+
 	
 	$("#coordinates").change( function () {
 		plotInterpretations();
 		$("#saveInterpretation").text('Save Interpreted Directions');
 		$("#eqAreaFitted").hide();
 	});
-	
+
 	//Fix for blurring tab after click (interferes with arrow key movement)
     $('#tabs a').click(function () {
         $(this).blur(); //Deselect the tab
@@ -565,7 +592,7 @@ $(function() {
 			drawInterpretations(sample);
 		}
 	});
-
+	
 	//Definition for specimen scroller
 	//The close method is triggered if a user selects a sample from the specimen scroller without using the < or > buttons.
 	$('#specimens').multiselect({	
@@ -1401,7 +1428,7 @@ function getPlaneData ( dirIn, type, MAD, signInc ) {
 	var zDec = (mDec+90)
 	var zInc = 0
 			
-	var nPoints = 501;
+	var nPoints = 251;
 	
 	var iPoint = ((nPoints-1)/2);
 	
@@ -3177,6 +3204,11 @@ function importingDefault ( applicationData, text ) {
 function importing (event, format)  {
 		
 	$("#appBody").hide();
+	$( "#input" ).dialog( "close" );
+	
+	if(format === undefined) {
+		var format = $("#importFormats").val();
+	}
 	
 	//Filehandler API; handles the file importing
     var input = event.target;
@@ -3198,12 +3230,12 @@ function importing (event, format)  {
 		//Contact us if you would like your custom format to be added
 		if(format === 'UTRECHT') {
 			data = importUtrecht(data, text);
-		} else if(format == 'APP') {
+		} else if(format === 'APP') {
 			data = importApplication(data, text);
-		} else if(format == 'SPINNER') {
+		} else if(format === 'SPINNER') {
 			notify('failure', 'Spinner input is currently not supported.');
 			return;
-		} else if(format == 'DEFAULT') {
+		} else if(format === 'DEFAULT') {
 			data = importDefault(data, text);
 		}
 		

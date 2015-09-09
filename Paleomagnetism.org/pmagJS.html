@@ -56,7 +56,7 @@
 	<!-- Paleomagnetism.org header -->
 	<div id="title" style="margin: 0 auto; padding: 5px; background-color: #fff">
 		<div style="display: inline-block; padding-right: 10px;">
-			<img style="margin: 0px; height: 60px;" src="./images/icon.png">
+			<a href="./home.html"><img style="margin: 0px; height: 60px;" src="./images/icon.png"></a>
 		</div>		
 		<div id="wld" style="display: inline-block; float: right;"></div>
 	</div>
@@ -64,16 +64,16 @@
 	
 	<!-- MENU -->
 	<div style="background-color: #7798BF; color: white; padding: 10px;">
-		<a class="link" style="background: #DED;"><img height="16" width="16" src="./images/icon.ico" style="vertical-align: middle;">&nbsp Statistics Portal </a> 
-		<a class="link" href="./paldir.htm"> Interpretation Portal </a>
-		<a class="link" href="./cite.html"> Citation Information and Literature </a>
-		<a class="link" href="mailto:fort@paleomagnetism.org"> Contact </a>
+		<li class="menuLink"><a class="link" style="background: #DED;"><img height="16" width="16" src="./images/icon.ico" style="vertical-align: middle;">&nbsp Statistics Portal </a> 
+		<li class="menuLink"><a class="link" href="./paldir.htm"> Interpretation Portal </a>
+		<li class="menuLink"><a class="link" href="./cite.html"> Citation Information and Literature </a>
+		<li class="menuLink"><a class="link" href="mailto:fort@paleomagnetism.org"> Contact </a>
 	</div>
 
 	<!-- ENCOMPASSING TABS DIV -->
 	<div id="tabs">
 		<ul>
-			<li><a href="#introductionTab" title="General information"> Introduction </a></li>
+			<li><a href="#introductionTab" title="General information"> Home </a></li>
 			<li><a href="#directionTab" title="Directions and VGPs"> Geomagnetic Directions </a></li>
 			<li><a href="#tabs-3" title="Site Means"> Mean Directions </a></li>
 			<li><a href="#tabs-4" title="Google Maps site overview"> Map Overview and APWP</a></li>
@@ -86,17 +86,15 @@
 		<!-- INTRODUCTION TAB -->
 		<div id="introductionTab">
 			<div class="information">
-				<h1>1. Introduction </h1>
-				<p> Welcome to Paleomagnetism.org; an online environment for paleomagnetic analysis. To get started, add your site data by clicking the button below.
-				<p> If you wish to use the interpretation portal go <a href="./paldir.htm">here</a>.
-				<h2> Data Handling <small> Add and remove sites </small> </h2>
+				<h1>1. Statistics Portal: Home  </h1>
+				<p> Welcome to the statistics portal of Paleomagnetism.org; an online environment for paleomagnetic analysis.
 				<p>
-				<button id="add" title="Load new data to the application"> Add new site </button>
+				New sites can be added to the application by clicking the <b> add new site </b> button below. Once a site has been added, the data can be evaluated and visualized in the available modules.
 				<p>
-				<select multiple id="introSel" class="siteSelector"></select>
-				<button id="delete" title="Delete the selected sites"> Delete Selected </button>	
+				<div style="text-align: center;">
+				<button id="add" style="height: 50px; width: 150px; border: 1px dashed; " title="Load new data to the application"> add new site </button>
+				</div>
 			</div>
-			<hr>
 		</div>
   
 		<!-- MAGNETIC DIRECTION AND VGP MODULE -->
@@ -194,7 +192,7 @@
 			</div>
 			<!-- Mean Figure Caption -->
 			<div class="caption">
-				<div id="meanInfo" style="margin: 10px; font-size: 15px;"><b> Figure 2 </b>- lower hemisphere equal area projections showing ChRM directions (left) and relative VGP positions (right). The confidence envelope and parachute are illustrated.</div>
+				<div id="meanInfo" style="margin: 10px; font-size: 15px;"><b> Figure 2a, b </b>- lower hemisphere equal area projections showing ChRM directions (left) and relative VGP positions (right). The confidence envelope and parachute are illustrated.</div>
 			</div>
 			<hr>
 			<!-- Export All Parameters (table) -->
@@ -214,7 +212,7 @@
 			<div class="information">
 			
 				<h1> 4. Map Overview </h1>
-				<p> The map below illustrates vertical-axis rotations for the user specified sites including confidence parachutes.
+				<p> The Google Maps overview illustrates vertical-axis rotations for the selected sites including confidence parachutes (ΔDx). Expected site declinations, inclinations, paleolatitudes, and apparant polar wander paths can be plotted for major plates.
 				<!-- Site Selector -->
 				<p><select multiple id="mapSel" title="" onClick="module.map.mapAddSites();" class="siteSelector"></select>
 			</div>
@@ -300,7 +298,7 @@
 					</div>
 				</div>
 				<div class="caption" id="poleTabCaption" style="display: none;">
-					<p style="margin-top: 10px; margin-bottom: 10px; font-size: 15px;"><b> Figure 4 </b>- Expected directions and APWPs for specified plates at chosen longitude, latitude.
+					<p style="margin-top: 10px; margin-bottom: 10px; font-size: 15px;"><b> Figure 4 </b>- Expected directions and APWPs for specified plates at selected site location. The selected site means and confidence limits are also illustrated.
 				</div>
 			<br>
 		</div>
@@ -309,6 +307,9 @@
 		<div id="tabs-5">
 			<div class="information">
 				<h1>5. Common True Mean Directions</h1>
+				<b> Information </b>
+				<p> For the selected sites, all possible permutations are compared using the classical reversal test. Clicking a matrix tile will complete a coordinate bootstrap as described by Lisa Tauxe, 2008
+				<p>
 				<select multiple id="ctmdSel" title="" class="siteSelector"></select>
 				<p>
 				<div id="CTMDRadio" style="display: inline-block;">
@@ -339,7 +340,7 @@
 			</div>
 			<div id="CTMDInfo" style="margin: 10px; font-size: 15px;">
 				<div class="caption">
-				<p> <b>Figure 4</b> - Common true mean direction permutations for all sites.
+				<p> <b>Figure 5</b> - Common true mean direction permutations for the selected sites.
 				</div>
 			</div>
 			<hr>
@@ -430,7 +431,7 @@
 		<!-- Advanced Options Module -->
 		<div id="tabs-8">
 			<div class="information">
-				<h1>Advanced Options</h1>
+				<h1>7. Statistics Portal: Advanced Options</h1>
 				<h2> Importing and Exporting <small> save or load instance </small> </h2>
 				<p> 
 				<!-- Exporting -->
@@ -506,12 +507,15 @@
 				<h2> Other Options <small> projection and cutoff </small> </h2>
 				<p> The default projection type for the hemispheres is equal area. Checking the following box will change the type of projection to equal angle.
 				<p><input type="checkbox" id="projFlag" autocomplete="off"> <label for="projFlag"><b> Use equal angle projection </b></label> <!-- Swap between equal area/equal angle -->
-				<p> Color mean directions individually
 				<p><input type="checkbox" id="colorFlag" autocomplete="off"> <label for="colorFlag"><b> Color mean directions individually </b></label> <!-- Fixed colors or not -->
 	
 				<p>
 				<!-- Instance resetting -->
-				<h2> Reset Application </h2>
+				<h2> Reset Application <small> removing sites </small> </h2>
+				<p> Select the sites you would like to remove and click <b>delete selected sites</b>.
+				<p>
+				<select multiple id="introSel" class="siteSelector"></select>
+				<button id="delete" title="Delete the selected sites"> delete selected sites </button>	
 				<p>
 				<div style="display: inline-block">
 					Clearing location storage will remove all saved sites and reload the application. Please remember to <b><a id="exportHighlight" href="#">export</a></b> your instance before resetting the application if you wish to save your data.

@@ -78,7 +78,7 @@ function jQueryInit () {
 		icons: { primary: "ui-icon-circle-check"}
 	});
 
-	$("#add, #addNewAPWP, #saveGroupButton").button({
+	$("#addNewAPWP, #saveGroupButton").button({
 		icons: { primary: "ui-icon-circle-plus"}
 	});
 
@@ -193,7 +193,7 @@ function jQueryInit () {
 		'autoOpen': false,
 		'modal': true,
 		'buttons': {
-			'Cancel editing': function () {
+			'Cancel': function () {
 				$(this).dialog("close");
 			}
 		}

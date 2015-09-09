@@ -38,6 +38,20 @@
 <BODY>
 	<div id="body_container" style="text-align: justify;">
 	
+		<div id="input" class="dialog" title="Data Input">
+			<h1> Select an input format </h1>
+			Below is a list of the currently supported data formats that can be imported to the application. If you would like your institutions format added, please contact us.
+			<p>
+			<select id="importFormats" title="Select an importing format" style="text-align: center; width: 150px;">
+				<option value="UTRECHT"> Utrecht (.TH, .AF) </option>
+				<!-- <option value="SPINNER"> Spinner </option> -->
+				<option value="DEFAULT"> Default </option>
+			</select>
+			<button id="import" type="button" onClick="$('#file-type').click();" title="Import a previously exported file.">Import Demagnetization Data </button>
+			<button id="customHelp">?</button>
+			<p> <input type="checkbox" id="appendFlag"><label for="appendFlag"> Append import to existing data </label>
+		</div>
+		
 		<!-- HEADER -->
 		<div id="title" style="margin: 0 auto; padding: 5px; background-color: #fff">
 			<div style="display: inline-block; padding-right: 10px;">
@@ -47,71 +61,75 @@
 		
 		<!-- MENU CONTACT -->
 		<div style="background-color: #7798BF; color: white; padding: 10px;">
-			<a class="link" href="./pmagJS.html"> Statistics Portal </a> 
-			<a class="link" style="background: #DED;"><img src="./images/icon.ico" height="16" width="16" style="vertical-align: middle;">&nbsp Interpretation Portal </a>
-			<a class="link" href="./cite.html"> Citation Information and Literature </a>
-			<a class="link" href="mailto:fort@paleomagnetism.org"> Contact </a>
+			<li class="menuLink"><a class="link" href="./pmagJS.html"> Statistics Portal </a> 
+			<li class="menuLink"><a class="link" style="background: #DED;"><img src="./images/icon.ico" height="16" width="16" style="vertical-align: middle;">&nbsp Interpretation Portal </a>
+			<li class="menuLink"><a class="link" href="./cite.html"> Citation Information and Literature </a>
+			<li class="menuLink"><a class="link" href="mailto:fort@paleomagnetism.org"> Contact </a>
 		</div>
 		
 		<div id="tabs">
 			<ul>
+				<li><a href="#homeTab" title="Home"> Home </a></li>
 				<li><a href="#interpretationTab" title="General information"> Interpretation Portal </a></li>
 				<li><a href="#fittingTab" title="General information"> Interpreted Directions </a></li>
 				<li><a href="#advancedTab" title="General information"> Advanced Options </a></li>
 			</ul>
 	
-			<div id="interpretationTab">
-				<div style="width:1150px; margin:0 auto; text-align: center;">
-					<h2> Interpretation Portal <small> Paleomagnetism.org </small> </h2>
+			<div id="homeTab">
+				<div class="information">
+					<h1>Interpretation Portal: Home  </h1>
+					<p> Welcome to the interpretation portal of Paleomagnetism.org; an online environment for paleomagnetic interpretation.
+					<p> New demagnetization data can be added to the application by clicking the <b> add new demagnetization data </b> button below. Once new data has been added, the data can be visualized and interpreted in the interpretation module.
+					<div style="text-align: center;">
+						<button id="add" style="height: 50px; width: 200px; border: 1px dashed; " title="Load new data to the application"> add new demagnetization data </button>
+					</div>
 				</div>
-		
+			</div>
+			<div id="interpretationTab">
 				<!-- HTML FOR SPECIMEN SCROLLER -->
-				<div id="specimenScroller">
+				<div id="specimenScroller" style="border: 1px dotted rgb(119, 152, 191); width: 400px; margin: 0 auto; padding: 10px;">
 					<div id="specimenScrollerInner">
 						<button id="left" style="font-family: times;"><span style="font-size: 22px;">  <  </span></button>
 						<select multiple id="specimens"></select>
 						<button id="right" style="font-family: times;"><span style="font-size: 22px;">  > </span></button>
 					</div>
 				</div>
-				
+				<input style="display: none" id="file-type" type="file" size="4" name="file" onChange="importing(event)"/>
 				<input style="display: none" id="file-type2" type="file" size="4" name="file" onChange="importing(event, 'APP')"/>
-				<input style="display: none" id="file-type3" type="file" size="4" name="file" onChange="importing(event, 'SPINNER')"/>
-				<input style="display: none" id="file-type" type="file" size="4" name="file" onChange="importing(event, 'UTRECHT')"/>
-				<input style="display: none" id="file-type4" type="file" size="4" name="file" onChange="importing(event, 'DEFAULT')"/>
 				<p>
-				<div style="width:1150px; margin:0 auto;">
+				<div style="width:auto; margin:0 auto;">
 				
 					<!-- HIDDEN CHECKBOXES FOR ANCHORING/TC/PROJECTION, TOGGLED BY KEYBOARD -->
-					<div style="margin: 0 auto; width: 500px; text-align: center;">
-						<input type="checkbox" id="anchor" style="display: none;">
-						<input type="checkbox" id="tcFlag" style="display: none;">
-						<input type="checkbox" id="tcViewFlag" style="display: none;">
-						<input type="checkbox" id="nFlag" style="display: none;">
-						<input type="checkbox" id="specFlag" style="display: none;">
-					</div>
-					<p>
-					
+					<input type="checkbox" id="anchor" style="display: none;">
+					<input type="checkbox" id="tcFlag" style="display: none;">
+					<input type="checkbox" id="tcViewFlag" style="display: none;">
+					<input type="checkbox" id="nFlag" style="display: none;">
+					<input type="checkbox" id="specFlag" style="display: none;">
+					<button id="PCA" style="display: none">Start PCA</button>
+					<button id="PCAGC" style="display: none">Start PCA GC</button>
+				
 					<!-- MAIN BODY FOR INTERPRETATION -->
-					<div id="appBody" style="display: none">
-						<div id="stepWalk" style="height: 620px; width: 100px; display: inline-block; vertical-align: top; margin-left: 10px; border: 1px dotted rgb(119, 152, 191);"></div>
-						<div style="height: 620px; border: 1px dotted rgb(119, 152, 191); display: inline-block;">
-							<div id="zijderveldPlot" style="width: 500px; height: 600px; display: inline-block;"></div>
-							<div id="eqAreaDirections" style="width: 500px; height: 600px; display: inline-block;"></div>
+					<div id="appBody" style="display: none; text-align: center; margin: 0 auto;">
+						<div id="stepWalk" style="height: 550px; width: 100px; display: inline-block; padding: 2px; vertical-align: top; margin-left: 10px; border: 1px dotted rgb(119, 152, 191);">
 						</div>
-						<p>
+							<div style="border: 1px dotted rgb(119, 152, 191); display: inline-block; float: center; padding: 2px;">
+								<div id="zijderveldPlot" style="width: 500px; height: 550px;"></div>
+							</div>
+							<div style="border: 1px dotted rgb(119, 152, 191); display: inline-block; float: center; padding: 2px;">
+								<div id="eqAreaDirections" style="width: 500px; height: 550px;"></div>
+							</div>
+						<br>
+						<hr>
 						<div id="update"></div>
-						<p>
+						<hr>
 						<div id="clrIntBox" style="text-align: center; display: none;">
 							<button id="clrInterpretation">Clear Interpretation</button>
 						</div>
 						<p>
-						<div id="intensityPlot" style="width: 1150px; height: 500px; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
+						<div id="intensityPlot" style="width: auto; height: 500px; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
 					</div>
 				</div>
-				<button id="PCA" style="display: none">Start PCA</button>
-				<button id="PCAGC" style="display: none">Start PCA GC</button>
-				
-				<div style="width:1150px; margin:0 auto; text-align: center;">
+				<div style="width:auto; margin:0 auto; text-align: center;">
 					<p><b> Controls: </b>Use the arrow keys (or wsda) to navigate; 1 (2) for line (forced); 3 for toggle W/Up-N/Up; 7 toggle for specimen coordinates; 8 for toggle tilt correction; 9 (0) for plane (forced); x (+) to toggle selection; z (-) to toggle visibility
 				</div>
 			</div>
@@ -119,8 +137,6 @@
 			<!-- DIRECTION FITTING TAB -->
 			<div id="fittingTab">
 				<div style="margin: 0 auto; text-align: center;">
-					<h2> Interpreted Directions <small> Great Circle Fitting </small> </h2>
-					<p>
 					<div id="fitCirclesDiv" style="display: none; ">
 						<div id="fitCirclesDivText"></div>
 						<p> 
@@ -146,32 +162,27 @@
 			
 			<!-- ADVANCED OPTIONS TAB -->
 			<div id="advancedTab">
-				<p>
-				<h2> Importing <small> formats </small> </h2>
-				<p> Import a file formatted following the Utrecht format (.TH or .AF)
-				<p> <button id="importUtrecht" type="button" onClick="$('#file-type').click();" title="Import a previously exported file.">Import Utrecht Format</button>
-				<p> Import a previously exported file from the Paleomagnetism.org interpretation portal (.dir).
-				<p> <button id="importApplication" type="button" onClick="$('#file-type2').click();" title="Import a previously exported file.">Import Appication Save</button>
-				<p> Import spinner data (not working properly) (.jr6)		
-				<p> <button id="importNew" type="button" onClick="$('#file-type3').click();" title="Import a previously exported file.">Import Spinner Data</button>
-				<p> Import a new format.	
-				<p> <button id="importCustom" type="button" onClick="$('#file-type4').click();" title="Import a previously exported file.">Import Default Data</button>
-				<button id="customHelp">?</button>
-				<p> <input type="checkbox" id="appendFlag"><label for="appendFlag"> Append imports to application data (skips duplicates)</label>
-				<h2> Exporting <small> data and interpretation </small> </h2>
-				<p> Export an application save of the paleomagnetism.org interpretation portal.
-				<p><button id="exportApplication" type="button" onClick="exporting()" title="Import a previously exported file.">Export Appication Save</button>
-				<p> Exporting a table of interpreted directions.
-				<p><button id="exportInterpretation" type="button" onClick="exportInterpretation()" title="Export your interpreted data">Export Interpretation</button>
-		
-				<h2> Other Options <small> present day field </small> </h2>
-				<p> Click here to add a sticky component to the equal area projection.
-				<p><button id="addSticky">Add Sticky</button><button id="removeSticky">Remove Stickies</button>
-				<p> <input type="checkbox" id="labelFlag"><label for="labelFlag"> Show data labels for demagnetization steps </label>
-				<p> <input type="checkbox" id="originFlag"><label for="originFlag"> Include origin as point </label>
-				<h2> Reset Instance <small> clear data </small> </h2>
-				<p> Click here to reset the instance and remove all data.
-				<p><button id="clearStorage" type="button" onClick="clearStorage()" title="Clear local storage">Clear local storage</button>
+				<div class="information">
+					<h1>Interpretation Portal: Advanced Options</h1>
+					<h2> Importing and Exporting <small> save or load instance </small> </h2>
+					<p> 
+					<!-- Exporting -->
+					Data can be imported and exported from and to the custom <b>.dir</b> format. This save can be loaded and used in other instances. The exported file is a JSON encoded plain text object and can be opened with any text editor.
+					<p>
+					<button id="importApplication" type="button" onClick="$('#file-type2').click();" title="Import a previously exported file.">Import Application Save</button>
+					<button id="exportApplication" type="button" onClick="exporting()" title="Import a previously exported file.">Export Application Save</button>
+					<p> Exporting a table of interpreted directions.
+					<p><button id="exportInterpretation" type="button" onClick="exportInterpretation()" title="Export your interpreted data">Export Interpretation</button>
+			
+					<h2> Other Options <small> present day field </small> </h2>
+					<p> Click here to add a sticky component to the equal area projection.
+					<p><button id="addSticky">Add Sticky</button><button id="removeSticky">Remove Stickies</button>
+					<p> <input type="checkbox" id="labelFlag"><label for="labelFlag"> Show data labels for demagnetization steps </label>
+					<p> <input type="checkbox" id="originFlag"><label for="originFlag"> Include origin as point </label>
+					<h2> Reset Instance <small> clear data </small> </h2>
+					<p> Click here to reset the instance and remove all data.
+					<p><button id="clearStorage" type="button" onClick="clearStorage()" title="Clear local storage">Clear local storage</button>
+				</div>
 			</div>
 		</div>
 		

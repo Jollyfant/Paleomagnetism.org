@@ -9,6 +9,7 @@
     margin: 10px;
 }
 
+
  .link {
 	padding: 5px;
 	margin: 20px;
@@ -22,6 +23,11 @@
 	text-decoration: none;
 	color: #7798BF;
 	font-weight: bold;
+}
+
+li.menuLink {
+	display: inline-block;
+	line-height: 16px; !important
 }
 
 .ui-multiselect {  
