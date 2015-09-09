@@ -469,10 +469,7 @@ $(function() {
 		if(name === "") {
 			notify('failure', 'Site name is empty.');
 			return;
-		}
-		
-		//When cancel is pressed
-		if(name === null) {
+		} else if(name === null) {
 			return;
 		}
 		
@@ -595,7 +592,7 @@ $(function() {
 	//PCA (line) and PCAGC (great circle)
 	$('#PCA, #PCAGC').click( function (event) {
 	
-		//Check if tc flag or anchor flag is checked
+		//Check if tilt correction flag or anchor flag is checked
 		var tcFlag = $('#tcFlag').prop('checked');
 		var anchor = $('#anchor').prop('checked');
 		var specFlag = $('#specFlag').prop('checked');
@@ -610,6 +607,7 @@ $(function() {
 			return;
 		}
 		
+		//Get the coordinate system
 		var coordType = tcFlag ? 'TECT' : 'GEO';
 		
 		//Type is GC or DIR
@@ -617,7 +615,7 @@ $(function() {
 		
 		//Capture specimen in samples variable
 		var sample = getSampleIndex();
-		var samples = data[sample];
+		var sampleData = data[sample];
 	
 		//Draw the charts
 		zijderveld(data[sample]);
@@ -634,12 +632,12 @@ $(function() {
 		var steps = new Array();
 		
 		//Loop over all data points and push to data bucket (if anchored, mirror all points)
-		for(var i = 0; i < samples.data.length; i++) {
-			if(samples.data[i].include) {
-				includedSteps.push([samples.data[i].x, samples.data[i].y, samples.data[i].z]);
-				steps.push(samples.data[i].step);
+		for(var i = 0; i < sampleData.data.length; i++) {
+			if(sampleData.data[i].include) {
+				includedSteps.push([sampleData.data[i].x, sampleData.data[i].y, sampleData.data[i].z]);
+				steps.push(sampleData.data[i].step);
 				if(anchor) {
-					includedSteps.push([-samples.data[i].x, -samples.data[i].y, -samples.data[i].z]);	//If anchored, mirror data points (this breaks the MAD calculation)
+					includedSteps.push([-sampleData.data[i].x, -sampleData.data[i].y, -sampleData.data[i].z]);	//If anchored, mirror data points (this breaks the MAD calculation)
 				}
 			}
 		}
@@ -654,11 +652,11 @@ $(function() {
 		}
 		
 		//For specimen get core parameters 
-		var cBed = samples.coreAzi;
-		var cDip = samples.coreDip - 90;
+		var cBed = sampleData.coreAzi;
+		var cDip = sampleData.coreDip - 90;
 		var Nrec = includedSteps.length;
-		var bedStrike = samples.bedStrike;
-		var bedDip = samples.bedDip;
+		var bedStrike = sampleData.bedStrike;
+		var bedDip = sampleData.bedDip;
 		
 		//Return if user has < 2 data points disabled
 		if(Nrec < 2) {
@@ -773,7 +771,6 @@ $(function() {
 			dot = 1;
 		}
 		
-
 		if(dot <= 0) {
 			for(var i = 0; i < 3; i++) {
 				v1[i] = -v1[i];
@@ -799,7 +796,7 @@ $(function() {
 			
 			//Construct data object with relevant information
 			//Write found principle component to specimen meta-data
-			samples.interpreted = true;
+			sampleData.interpreted = true;
 			var dataObj = {
 				'dec': eigenDirection.dec,
 				'inc': eigenDirection.inc,
@@ -838,7 +835,7 @@ $(function() {
 			}
 			
 			//Write meta-data
-			samples.interpreted = true;
+			sampleData.interpreted = true;
 			var dataObj = {
 				'dec': eigenDirection.dec,
 				'inc': eigenDirection.inc,
@@ -858,8 +855,8 @@ $(function() {
 		
 		//Check if component already exists
 		var sanitized = true;
-		for(var i = 0; i < samples[coordType].length; i++) {
-			if(JSON.stringify(dataObj) === JSON.stringify(samples[coordType][i])) {
+		for(var i = 0; i < sampleData[coordType].length; i++) {
+			if(JSON.stringify(dataObj) === JSON.stringify(sampleData[coordType][i])) {
 				if(tcFlag) {
 					notify('failure', 'This direction has already been interpreted.');
 				}
@@ -867,7 +864,7 @@ $(function() {
 			}
 		}
 		if(sanitized) {
-			samples[coordType].push(dataObj);
+			sampleData[coordType].push(dataObj);
 		}
 		
 		//Only redraw once (this function is automatically called in both Geographic and Tectonic coordinates)
