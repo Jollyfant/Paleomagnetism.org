@@ -632,21 +632,12 @@ $(function() {
 		var steps = new Array();
 		
 		//Loop over all data points and push to data bucket (if anchored, mirror all points)
-<<<<<<< HEAD
 		for(var i = 0; i < sampleData.data.length; i++) {
 			if(sampleData.data[i].include) {
 				includedSteps.push([sampleData.data[i].x, sampleData.data[i].y, sampleData.data[i].z]);
 				steps.push(sampleData.data[i].step);
 				if(anchor) {
 					includedSteps.push([-sampleData.data[i].x, -sampleData.data[i].y, -sampleData.data[i].z]);	//If anchored, mirror data points (this breaks the MAD calculation)
-=======
-		for(var i = 0; i < samples.data.length; i++) {
-			if(samples.data[i].include) {
-				includedSteps.push([samples.data[i].x, samples.data[i].y, samples.data[i].z]);
-				steps.push(samples.data[i].step);
-				if(anchor) {
-					includedSteps.push([-samples.data[i].x, -samples.data[i].y, -samples.data[i].z]);	//If anchored, mirror data points (this breaks the MAD calculation)
->>>>>>> 415b46d668558ab73ae5a316a137559dfd35453b
 				}
 			}
 		}
@@ -661,19 +652,11 @@ $(function() {
 		}
 		
 		//For specimen get core parameters 
-<<<<<<< HEAD
 		var cBed = sampleData.coreAzi;
 		var cDip = sampleData.coreDip - 90;
 		var Nrec = includedSteps.length;
 		var bedStrike = sampleData.bedStrike;
 		var bedDip = sampleData.bedDip;
-=======
-		var cBed = samples.coreAzi;
-		var cDip = samples.coreDip - 90;
-		var Nrec = includedSteps.length;
-		var bedStrike = samples.bedStrike;
-		var bedDip = samples.bedDip;
->>>>>>> 415b46d668558ab73ae5a316a137559dfd35453b
 		
 		//Return if user has < 2 data points disabled
 		if(Nrec < 2) {
@@ -813,11 +796,7 @@ $(function() {
 			
 			//Construct data object with relevant information
 			//Write found principle component to specimen meta-data
-<<<<<<< HEAD
 			sampleData.interpreted = true;
-=======
-			samples.interpreted = true;
->>>>>>> 415b46d668558ab73ae5a316a137559dfd35453b
 			var dataObj = {
 				'dec': eigenDirection.dec,
 				'inc': eigenDirection.inc,
@@ -856,11 +835,7 @@ $(function() {
 			}
 			
 			//Write meta-data
-<<<<<<< HEAD
 			sampleData.interpreted = true;
-=======
-			samples.interpreted = true;
->>>>>>> 415b46d668558ab73ae5a316a137559dfd35453b
 			var dataObj = {
 				'dec': eigenDirection.dec,
 				'inc': eigenDirection.inc,
@@ -880,13 +855,8 @@ $(function() {
 		
 		//Check if component already exists
 		var sanitized = true;
-<<<<<<< HEAD
 		for(var i = 0; i < sampleData[coordType].length; i++) {
 			if(JSON.stringify(dataObj) === JSON.stringify(sampleData[coordType][i])) {
-=======
-		for(var i = 0; i < samples[coordType].length; i++) {
-			if(JSON.stringify(dataObj) === JSON.stringify(samples[coordType][i])) {
->>>>>>> 415b46d668558ab73ae5a316a137559dfd35453b
 				if(tcFlag) {
 					notify('failure', 'This direction has already been interpreted.');
 				}
@@ -894,11 +864,7 @@ $(function() {
 			}
 		}
 		if(sanitized) {
-<<<<<<< HEAD
 			sampleData[coordType].push(dataObj);
-=======
-			samples[coordType].push(dataObj);
->>>>>>> 415b46d668558ab73ae5a316a137559dfd35453b
 		}
 		
 		//Only redraw once (this function is automatically called in both Geographic and Tectonic coordinates)
