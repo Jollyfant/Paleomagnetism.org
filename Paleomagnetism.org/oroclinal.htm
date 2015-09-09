@@ -38,8 +38,10 @@ applicationHasData = false;
 //Some jQuery UI initializations
 $(function() {
 
+	//Toggle whether we use variance or eigenvalue approach (not implemented)
 	$("#oroFoldtest").click( function () {
-		initializeFoldtest();
+		//initializeFoldtest();
+		varianceFoldtest();
 	});
 	
 	$("#oroFoldtest, #initializeOroclinal").button({
@@ -216,6 +218,151 @@ function plotWindRose(newDatArray, container) {
 		series: dataSeries,
     }
 	new Highcharts.Chart(chartOptions);
+}
+
+function calcCircularVariance( data ) {
+	
+	var xCoord = 0;
+	var yCoord = 0;
+	
+	for(var i = 0; i < data.length; i++) {
+		var declination = data[i][0]*rad;
+		xCoord += Math.cos(declination);
+		yCoord += Math.sin(declination);
+	}
+	xCoord = xCoord/data.length;
+	yCoord = yCoord/data.length;
+	
+	return Math.sqrt(xCoord*xCoord + yCoord*yCoord);
+}
+
+function varianceFoldtest() {
+
+	if(!applicationHasData) {
+		notify('failure', 'Found no data in the application. Please load some.');
+		return;
+	}
+	
+	//(Gaussian or Standard sampling)
+	var type = $("#sampleType2 input[type='radio']:checked").val();
+	
+	if(type === undefined) {
+		notify('failure', 'Please select a type.');
+		return;
+	}
+	
+	var nBootstraps = 1000;
+	var unfoldingMin = -50;
+	var unfoldingMax = 150;
+
+	var data = new Array();
+	var taus = new Array();
+	var untilt = new Array();
+	var bootTaus = new Array();
+	
+	//Construct our original data array that we use to show when the red line is clicked
+	for(var i = 0; i < dec.length; i++) {
+		data.push([dec[i], strike[i]]);
+	}
+	
+	//Do for the specified amount of bootstraps
+	for(var i = 0; i < nBootstraps; i++) {
+		
+		var sampleDec = new Array();
+		var sampleStrike = new Array();
+		var taus = new Array();
+		
+		//For each point, draw a random point from within the confidence interval
+		//for the first bootstrap we use the actual data
+		for(var j = 0; j < dec.length; j++) {
+			if(i > 0) {
+				sampleDec.push(getRandom(dec[j], decErr[j], type));
+				sampleStrike.push(getRandom(strike[j], strikeErr[j], type));	
+			} else {
+				sampleDec.push(dec[j]);
+				sampleStrike.push(strike[j]);
+			}
+		}
+		
+		var max = 0;
+		
+		//Unfold over range in increments of 10 degrees
+		for(var j = unfoldingMin; j <= unfoldingMax; j+=10) {	
+		
+			var tilts = new Array();
+			
+			//Do the unfolding of the declination
+			//The inclination is assumed to be 0
+			for(var k = 0; k < sampleDec.length; k++) {
+				var unfoldedDeclination = (sampleDec[k] - (sampleStrike[k]-90)*0.01*j);
+				tilts.push([unfoldedDeclination, 0]);		
+			}
+						
+			//Obtain the eigenvalues of these directions
+			var sdev = calcCircularVariance(tilts);
+			taus.push(sdev);
+			
+			if(sdev > max) {
+				max = sdev;
+				index = j
+			}
+		}
+			
+		//If we find the unfolding % that yields the highest tau we zoom in around this point and take steps of 1 deg from -9 to 9 around that point
+		//Same procedure as above only more precise
+		//Remember to carry the oldIndex
+		var oldIndex = index;
+		
+		for(var j = -9; j <= 9; j++) {
+
+			//Only if within specified minimum and maximum bounds
+			if(index + j >= unfoldingMin && index + j <= unfoldingMax) {
+			
+				tilts = new Array();
+				
+				//Do the unfolding of the declination
+				for(var k = 0; k < sampleDec.length; k++) {
+					var unfoldedDeclination = (sampleDec[k] - (sampleStrike[k]-90)*0.01*(oldIndex+j));
+					tilts.push([unfoldedDeclination, 0]);		
+				}
+						
+				//Get the principle eigenvalues for this set of untilted directions
+				var sdev = calcCircularVariance(tilts);
+	
+				//Save the maximum eigenvalue for this bootstrap and unfolding increment
+				if(sdev > max) {
+					max = sdev;
+					index = (oldIndex+j);
+				}
+				
+			}
+		}
+				
+		//Show the first 25 bootstraps and first actual data
+		if(i <= 26) {
+			bootTaus.push(taus);
+		}
+		
+		untilt.push(index);
+		
+	}
+
+	untilt.sort(function (a, b) {
+		return a > b ? 1 : a < b ? -1 : 0;
+	});
+	
+	//Get the cumulative distribution of untilting percentages
+	cdfData = new Array();
+	for(var i = 0; i < nBootstraps; i++){
+		cdfData.push([untilt[i], i/(nBootstraps-1)]);
+	}
+	
+	var lower = untilt[parseInt(0.025*nBootstraps, 10)];
+	var upper = untilt[parseInt(0.975*nBootstraps, 10)];
+	var sub = 'Don\'t forget to add a subtitle ';
+	
+	//Call the foldtest plotting function
+	grfoldtestOro ( cdfData, bootTaus, lower, upper, unfoldingMin, unfoldingMax, sub, data );
 }
 
 /*
