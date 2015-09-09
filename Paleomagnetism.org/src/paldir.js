@@ -37,7 +37,7 @@ var exportData = new Array();
  */
 function getSampleIndex() {
 
-	//Get specimen name from scoller
+	//Get specimen name from the specimen scroller
 	//Return the index@integer of the specimen
 	var name = $("#specimens").val(); 
 	if(name != null) {
@@ -46,10 +46,14 @@ function getSampleIndex() {
 	
 }
 
+/* 
+ * FUNCTION getSelectedStep
+ * Description: gets the selected step number as integer from the step list
+ * Input: NULL
+ * Output: integer of selected step (from 0 to N steps)
+ */
 var getSelectedStep = function () {
-	
 	return parseInt($(liSelected).index() - 1);
-	
 }
 
 /*
@@ -405,8 +409,8 @@ $(function() {
 			default: return; // Exit this handler for other keys
 			
 		}
-		
-		//After pressing a key set the hover radius for the selected point
+
+		//Save the application
 		setStorage();
 		
 	});
@@ -417,7 +421,7 @@ $(function() {
 		$("#saveInterpretation").text('Save Interpreted Directions and fitted Great Circles');
 	});
 	
-	//Function to save interpretations to the statistics portal
+	//Function to save interpretations to the statistics portal through localStorage
 	$("#saveInterpretation").click( function () {
 	
 		//Check if localStorage is supported
@@ -621,19 +625,21 @@ $(function() {
 		
 		var fdata = new Array();
 		var X = new Array();
-		var cm = [0, 0, 0]; //Vector for center of mass
+		
+		//Vector for center of mass
+		var cm = [0, 0, 0];
 
 		//Data bucket
-		var dete = new Array();
+		var includedSteps = new Array();
 		var steps = new Array();
 		
 		//Loop over all data points and push to data bucket (if anchored, mirror all points)
 		for(var i = 0; i < samples.data.length; i++) {
 			if(samples.data[i].include) {
-				dete.push([samples.data[i].x, samples.data[i].y, samples.data[i].z]);
+				includedSteps.push([samples.data[i].x, samples.data[i].y, samples.data[i].z]);
 				steps.push(samples.data[i].step);
 				if(anchor) {
-					dete.push([-samples.data[i].x, -samples.data[i].y, -samples.data[i].z]);	//If anchored, mirror data points (this breaks the MAD calculation)
+					includedSteps.push([-samples.data[i].x, -samples.data[i].y, -samples.data[i].z]);	//If anchored, mirror data points (this breaks the MAD calculation)
 				}
 			}
 		}
@@ -641,7 +647,7 @@ $(function() {
 		//Wish to include the origin, use this flag
 		if(!anchor) {
 			if(includeOrigin) {
-				dete.push([0, 0, 0]);
+				includedSteps.push([0, 0, 0]);
 			}
 		} else {
 			includeOrigin = false;
@@ -650,7 +656,7 @@ $(function() {
 		//For specimen get core parameters 
 		var cBed = samples.coreAzi;
 		var cDip = samples.coreDip - 90;
-		var Nrec = dete.length;
+		var Nrec = includedSteps.length;
 		var bedStrike = samples.bedStrike;
 		var bedDip = samples.bedDip;
 		
@@ -668,18 +674,18 @@ $(function() {
 
 			//Rotate specimen to geographic coordinates
 			//If we are including the origin (not forcing) we use a point 0, 0, 0 which has no vector, so give 0, 0, 0 for dec, inc, R
-			if(dete[i][0] === 0 && dete[i][1] === 0 && dete[i][2] === 0) {
-				var rotated1 = {'dec': 0, 'inc': 0 , 'R': 0}
+			if(includedSteps[i][0] === 0 && includedSteps[i][1] === 0 && includedSteps[i][2] === 0) {
+				var rotatedGeographic = {'dec': 0, 'inc': 0 , 'R': 0}
 			} else {
-				var rotated1 = rotateGeographic(cBed, cDip, dete[i]);
+				var rotatedGeographic = rotateGeographic(cBed, cDip, includedSteps[i]);
 			}
 			
 			//if tc is selected, rotate to tectonic coordinates
 			if(tcFlag) {
-				var rotated = rotateTectonic(bedStrike+90, bedDip+90, [rotated1.dec, rotated1.inc, 0, 0, 0]);
-				var dataD = [rotated[0], rotated[1], rotated1.R];
+				var rotated = rotateTectonic(bedStrike+90, bedDip+90, [rotatedGeographic.dec, rotatedGeographic.inc, 0, 0, 0]);
+				var dataD = [rotated[0], rotated[1], rotatedGeographic.R];
 			} else {
-				var dataD = [rotated1.dec, rotated1.inc, rotated1.R];
+				var dataD = [rotatedGeographic.dec, rotatedGeographic.inc, rotatedGeographic.R];
 			}
 			
 			var coords = cart(dataD[0], dataD[1], dataD[2]);
@@ -688,14 +694,13 @@ $(function() {
 			
 		}
 		
-		/* Preparation for orientation matrix A.3.5, Lisa Tauxe book */
+		//Preparation for orientation matrix A.3.5, Lisa Tauxe book
 		//Calculate the coordinates of the “center of mass” (x) of the data points: 
 		for(var i = 0; i < X.length; i++) {
 			for( var j = 0; j < 3; j++) {
 				cm[j] += X[i][j]/Nrec
 			}
 		}
-		var ker = new dir(cm[0], cm[1], cm[2]);
 		
 		//Transform the origin of the data cluster to the center of mass:
 		for(var i = 0; i < X.length; i++) {
@@ -706,16 +711,16 @@ $(function() {
 		
 		//Prepare k array of x, y, z coordinates for orientation matrix
 		//TMatrix subroutine takes this as input.
-		var k = [];
+		var k = new Array();
 		for(var i = 0; i < X.length; i++) {
-			k.push({x: X[i][0], y: X[i][1], z: X[i][2]});
+			k.push({'x': X[i][0], 'y': X[i][1], 'z': X[i][2]});
 		}
 		
-		//Get principle components from TMatrix
+		//Get principle components from TMatrix through numeric.js library
 		var eig = numeric.eig(TMatrix(k)); 
 
 		//Eigenvalues to unit length
-		tr = 0;
+		var tr = 0;
 		for(var i = 0; i < 3; i++) {
 			tr += eig.lambda.x[i];
 		}
@@ -786,19 +791,18 @@ $(function() {
 			var setType = 'dir';
 			
 			//Get the dec/inc of the maximum eigenvector stored in v1
-			var wat = new dir(v1[0], v1[1], v1[2]);
-			
-			//Write found principle component to specimen meta-data
-			samples.interpreted = true;
+			var eigenDirection = new dir(v1[0], v1[1], v1[2]);
 			
 			if(isNaN(MAD)) {
 				MAD = 0;
 			}
 			
 			//Construct data object with relevant information
+			//Write found principle component to specimen meta-data
+			samples.interpreted = true;
 			var dataObj = {
-				'dec': wat.dec,
-				'inc': wat.inc,
+				'dec': eigenDirection.dec,
+				'inc': eigenDirection.inc,
 				'MAD': MAD,
 				'cm': cm,
 				'intensity': intensity,
@@ -811,27 +815,12 @@ $(function() {
 				'maxStep': steps[steps.length-1],
 				'steps': steps,
 			};
-			
-			//Check if component already exists
-			var sanitized = true;
-			for(var i = 0; i < samples[coordType].length; i++) {
-				if(JSON.stringify(dataObj) === JSON.stringify(samples[coordType][i])) {
-					if(tcFlag) {	
-						notify('failure', 'This direction has already been interpreted.');
-					}
-					var sanitized = false;
-				}
-			}
-			
-			if(sanitized) {
-				samples[coordType].push(dataObj);
-			}
-			
+
 		//For great circles we find direction of tau3 (which serves as the pole to the plane spanned by tau1, tau2)	
 		} else if ( typeFit == 'PCAGC') {
 		
 			//Minimum eigenvector (direction of tau3);
-			var wat = new dir(v3[0], v3[1], v3[2]);
+			var eigenDirection = new dir(v3[0], v3[1], v3[2]);
 			
 			//Calculation of MAD
 			var s1 = Math.sqrt((tau[2] / tau[1]) + (tau[2] / tau[0]));
@@ -839,9 +828,9 @@ $(function() {
 			var setType = 'GC';
 			
 			//Per definition we use the negative pole of the plane
-			if(wat.inc > 0) {
-				wat.dec = (wat.dec+180)%360;
-				wat.inc = -wat.inc;
+			if(eigenDirection.inc > 0) {
+				eigenDirection.dec = (eigenDirection.dec+180)%360;
+				eigenDirection.inc = -eigenDirection.inc;
 			}
 			
 			if(isNaN(MAD)) {
@@ -850,9 +839,9 @@ $(function() {
 			
 			//Write meta-data
 			samples.interpreted = true;
-			samples[coordType].push({
-				'dec': wat.dec,
-				'inc': wat.inc,
+			var dataObj = {
+				'dec': eigenDirection.dec,
+				'inc': eigenDirection.inc,
 				'MAD': MAD,
 				'cm': cm,
 				'intensity': intensity,
@@ -864,20 +853,30 @@ $(function() {
 				'minStep': steps[0],
 				'maxStep': steps[steps.length-1],
 				'steps': steps,
-			});
-			
-			//Draw great circle, MAD ellipse, and tau3 principle comp.
-
+			};
 		}
-
+		
+		//Check if component already exists
+		var sanitized = true;
+		for(var i = 0; i < samples[coordType].length; i++) {
+			if(JSON.stringify(dataObj) === JSON.stringify(samples[coordType][i])) {
+				if(tcFlag) {
+					notify('failure', 'This direction has already been interpreted.');
+				}
+				var sanitized = false;
+			}
+		}
+		if(sanitized) {
+			samples[coordType].push(dataObj);
+		}
+		
 		//Only redraw once (this function is automatically called in both Geographic and Tectonic coordinates)
+		//So reduce to just firing when interpreting in Tectonic coordinates
 		if(tcFlag) {
 			drawInterpretations( sample );
 			setHoverRadius();
 		}
-		
 	});
-
 	
 	/*
 	 * FUNCTION clrInterpretation.click()
@@ -1232,7 +1231,7 @@ function fitCirclesToDirections() {
 	var k = (2*nPoints + nCircles - 2)/(2*(nPoints + nCircles - R));
 	var a95 = ((nPrime - 1)/k) * (Math.pow(20, (1/(nPrime - 1))) - 1);
 	var am95 = Math.acos(1 - a95/R)/rad;
-	var t95 = Math.acos(1 - a95)/rad
+	var t95 = Math.acos(1 - a95)/rad;
 	
 	//Standard Fisher parameters (k, a95);
 	var k = (nTotal - 1) / (nTotal - R);
@@ -1243,11 +1242,7 @@ function fitCirclesToDirections() {
 	var ellipse2 = getPlaneData({'dec': newMean.dec, 'inc': newMean.inc}, 'MAD', t95);
 
 	//Get color for mean direction (if neg make white)
-	if(newMean.inc < 0) {
-		var color = 'white'
-	} else {
-		var color = 'rgb(119, 191, 152)'
-	}
+	var color = (newMean.inc < 0) ? 'white' : 'rgb(119, 191, 152)';
 	
 	//Set up data for Highcharts:
 	//Directions, Fitted directions, Mean direction, Great circles, Confidence Ellipses..
@@ -1382,14 +1377,14 @@ function getPlaneData ( dirIn, type, MAD, signInc ) {
 	var mDec = dirIn.dec;
 	var mInc = dirIn.inc;
 	
-	if(signInc != undefined) {
+	if(signInc !== undefined) {
 		if(signInc < 0) {
 			mDec += 180;
 		}
 	}
 	
-	var mySeries = [];
-	var mySeries2 = [];
+	var mySeries = new Array;
+	var mySeries2 = new Array();
 	
 	var incSign = (Math.abs(mInc)/mInc); // 1 or -1 depending on inclination polarity
 	
@@ -1467,21 +1462,23 @@ function getPlaneData ( dirIn, type, MAD, signInc ) {
 
 		var psi = ((i)*Math.PI/iPoint);
 		
+		//resulting coordinate on unit-sphere for great circle is always 0 (before rotation)
+		//For small circles, the resulting coordinate is 1 - x - y 
 		if(type == 'GC') {
 			v[1] = Math.cos(psi);
 			v[2] = Math.sin(psi);
-			v[0] = 0 //resulting coordinate on unit-sphere for great circle is always 0 (before rotation)
+			v[0] = 0 
 		} else if (type == 'MAD') {
 			v[1] = Math.sin(MAD*rad)*Math.cos(psi);
 			v[2] = Math.sin(MAD*rad)*Math.sin(psi);
-			v[0] = Math.sqrt( 1 - Math.pow(v[1],2) - Math.pow(v[2],2) ); //resulting coordinate on unit-sphere.
+			v[0] = Math.sqrt( 1 - Math.pow(v[1],2) - Math.pow(v[2],2) ); 
 		}
 
  		// Matrix multiplication V'j = RjiVi (sum i);	
 		var eli = [0,0,0];
-		for(var j=0;j<3;j++){
-			for(var k=0;k<3;k++){ 
-				eli[j]=eli[j] + R[j][k]*v[k];
+		for(var j = 0; j < 3; j++){
+			for(var k = 0; k < 3; k++){ 
+				eli[j] = eli[j] + R[j][k]*v[k];
 			}
 		}
 
@@ -1915,8 +1912,8 @@ var rotateGeographic = function(azi, pl, data){
 	var azi = azi*rad;
 	var pl = pl*rad;
 	
-	//Vector k with x, y, z coordinates
-	var k = [data[0], data[1], data[2]];
+	//Vector v with x, y, z coordinates
+	var v = [data[0], data[1], data[2]];
 
 	//Rotation matrix for drilling correction
 	//Lisa Tauxe, A.13
@@ -1926,18 +1923,18 @@ var rotateGeographic = function(azi, pl, data){
 		[Math.sin(pl), 0, Math.cos(pl)]
 	];
 
-	//Empty v vector to catch rotated directions
-	var v = [0, 0, 0];
+	//Empty vP vector to catch rotated directions
+	var vP = [0, 0, 0];
 			
 	//Do matrix vector multiplication		
 	for(var i = 0; i < 3; i++) {
 		for(var j = 0; j < 3; j++) {
-			v[i] += R[i][j]*k[j];
+			vP[i] += R[i][j] * v[j];
 		}
 	}
 	
 	//Return a direction with the rotated vector
-	return dir(v[0], v[1], v[2]);
+	return dir(vP[0], vP[1], vP[2]);
 }
 
 /*
@@ -1953,19 +1950,13 @@ var rotateTectonic = function(str, he, data){
 	var dec = data[0];
 	var inc = data[1];
 	
-	//This function rotates vectors in the data block where str/he is the dec/inc for a vector that will face up
-	//We take the declination of the mean VGP and rotate all CCW vectors by this angle.
-	//Then we correct for the inclination by applying a rotation matrix.
-	//Lastly, we rotate back over the same declination angle.
-	//Alternatively, we could apply a single rotation about an "arbitrary" axis, but this method is easier to follow!
-	//See Lisa Tauxe, book: Sections: 9.3 + A.13
-
-	var theta = (str)*rad; //angle with North is equal to the declination of the mean vector.
-	var phi = (90 - he)*rad; //phi ranges between 0 (up) and 180 (down).
+	//angle with North is equal to the declination of the mean vector.
+	var theta = (str)*rad; 
+	var phi = (90 - he)*rad; 
 
 	//Rotate all directions so the mean VGP faces north.
-	//We can simply substract the angle with North from all directions because the inclination will not change.
-	var coords = cart(dec-str, inc);
+	//We can simply subtract the angle with North from all directions because the inclination will not change.
+	var coords = cart(dec - str, inc);
 
 	//Now we wish to tilt the mean VGP to an inclination of 90. Now we cannot simply add this angle to all directions, because besides the inclinations, the declinations changes too.
 	//Therefore, we construct a rotation matrix and rotate around the yAxis with angle phi (90 - mInc);
@@ -1985,18 +1976,18 @@ var rotateTectonic = function(str, he, data){
 	R[2][2] = Math.cos(phi)
 
 	//Directions to Cartesian coordinates
-	var v = [coords.x, coords.y , coords.z]	
+	var v = [coords.x, coords.y , coords.z];
 
 	//v' becomes the coordinate vector after rotation.
 	var vP = [0,0,0];
-	for(var j=0;j<3;j++){
-		for(var k=0;k<3;k++){ 
-      		vP[j]=vP[j] + R[j][k]*v[k]; //V'j = Rjk*Vk (sum over k);
+	for(var j = 0 ; j < 3; j++){
+		for(var k = 0; k < 3; k++){ 
+      		vP[j] = vP[j] + R[j][k]*v[k]; //V'j = Rjk*Vk (sum over k);
 		}
 	}
 
 	//Find new direction from the rotated Cartesian coordinates.
-	var temp = dir(vP[0],vP[1],vP[2]);
+	var temp = dir(vP[0], vP[1], vP[2]);
 
 	//Similarly to the first step, as the final step we rotate the directions back to their initial declinations. Keep declination within bounds.
 	temp.dec = (temp.dec + str)%360;
@@ -2093,14 +2084,14 @@ function zijderveld ( samples ) {
 	var maximumX = Math.max.apply(Math, valuesX);
 	var maximumY = Math.max.apply(Math, valuesY);
 	
-   var chartOptions = {
-		chart: {
-			animation: false,
-			zoomType: 'xy',
-			id: 'Zijderveld',
-			renderTo: 'zijderveldPlot',
-			events: {			//Work around to resize markers on exporting from radius 2 (tiny preview) to 4 (normalized)
-                load: function () {
+    var chartOptions = {
+		'chart': {
+			'animation': false,
+			'zoomType': 'xy',
+			'id': 'Zijderveld',
+			'renderTo': 'zijderveldPlot',
+			'events': {			//Work around to resize markers on exporting from radius 2 (tiny preview) to 4 (normalized)
+                'load': function () {
                     if (this.options.chart.forExport) {
 						for(var i = 0; i < this.series[0].data.length; i++) {
 							this.series[2].data[i].update({marker: {radius: 2}}, false);
@@ -2111,11 +2102,11 @@ function zijderveld ( samples ) {
 				}
 			}
 		},
-		title: {
-			text: 'Zijderveld Diagram (' + samples.name + ')'
+		'title': {
+			'text': 'Zijderveld Diagram (' + samples.name + ')'
 		},
-		tooltip: {
-			formatter: function () {
+		'tooltip': {
+			'formatter': function () {
 				if(this.series.name == 'Declination') {
 					return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>x-coordinate: </b>' + this.x.toFixed(1) + '<br> <b>y-coordinate: </b>' + this.y.toFixed(1);
 				} else if ( this.series.name == 'Inclination') {
@@ -2123,110 +2114,109 @@ function zijderveld ( samples ) {
 				}
 			}
 		},
-		subtitle: {
-			text: '<b>' + coordinateInformation + '</b><br>' + projectionInformation
+		'subtitle': {
+			'text': '<b>' + coordinateInformation + '</b><br>' + projectionInformation
 		},
-        xAxis: {
-            gridLineWidth: 0,
-            lineColor: 'black',
-            crossing: 0,
-			min: -maximumX,
-			max: maximumX,
-			tickWidth: 0,
-            opposite: true,
-			title: {
-                enabled: false
+        'xAxis': {
+            'gridLineWidth': 0,
+            'lineColor': 'black',
+            'crossing': 0,
+			'min': -maximumX,
+			'max': maximumX,
+			'tickWidth': 0,
+            'opposite': true,
+			'title': {
+                'enabled': false
             },
-			labels: {
-				enabled: false
+			'labels': {
+				'enabled': false
 			}
         },
-        yAxis: {
-			min: -maximumY,
-			max: maximumY,
-		    gridLineWidth: 0,
-			lineWidth: 1,
-			minRange: 10,
-            lineColor: 'black',
-            crossing: 0,
-            title: {
-                enabled: false
+        'yAxis': {
+			'min': -maximumY,
+			'max': maximumY,
+		    'gridLineWidth': 0,
+			'lineWidth': 1,
+			'minRange': 10,
+            'lineColor': 'black',
+            'crossing': 0,
+            'title': {
+                'enabled': false
             },
-			labels: {
-				enabled: false
+			'labels': {
+				'enabled': false
 			}
         },
-		plotOptions: {
-			series: {
-				animation: false,
-				dataLabels: {
-					color: 'grey',
-                    enabled: enableLabels,
-					style: {
-						fontSize: '10px'
+		'plotOptions': {
+			'series': {
+				'animation': false,
+				'dataLabels': {
+					'color': 'grey',
+                    'enabled': enableLabels,
+					'style': {
+						'fontSize': '10px'
 					},
-					formatter: function () {
+					'formatter': function () {
 						return this.point.step;
 					}
 				},
 			},
-			line: {
-				lineWidth: 1,
+			'line': {
+				'lineWidth': 1,
 			}
 		},
-		credits: {
-			enabled: true,
-			text: "Paleomagnetism.org (Zijderveld Diagram)",
-			href: ''
+		'credits': {
+			'enabled': true,
+			'text': "Paleomagnetism.org (Zijderveld Diagram)",
+			'href': ''
 		},
-        series: [{ //Declination Series
-			type: 'line',
-			linkedTo: 'Declination',
-			name: 'Declination', 
-			enableMouseTracking: false,
-			data: decDat,
-			color: 'rgb(119, 152, 191)',
-			marker: {
-				enabled: false
+        'series': [{ //Declination Series
+			'type': 'line',
+			'linkedTo': 'Declination',
+			'name': 'Declination', 
+			'enableMouseTracking': false,
+			'data': decDat,
+			'color': 'rgb(119, 152, 191)',
+			'marker': {
+				'enabled': false
 			}
 		},{	//Inclination Series
-			name: 'Inclination',
-			type: 'line',
-			linkedTo: 'Inclination',
-			enableMouseTracking: false,
-			data: incDat,
-			color: 'rgb(119, 152, 191)',
-			marker: {
-				enabled: false
+			'name': 'Inclination',
+			'type': 'line',
+			'linkedTo': 'Inclination',
+			'enableMouseTracking': false,
+			'data': incDat,
+			'color': 'rgb(119, 152, 191)',
+			'marker': {
+				'enabled': false
 			}
 		},{ //Declination Series
-			type: 'scatter',
-			id: 'Declination',
-			name: 'Declination', 
-			data: decDat,
-			color: 'rgb(119, 152, 191)',
-			marker: {
-				lineWidth: 1,
-				symbol: 'circle',
-				radius: 2,
-				lineColor: 'rgb(119, 152, 191)',
-				fillColor: 'rgb(119, 152, 191)'
+			'type': 'scatter',
+			'id': 'Declination',
+			'name': 'Declination', 
+			'data': decDat,
+			'color': 'rgb(119, 152, 191)',
+			'marker': {
+				'lineWidth': 1,
+				'symbol': 'circle',
+				'radius': 2,
+				'lineColor': 'rgb(119, 152, 191)',
+				'fillColor': 'rgb(119, 152, 191)'
 			}
-		},{	//Inclination Series
-			type: 'scatter',
-			id: 'Inclination',
-			name: 'Inclination',
-			data: incDat,
-			color: 'rgb(119, 152, 191)',
-			marker: {
-				symbol: 'circle',
-				lineWidth: 1,
-				radius: 2,
-				lineColor: 'rgb(119, 152, 191)',
-				fillColor: 'white'
+		}, {	//Inclination Series
+			'type': 'scatter',
+			'id': 'Inclination',
+			'name': 'Inclination',
+			'data': incDat,
+			'color': 'rgb(119, 152, 191)',
+			'marker': {
+				'symbol': 'circle',
+				'lineWidth': 1,
+				'radius': 2,
+				'lineColor': 'rgb(119, 152, 191)',
+				'fillColor': 'white'
 			}
 		}]
-    
     }
 	new Highcharts.Chart(chartOptions); //Call Highcharts constructor
 }
@@ -2259,12 +2249,12 @@ function intensity ( sample ) {
 	}
 	
 	var chartOptions = {
-		chart: {
-			animation: false,
-		    renderTo: 'intensityPlot', //Container that the chart is rendered to.
-			id: 'intensity',
-			events: {
-                load: function () {
+		'chart': {
+			'animation': false,
+		    'renderTo': 'intensityPlot', //Container that the chart is rendered to.
+			'id': 'intensity',
+			'events': {
+                'load': function () {
                     if (this.options.chart.forExport) {
 					for(var i = 0; i < this.series[0].data.length; i++) {
 							this.series[0].data[i].update({marker: {radius: 4}}, false);
@@ -2274,49 +2264,47 @@ function intensity ( sample ) {
                  }
 			}
 		},
-		title: {
-			text: 'Intensity Diagram (' + sample.name + ')'
+		'title': {
+			'text': 'Intensity Diagram (' + sample.name + ')'
 		},
-        yAxis: {
-	        title: {
-                text: 'Intensity (A/m)'
+        'yAxis': {
+	        'title': {
+                'text': 'Intensity (A/m)'
             },		
         },
-		tooltip: {
-			formatter: function () {
+		'tooltip': {
+			'formatter': function () {
 				return '<b>Demagnetization Step: </b>' + this.x + '<br> <b>Intensity </b>' + this.y.toFixed(1)
 			}
 		},
-        xAxis: {
-			categories: categories,
-            title: {
-                text: 'Demagnetization steps'
+        'xAxis': {
+			'categories': categories,
+            'title': {
+                'text': 'Demagnetization steps'
             },
         },
-        legend: {
-            layout: 'vertical',
-            align: 'right',
-            verticalAlign: 'middle',
-            borderWidth: 0
+        'legend': {
+            'layout': 'vertical',
+            'align': 'right',
+            'verticalAlign': 'middle',
+            'borderWidth': 0
         },
-		credits: {
-			enabled: true,
-			text: "Paleomagnetism.org (Intensity Diagram)",
-			href: ''
+		'credits': {
+			'enabled': true,
+			'text': "Paleomagnetism.org (Intensity Diagram)",
+			'href': ''
 		},
-		plotOptions: { 
-			series : {
-				animation: false,
+		'plotOptions': { 
+			'series' : {
+				'animation': false,
 			}
        	},
-        series: [{
-            name: sample.name,
-            data: dataSeries
+        'series': [{
+            'name': sample.name,
+            'data': dataSeries
         }]
     }
-	
 	new Highcharts.Chart(chartOptions);
-	
 }
 
 /* 
@@ -3367,34 +3355,33 @@ function plotInterpretations() {
 	var plotDataDir = [];
 	var plotDataCircle = [];
 	var plotDataCircle2 = [];
-	var nCircles = 0;
-	var nPoints = 0;
+
 	var dataFisher = [];
 	var circlePoles = [];
 	
 	var coordType =  $("#coordinates input[type='radio']:checked").val();
+	var coordinateNice = (coordType == 'GEO') ? 'Geographic Coordinates' : 'Tectonic Coordinates';
+
+	var nCircles = 0;
+	var nPoints = 0;
 	
-	if(coordType == 'GEO') {
-		var coordinateNice = 'Geographic Coordinates';
-	} else if(coordType == 'TECT') {
-		var coordinateNice = 'Tectonic Coordinates';
-	}
-	
-	//Loop over all specimens
+	//Loop over all interpreted specimens
 	for(var i = 0; i < data.length; i++) {
-		if(data[i].interpreted) { //Only if interpreted
+		if(data[i].interpreted) { 
 			for(var j = 0; j < data[i][coordType].length; j++) {
+			
 				var dec = data[i][coordType][j].dec;
 				var inc = data[i][coordType][j].inc;
 				var sample = data[i].name;
+				var color = (inc < 0) ? 'white' : 'rgb(119, 152, 191)';
+				
+				//This interpreted direction is a point and not a pole
 				if(data[i][coordType][j].type == 'dir') {
+				
 					nPoints++;
 					dataFisher.push([dec, inc]);
-					if(inc < 0) {
-						color = 'white';
-					} else {
-						color = 'rgb(119, 152, 191)';
-					}
+
+					//Push to Highcharts formatted data array
 					plotDataDir.push({
 						'x': dec, 
 						'sample': sample,
@@ -3406,8 +3393,11 @@ function plotInterpretations() {
 							'lineWidth' : 1,
 						}
 					});
+					
 				} else if (data[i][coordType][j].type == 'GC') {
+				
 					nCircles++;
+					
 					var k = getPlaneData({'dec': dec, 'inc': inc}, 'GC');
 					plotDataCircle = plotDataCircle.concat(k.one);
 					plotDataCircle.push({x: null, y: null});
@@ -3419,15 +3409,12 @@ function plotInterpretations() {
 		}
 	}
 
+	//Get the fisher parameters for the set points and request the 95% confidence Fisher ellipse
 	var parameters = new fisher(dataFisher, 'dir', 'full');
-	var ellipse = getPlaneData({'dec': parameters.mDec, 'inc': parameters.mInc}, 'MAD', parameters.a95)
+	var ellipse = getPlaneData({'dec': parameters.mDec, 'inc': parameters.mInc}, 'MAD', parameters.a95);
 	
 	//Get fillColor (white if reversed)
-	if(parameters.mInc < 0) {
-		var color = 'white'
-	} else {
-		var color = 'rgb(119, 191, 152)'
-	}
+	var color = (parameters.mInc < 0) ? 'white' : 'rgb(119, 191, 152)';
 	
 	//Construct data for plotting
 	var plotData = [{
@@ -3456,35 +3443,35 @@ function plotInterpretations() {
 			'enabled': false
 		}	
 	}, {
-		name: 'Mean',
-		type: 'scatter',
-		data: [{'sample': 'Direction Mean', 'x': parameters.mDec, 'y': eqArea(parameters.mInc), 'inc': parameters.mInc}],
-		color: 'rgb(119, 191, 152)',
-		marker: {
-			symbol: 'circle',
-			radius: 6,
-			fillColor: color,
-			lineColor: 'rgb(119, 191, 152)',
-			lineWidth: 1
+		'name': 'Mean',
+		'type': 'scatter',
+		'data': [{'sample': 'Direction Mean', 'x': parameters.mDec, 'y': eqArea(parameters.mInc), 'inc': parameters.mInc}],
+		'color': 'rgb(119, 191, 152)',
+		'marker': {
+			'symbol': 'circle',
+			'radius': 6,
+			'fillColor': color,
+			'lineColor': 'rgb(119, 191, 152)',
+			'lineWidth': 1
 		}
 	}, {
-		name: 'Confidence',
-		id: 'confidence',
-		type: 'line',
-		color: 'red',
-		enableMouseTracking: false,
-		data: ellipse.two,
-		marker: {
-			enabled: false
+		'name': 'α95 Confidence Interval',
+		'id': 'confidence',
+		'type': 'line',
+		'color': 'red',
+		'enableMouseTracking': false,
+		'data': ellipse.two,
+		'marker': {
+			'enabled': false
 		}
 	}, {
-		linkedTo: 'confidence',
-		type: 'line',
-		color: 'red',
-		enableMouseTracking: false,
-		data: ellipse.one,
-		marker: {
-			enabled: false
+		'linkedTo': 'confidence',
+		'type': 'line',
+		'color': 'red',
+		'enableMouseTracking': false,
+		'data': ellipse.one,
+		'marker': {
+			'enabled': false
 		}	
 	}];
 
@@ -3509,7 +3496,6 @@ function plotInterpretations() {
  * Original author: Torstein Honsi (Highcharts)
  * We use this script for the Zijderveld diagram that crosses at point (0, 0)
  */
-
 (function (H) {
     H.wrap(H.Axis.prototype, 'render', function (proceed) {
         var chart = this.chart,
@@ -3520,8 +3506,6 @@ function plotInterpretations() {
 			this.offset = otherAxis.toPixels(this.options.crossing, true);
             chart.axisOffset[this.side] = 10;
         }
-        proceed.call(this);
-        
+        proceed.call(this); 
     });
-    
 }(Highcharts));

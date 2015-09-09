@@ -556,7 +556,7 @@ var addSiteCombination = function () {
 	//Ignore rejected samples if requested
 	var data = $("#excludeRejected").prop('checked') ? sites['TEMP'].data.dir.accepted : sites['TEMP'].userInput.data;
 	
-	// If checked, reverse all samples to normal polarity
+	// If checked, reverse all samples to normal polarity	
 	if($("#reversePolarity").prop('checked')) {
 		for(var i = 0; i < data.length; i++) {
 			if(data[i][1] < 0) {
