@@ -954,11 +954,6 @@ function initialize() {
 	} else {
 		data = new Array();
 		notify('success', 'Welcome to the Paleomagnetism.org interpretation portal!');
-		setTimeout(function(){ 
-			notify('success', 'Before starting, please import some data in the advanced options tab.');
-			$("#ui-id-3").animate({"color": "white", "background-color": "rgb(191, 119, 152)"}, 2000);
-			$("#ui-id-3").animate({"color": "#7798BF", "background-color": "white"}, 2000);
-		 }, 3000);
 	}
 }
 
@@ -983,7 +978,7 @@ function fitCirclesToDirections() {
 	var pointsSet = new Array();
 	var isSet = false;
 
-	//Loop over all interpreted components
+	//Loop over all interpreted components and parse to Palfit format
 	for(var i = 0; i < data.length; i++) {
 		if(data[i].interpreted) {
 		
@@ -1005,7 +1000,7 @@ function fitCirclesToDirections() {
 					var row = [sample, 0, dec, inc, 'dir'];
 					isSet = true;
 					
-					//Highcharts data array for plotting set points
+					//Highcharts data array for plotting the set points, these can be used directly
 					pointsSet.push({
 						'x': dec,
 						'y': eqArea(inc),
@@ -1018,7 +1013,7 @@ function fitCirclesToDirections() {
 						}
 					});
 				} else if(data[i][coordType][j].type === 'GC') {
-					row = [sample, 0, dec, inc, 'gc'];	//Format used by the fitting function function that fits great circles to set points	
+					row = [sample, 0, dec, inc, 'gc'];
 				}
 				fitData.push(row);
 			}
@@ -1065,7 +1060,7 @@ function fitCirclesToDirections() {
 		} else if(fitData[i][4] === 'dir') {
 			nPoints++
 			
-			//Add Cartesian coordinates for mean			
+			//Add Cartesian coordinates for mean vector			
 			var coordinates = cart(fitData[i][2], fitData[i][3]);
 			xSum += coordinates.x, ySum += coordinates.y, zSum += coordinates.z;
 			
@@ -1087,7 +1082,7 @@ function fitCirclesToDirections() {
 	//If no set points are specified we take the anchor that is specified above under 'fake' as the mean vector
 	if(nPoints > 0) {
 		var R = Math.sqrt(xSum*xSum + ySum*ySum + zSum*zSum);
-		var newMeanVector = {'x': xSum/R, 'y': ySum/R, 'z': zSum/R};
+		var unitMeanVector = {'x': xSum/R, 'y': ySum/R, 'z': zSum/R};
 	}
 	
 	var meanVector = {'x': xSum, 'y': ySum, 'z': zSum};
@@ -1097,7 +1092,7 @@ function fitCirclesToDirections() {
 	
 	//Initially, for all circles, find the closest point on the great circle (through vClose routine) to the mean vector
 	for(var i = 0; i < nCircles; i++) {
-		var fittedCoordinates = vClose(xCircle[i], yCircle[i], zCircle[i], newMeanVector);
+		var fittedCoordinates = vClose(xCircle[i], yCircle[i], zCircle[i], unitMeanVector);
 		meanVector.x += fittedCoordinates.x, meanVector.y += fittedCoordinates.y, meanVector.z += fittedCoordinates.z;
 		fittedCircleCoordinates.push({'x': fittedCoordinates.x, 'y': fittedCoordinates.y, 'z': fittedCoordinates.z});
 	}
@@ -1107,7 +1102,7 @@ function fitCirclesToDirections() {
 	//Iterative procedure start
 	while(true) {
 		
-		var angle = new Array();
+		var angles = new Array();
 
 		//Procedure for one iteration
 		for( var i = 0; i < nCircles; i++) {
@@ -1117,17 +1112,17 @@ function fitCirclesToDirections() {
 
 			//Recalculate the the new mean vector (unit length)
 			var R = Math.sqrt(meanVector.x*meanVector.x + meanVector.y*meanVector.y + meanVector.z*meanVector.z);
-			var newMeanVector = {'x': meanVector.x/R, 'y': meanVector.y/R, 'z': meanVector.z/R};
+			var unitMeanVector = {'x': meanVector.x/R, 'y': meanVector.y/R, 'z': meanVector.z/R};
 			
 			//Calculate the new closest point for the great circle Gi to new mean vector
-			var newClose = vClose(xCircle[i], yCircle[i], zCircle[i], newMeanVector);
+			var newClose = vClose(xCircle[i], yCircle[i], zCircle[i], unitMeanVector);
 
 			//Dot product to find the angle between the newly fitted point and the old fitted point this will determine whether the procedure is broken
 			var dotProduct = newClose.x * fittedCircleCoordinates[i].x + newClose.y * fittedCircleCoordinates[i].y + newClose.z * fittedCircleCoordinates[i].z;
 			if(dotProduct > 1) {
 				dotProduct = 1;
 			}
-			angle.push(Math.acos(dotProduct)/rad);
+			angles.push(Math.acos(dotProduct)/rad);
 			
 			//Add the new closest direction back to the mean vector
 			meanVector.x += newClose.x, meanVector.y += newClose.y, meanVector.z += newClose.z;
@@ -1170,8 +1165,6 @@ function fitCirclesToDirections() {
 			'inc': direction.inc,
 			'sample': sample
 		});
-		
-		var color = (direction.inc < 0) ? 'white' : 'rgb(191, 119, 152)';
 
 		//Data array for points fitted on great circle
 		pointsCircle.push({
@@ -1180,7 +1173,7 @@ function fitCirclesToDirections() {
 			'y': eqArea(direction.inc), 
 			'inc': direction.inc,
 			'marker': {
-				'fillColor' : color,
+				'fillColor' : (direction.inc < 0) ? 'white' : 'rgb(191, 119, 152)',
 				'lineColor' : 'rgb(191, 119, 152)',
 				'lineWidth' : 1,
 			}
@@ -1212,7 +1205,7 @@ function fitCirclesToDirections() {
 		nPrime = 1.1 
 	}
 	
-	//Other Fisher parameters (McFadden & McElhinny)
+	//Other statistical parameters (McFadden & McElhinny, 1988)
 	var k = (2*nPoints + nCircles - 2)/(2*(nPoints + nCircles - R));
 	var a95 = ((nPrime - 1)/k) * (Math.pow(20, (1/(nPrime - 1))) - 1);
 	var am95 = Math.acos(1 - a95/R)/rad;
@@ -1333,7 +1326,7 @@ function fitCirclesToDirections() {
 /* 
  * FUNCTION vClose
  * Description: Calculates point (x, y, z) on great circle (xCircle, yCircle, zCircle) closest to vector V (v1, v2, v3)
- * 			  : Notation after (McFadden and McElhinny, 1988) eq. 20
+ * 			  : Notation after (McFadden and McElhinny, 1988) eq. 20 (meanVector = u, v, w)
  * Input: Cartesian Coordinates of pole to great circle and vector V
  * Output: Cartesian Coordinates of point closest to vector V
  */
@@ -1342,7 +1335,7 @@ function vClose (p, q, r, meanVector) {
 	"use strict";
 	
 	var tau = meanVector.x * p + meanVector.y * q + meanVector.z * r;
-	var rho = Math.sqrt(1 - tau*tau);
+	var rho = Math.sqrt(1 - tau * tau);
 	
 	return {
 		'x': ((meanVector.x - tau * p) / rho),
@@ -1450,11 +1443,11 @@ function getPlaneData ( dirIn, type, MAD, signInc ) {
 		
 		//resulting coordinate on unit-sphere for great circle is always 0 (before rotation)
 		//For small circles, the resulting coordinate is 1 - x - y 
-		if(type == 'GC') {
+		if(type === 'GC') {
 			v[1] = Math.cos(psi);
 			v[2] = Math.sin(psi);
 			v[0] = 0 
-		} else if (type == 'MAD') {
+		} else if (type === 'MAD') {
 			v[1] = Math.sin(MAD*rad)*Math.cos(psi);
 			v[2] = Math.sin(MAD*rad)*Math.sin(psi);
 			v[0] = Math.sqrt( 1 - Math.pow(v[1],2) - Math.pow(v[2],2) ); 
