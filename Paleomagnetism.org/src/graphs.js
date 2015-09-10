@@ -38,9 +38,7 @@
 			}
 		});
 	}
-	
 	return formattedDirections;
-	
  }
  
 /* FUNCTION eqAreaDirections
@@ -264,7 +262,7 @@ var eqAreaVGPs = function(name) {
 		'zInc'	: 0,
 		'beta'	: data.params.A95,
 		'gamma'	: data.params.A95
-	}
+	};
 	
 	var ellipse = new ellipseData(ellipseParameters, false);
 
