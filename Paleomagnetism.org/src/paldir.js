@@ -1,7 +1,7 @@
 /* PALEOMAGNETISM.ORG INTERPRETATION PORTAL
  * 
- * VERSION: ALPHA.1507
- * LAST UPDATED: 7/22/2015
+ * VERSION: ALPHA.1509
+ * LAST UPDATED: 9/10/2015
  *
  * Description: Application that allows for the interpretation of laboratory obtained demagnetization data
  * Components (great circles and directions) can be interpreted following the principle component analysis of Kirschvink, 1981
@@ -163,7 +163,6 @@ $(function() {
 		}
     });
 
-	
 	$('#input').dialog({
 		'width': 500,
 		'min-height': 100,
@@ -204,26 +203,24 @@ $(function() {
 		});
 	});
 	
-	$("#exportApplication").button({
-		icons: { primary: "ui-icon-arrowthickstop-1-s"}
+	$("#importApplication").button({
+		icons: { primary : "ui-icon-arrowthickstop-1-n"}
 	});
-	$("#exportInterpretation").button({
+	
+	$("#exportApplication, #exportInterpretation").button({
 		icons: { primary: "ui-icon-arrowthickstop-1-s"}
 	});
 
-	$("#clearStorage").button({
+	$("#clearStorage, #removeSticky").button({
 		icons: { primary: "ui-icon-trash"}
 	});
+	
 	$("#addSticky").button({
 		icons: {
 			primary: 'ui-icon-pin-s'
 		}
 	});
-	$("#removeSticky").button({
-		icons: {
-			primary: 'ui-icon-close'
-		}
-	});
+	
 	$("button:not(.ui-multiselect)").button()
 		.bind('mouseup', function() {
         $(this).blur();   
@@ -239,7 +236,6 @@ $(function() {
 	
 	$( "#coordinates" ).buttonset();
 
-	
 	$("#coordinates").change( function () {
 		plotInterpretations();
 		$("#saveInterpretation").text('Save Interpreted Directions');
@@ -979,7 +975,7 @@ function fitCirclesToDirections() {
 	
 	exportData = new Array();
 	
-	//Get coordinate reference frame; fitting great circles must be done in tectonic coordinates and geographic coordinates seperated
+	//Get coordinate reference frame; fitting great circles must be done in tectonic coordinates and geographic coordinates separated
 	var coordType = $("#coordinates input[type='radio']:checked").val();
 	var coordinateNice = coordType === 'GEO' ? 'Geographic Coordinates' : 'Tectonic Coordinates';
 	
@@ -1006,7 +1002,7 @@ function fitCirclesToDirections() {
 						'sample': sample
 					});
 					
-					var row = [sample, 0, dec, inc, 's'];
+					var row = [sample, 0, dec, inc, 'dir'];
 					isSet = true;
 					
 					//Highcharts data array for plotting set points
@@ -1022,7 +1018,7 @@ function fitCirclesToDirections() {
 						}
 					});
 				} else if(data[i][coordType][j].type === 'GC') {
-					row = [sample, 0, dec, inc, 0];	//Format used by the fitting function function that fits great circles to set points	
+					row = [sample, 0, dec, inc, 'gc'];	//Format used by the fitting function function that fits great circles to set points	
 				}
 				fitData.push(row);
 			}
@@ -1044,161 +1040,130 @@ function fitCirclesToDirections() {
 			var declination = Number(getSuggestion[0]);
 			var inclination = Number(getSuggestion[1]);
 			
-			fitData.push(['FORCED', 0, declination, inclination, 'a']);
+			fitData.push(['FORCED', 0, declination, inclination, 'fake']);
 		}
 		notify('failure', 'Adding your suggestion has failed. Breaking fitting procedure.');
 		return;
 	}
 
-	//Cartesian coordinate sums
-	var xSum = 0;
-	var ySum = 0;
-	var zSum = 0;
-	
-	var xCircle = [];
-	var yCircle = [];
-	var zCircle = [];
-	var sampleCircle = [];
-	
-	var xSp = [];
-	var ySp = [];
-	var zSp = [];
+	//@Circle is an array containing Cartesian coordinates of pole to great circle
+	var xCircle = new Array(), yCircle = new Array(), zCircle = new Array();
+	var sampleCircle = new Array();
 	
 	//Number of set points and great circles
-	var nPoints = 0;
-	var nCircles = 0;
+	var nPoints = 0, nCircles = 0;
+	var xSum = 0, ySum = 0, zSum = 0;
 	
 	//Loop over data and sort great circles from set points
 	for(var i = 0; i < fitData.length; i++) {
-		if(fitData[i][4] == 'a') { //Anchorpoint
-			var v = cart(fitData[i][2], fitData[i][3]); //Dec and Inc pair to Cartesian coordinates
-			var v1 = v.x;
-			var v2 = v.y;
-			var v3 = v.z;
-		}
-		else if(fitData[i][4] == 's') { //Setpoint
-			nPoints++ //Increment
-			var sp = cart(fitData[i][2], fitData[i][3]); //Dec and Inc pair to Cartesian coordinates
+	
+		//Fake anchoring point to start fitting of circles
+		//If there are no set-points use the fake anchor as the mean vector
+		if(fitData[i][4] === 'fake') { 
+			var anchorCoordinates = cart(fitData[i][2], fitData[i][3]);
+			var newMeanVector = {'x': anchorCoordinates.x, 'y': anchorCoordinates.y, 'z': anchorCoordinates.z};	
+		} else if(fitData[i][4] === 'dir') {
+			nPoints++
 			
-			xSp.push(sp.x);
-			ySp.push(sp.y);
-			zSp.push(sp.z);
+			//Add Cartesian coordinates for mean			
+			var coordinates = cart(fitData[i][2], fitData[i][3]);
+			xSum += coordinates.x, ySum += coordinates.y, zSum += coordinates.z;
 			
-			//Add to sums for Fisher mean
-			xSum += sp.x;
-			ySum += sp.y;
-			zSum += sp.z;
-			
-		} else if(fitData[i][4] == 0) { //Great circle
+		} else if(fitData[i][4] === 'gc') {
 			nCircles++;
-			var circle = cart(fitData[i][2], fitData[i][3]); //Dec and Inc pair to Cartesian coordinates
-
-			xCircle.push(circle.x);
-			yCircle.push(circle.y);
-			zCircle.push(circle.z);
+			
+			//Dec and inc pair to Cartesian coordinates
+			var circleCoordinates = cart(fitData[i][2], fitData[i][3]);
+			xCircle.push(circleCoordinates.x), yCircle.push(circleCoordinates.y), zCircle.push(circleCoordinates.z);
 			sampleCircle.push(fitData[i][0]);
 			
 		} else {
-			notify('failure', 'Unfamiliar type');
+			notify('failure', 'Unfamiliar fitting type; expected "fake", "dir", or "gc"');
 		}
 	}
 
-	//At least one set point
+	//At least one set point, calculate the mean coordinates to start fitting circles
+	//This v vector represents the first 'guess'
+	//If no set points are specified we take the anchor that is specified above under 'fake' as the mean vector
 	if(nPoints > 0) {
 		var R = Math.sqrt(xSum*xSum + ySum*ySum + zSum*zSum);
-		var v1 = xSum / R;
-		var v2 = ySum / R;
-		var v3 = zSum / R;
+		var newMeanVector = {'x': xSum/R, 'y': ySum/R, 'z': zSum/R};
 	}
 	
-	var u1 = xSum;
-	var u2 = ySum;
-	var u3 = zSum;
+	var meanVector = {'x': xSum, 'y': ySum, 'z': zSum};
 	
-	var uX = [];
-	var uY = [];
-	var uZ = [];
+	//Bucket to contain x, y, z coordinates of the fitted points respectively
+	var fittedCircleCoordinates = new Array();
 	
+	//Initially, for all circles, find the closest point on the great circle (through vClose routine) to the mean vector
 	for(var i = 0; i < nCircles; i++) {
-		var u = vClose(xCircle[i], yCircle[i], zCircle[i], v1, v2, v3);
-		
-		u1 += u.x;
-		u2 += u.y;
-		u3 += u.z;
-		
-		uX.push(u.x);
-		uY.push(u.y);
-		uZ.push(u.z);
+		var fittedCoordinates = vClose(xCircle[i], yCircle[i], zCircle[i], newMeanVector);
+		meanVector.x += fittedCoordinates.x, meanVector.y += fittedCoordinates.y, meanVector.z += fittedCoordinates.z;
+		fittedCircleCoordinates.push({'x': fittedCoordinates.x, 'y': fittedCoordinates.y, 'z': fittedCoordinates.z});
 	}
 
-	//Iterate to determine best agreement
 	var nIterations = 0;
-	var maxAngle = 1;
+	
+	//Iterative procedure start
+	while(true) {
+		
+		var angle = new Array();
 
-	while(maxAngle > 0.1) {
-		var angle = [];
-		nIterations++;
+		//Procedure for one iteration
 		for( var i = 0; i < nCircles; i++) {
-			u1 = u1 - uX[i];
-			u2 = u2 - uY[i];
-			u3 = u3 - uZ[i];
 			
-			R = Math.sqrt(u1*u1 + u2*u2 + u3*u3);
-			v1 = u1 / R;
-			v2 = u2 / R;
-			v3 = u3 / R;
-			
-			var doubled = vClose(xCircle[i], yCircle[i], zCircle[i], v1, v2, v3);
+			//Subtract the fitted point from the mean
+			meanVector.x -= fittedCircleCoordinates[i].x, meanVector.y -= fittedCircleCoordinates[i].y, meanVector.z -= fittedCircleCoordinates[i].z;
 
-			//Dot product to find new angle
-			var iterationAngle = doubled.x * uX[i] + doubled.y * uY[i] + doubled.z * uZ[i];
-			if(iterationAngle > 1) {
-				iterationAngle = 1; //Floating point numbers
-			}
-			angle.push(Math.acos(iterationAngle)/rad);
+			//Recalculate the the new mean vector (unit length)
+			var R = Math.sqrt(meanVector.x*meanVector.x + meanVector.y*meanVector.y + meanVector.z*meanVector.z);
+			var newMeanVector = {'x': meanVector.x/R, 'y': meanVector.y/R, 'z': meanVector.z/R};
 			
-			uX[i] = doubled.x;
-			uY[i] = doubled.y;
-			uZ[i] = doubled.z;
-			u1 += doubled.x;
-			u2 += doubled.y;
-			u3 += doubled.z;
+			//Calculate the new closest point for the great circle Gi to new mean vector
+			var newClose = vClose(xCircle[i], yCircle[i], zCircle[i], newMeanVector);
+
+			//Dot product to find the angle between the newly fitted point and the old fitted point this will determine whether the procedure is broken
+			var dotProduct = newClose.x * fittedCircleCoordinates[i].x + newClose.y * fittedCircleCoordinates[i].y + newClose.z * fittedCircleCoordinates[i].z;
+			if(dotProduct > 1) {
+				dotProduct = 1;
+			}
+			angle.push(Math.acos(dotProduct)/rad);
+			
+			//Add the new closest direction back to the mean vector
+			meanVector.x += newClose.x, meanVector.y += newClose.y, meanVector.z += newClose.z;
+			
+			//Set the new fitted point as the old fitted point for the next iteration
+			fittedCircleCoordinates[i] = {'x': newClose.x, 'y': newClose.y, 'z': newClose.z};
 		}
 		
-		maxAngle = angle[0];	
-
-		for(var i = 1; i < nCircles; i++) {
+		nIterations++;
+		
+		//Get the maximum angle between a new and an old fitted direction (this should be lower than 0.1 for the procedure to continue); else break
+		var maxAngle = 0;
+		for(var i = 0; i < nCircles; i++) {
 			if(angle[i] > maxAngle) {
 				maxAngle = angle[i];
 			}
 		}
+		if(maxAngle < 0.1) {
+			break;
+		}
 	}
-	
-	u1 = xSum;
-	u2 = ySum;
-	u3 = zSum;
 
+	//Start with the sum of all set points and add all the iteratively fitted directions to the mean vector
+	//Calculate the mean direction for all fitted directions and set points together
+	meanVector = {'x': xSum, 'y': ySum, 'z': zSum};
 	for(var i = 0; i < nCircles; i++) {
-		u1 += uX[i];
-		u2 += uY[i];
-		u3 += uZ[i];
+		meanVector.x += fittedCircleCoordinates[i].x, meanVector.y += fittedCircleCoordinates[i].y, meanVector.z += fittedCircleCoordinates[i].z;
 	}
+	var newMean = new dir(meanVector.x, meanVector.y, meanVector.z);
 	
-	R = Math.sqrt(u1*u1 + u2*u2 + u3*u3);
-	u1 = u1 / R;
-	u2 = u2 / R;
-	u3 = u3 / R;
-	
-	var newMean = new dir(u1, u2, u3); //Calculate the newly found mean vector after fittingTable
-	
-	var circleDeclinations = [];
-	var circleInclination = [];
-	var pointsCircle = [];
+	var pointsCircle = new Array();
 
-	//Loop over all great circles and get fitted directions (uX, uY, uZ)
+	//Loop over all great circles and get fitted directions in Highcharts data array
 	for(var i = 0; i < nCircles; i++) {
 	
-		var direction = new dir(uX[i], uY[i], uZ[i]);
+		var direction = new dir(fittedCircleCoordinates[i].x, fittedCircleCoordinates[i].y, fittedCircleCoordinates[i].z);
 		var sample = sampleCircle[i];
 		exportData.push({
 			'dec': direction.dec, 
@@ -1206,11 +1171,7 @@ function fitCirclesToDirections() {
 			'sample': sample
 		});
 		
-		if(direction.inc < 0) {
-			color = 'white';
-		} else {
-			color = 'rgb(191, 119, 152)';
-		}
+		var color = (direction.inc < 0) ? 'white' : 'rgb(191, 119, 152)';
 
 		//Data array for points fitted on great circle
 		pointsCircle.push({
@@ -1227,8 +1188,8 @@ function fitCirclesToDirections() {
 	}
 
 	//Get plane data for great circles themselves
-	var greatCircleDataPos = [];	
-	var greatCircleDataNeg = [];	
+	var greatCircleDataPos = new Array();	
+	var greatCircleDataNeg = new Array();	
 	for(var i = 0; i < nCircles; i++) {
 	
 		var direction = new dir(xCircle[i], yCircle[i], zCircle[i]);
@@ -1371,21 +1332,22 @@ function fitCirclesToDirections() {
 
 /* 
  * FUNCTION vClose
- * Description Calculates point (x, y, z) on great circle (xCircle, yCircle, zCircle) closest to vector V (v1, v2, v3)
+ * Description: Calculates point (x, y, z) on great circle (xCircle, yCircle, zCircle) closest to vector V (v1, v2, v3)
+ * 			  : Notation after (McFadden and McElhinny, 1988) eq. 20
  * Input: Cartesian Coordinates of pole to great circle and vector V
  * Output: Cartesian Coordinates of point closest to vector V
  */
-function vClose (xCircle, yCircle, zCircle, v1, v2, v3) {
+function vClose (p, q, r, meanVector) {
 
 	"use strict";
 	
-	var lambda = v1 * xCircle + v2 * yCircle + v3 * zCircle;
-	var beta = Math.sqrt(1 - lambda*lambda);
+	var tau = meanVector.x * p + meanVector.y * q + meanVector.z * r;
+	var rho = Math.sqrt(1 - tau*tau);
 	
 	return {
-		'x': ((v1 - lambda * xCircle) / beta),
-		'y': ((v2 - lambda * yCircle) / beta),
-		'z': ((v3 - lambda * zCircle) / beta),
+		'x': ((meanVector.x - tau * p) / rho),
+		'y': ((meanVector.y - tau * q) / rho),
+		'z': ((meanVector.z - tau * r) / rho),
 	}
 }
 
@@ -2370,7 +2332,7 @@ function eqAreaProjection ( sample ) {
 			//If a tilt correction is requested, rotate again
 			//Only do this if NOT viewing in specimen coordinates
 			if(tcFlag && !specFlag) {
-				var directionTectonic = rotateTectonic(beddingStrike+90, beddingDip+90, [direction.dec, direction.inc, 0, 0, 0]);
+				var directionTectonic = rotateTectonic(beddingStrike + 90, beddingDip + 90, [direction.dec, direction.inc, 0, 0, 0]);
 				direction.dec = directionTectonic[0];
 				direction.inc = directionTectonic[1];
 				var information = '(Tectonic)';
