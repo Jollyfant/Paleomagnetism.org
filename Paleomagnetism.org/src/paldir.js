@@ -3069,7 +3069,7 @@ function importSpinner(applicationData, text) {
 	}
 }
 
-function importingDefault ( applicationData, text ) {
+function importDefault ( applicationData, text ) {
 
 	var blocks = text.split(/9999[\n\r]/);
 	var nSamples = blocks.length; 
@@ -3092,7 +3092,7 @@ function importingDefault ( applicationData, text ) {
 			});
 		
 			if(j === 0) {
-				var name = parameters[0];
+				var name = parameters[0].replace(/['"]+/g, '');
 				
 				//Check if sample with name exists -> append copy text
 				for(var k = 0; k < applicationData.length; k++) {
