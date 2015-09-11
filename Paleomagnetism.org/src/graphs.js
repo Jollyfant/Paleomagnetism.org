@@ -80,8 +80,8 @@ var eqAreaDirections = function(siteName) {
 			}
 		},
 		'exporting': {
-            'sourceWidth': 600,
-            'sourceHeight': 600,
+            'sourceWidth': 800,
+            'sourceHeight': 800,
 			'filename': siteName + ' (directions)',
             'buttons': {
                 'contextButton': {
@@ -145,7 +145,7 @@ var eqAreaDirections = function(siteName) {
 			'area': {
 				'events': {
 					'legendItemClick': function () {
-						if (this.name == 'Declination Uncertainty') {
+						if (this.name === '∆Dx') {
 							toggleBands(this.chart, plotBands);
 						}
 					}
@@ -181,7 +181,7 @@ var eqAreaDirections = function(siteName) {
             },
 			'zIndex': 10
 		}, {         
-			'name': 'Mean Direction', 
+			'name': 'Mean', 
 			'type':'scatter', 
 			'color': 'rgb(119, 152, 191)',
 			'marker':
@@ -199,7 +199,7 @@ var eqAreaDirections = function(siteName) {
 				'inc'	: data.params.mInc
 			}]
 		}, {
-			'name': 'Confidence Ellipse',
+			'name': 'Confidence',
 			'type': 'line',
 			'zIndex': 100,
 			'data': ellipse.pos,
@@ -212,7 +212,7 @@ var eqAreaDirections = function(siteName) {
 			'linkedTo': ':previous',
 		}, {
 			'type': 'area', 
-			'name': 'Declination Uncertainty', 
+			'name': '∆Dx', 
 			'id': 'conf', 
 			'color': 'rgba(119, 152, 191, 1)'
 		}]
@@ -283,8 +283,8 @@ var eqAreaVGPs = function(name) {
     	},
 		'exporting': {
 			'filename': name + '_45',
-            'sourceWidth': 600,
-            'sourceHeight': 600,
+            'sourceWidth': 800,
+            'sourceHeight': 800,
             'buttons': {
                 'contextButton': {
                     'symbolStroke': '#7798BF',
@@ -358,15 +358,6 @@ var eqAreaVGPs = function(name) {
 			}
        	},
     	'series': [{
-			'color': 'rgb(191, 119, 152)',
-			'type': 'scatter',
-			'name': 'Rejected Directions',
-			'data': rejectedVGPs,
-			'marker': {
-				'symbol': 'circle',
-               	'lineWidth': 1,
-           	}
-		}, {
 			'name': 'Accepted Directions',
            	'color': 'rgb(119, 152, 191)',
 			'type': 'scatter',
@@ -375,7 +366,16 @@ var eqAreaVGPs = function(name) {
 				'symbol': 'circle',
                	'lineWidth': 1,
            	}
-		}, {         
+		}, {
+			'color': 'rgb(191, 119, 152)',
+			'type': 'scatter',
+			'name': 'Rejected Directions',
+			'data': rejectedVGPs,
+			'marker': {
+				'symbol': 'circle',
+               	'lineWidth': 1,
+           	}
+		},  {         
 			'type':'scatter', 
 			'color': 'rgb(119, 152, 191)',
 			'marker': {
@@ -383,12 +383,12 @@ var eqAreaVGPs = function(name) {
 				'symbol': 'circle',
 			},
 			'name': 'Mean', 
-			'data': ([{sample: 'Mean VGP', x: 0, y: 90, inc: 90}]) //Cheat and set mean declination to 0 and inclination to 90. It should be 0, 90 anyway. Always.
+			'data': ([{sample: 'Mean', x: 0, y: 90, inc: 90}]) //Cheat and set mean declination to 0 and inclination to 90. It should be 0, 90 anyway. Always.
 		}, {
 			'type': 'line',
 			'data': ellipse.neg,
 			'enableMouseTracking': false,
-			'name': 'Confidence Ellipse',
+			'name': 'Confidence',
 		}, {
 			'type': 'line',
 			'data': ellipse.pos,

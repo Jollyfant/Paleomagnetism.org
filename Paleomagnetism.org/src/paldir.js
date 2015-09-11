@@ -154,10 +154,14 @@ $(function() {
     $('#tabs').tabs({
 		activate: function(event, ui) {
 			if(data.length !== 0) {
-				if(ui.newPanel.selector == '#fittingTab') {
+				if(ui.newPanel.selector === '#fittingTab') {
 					//Redraw the interpretations to the equal area projection
 					$("#eqAreaFitted").hide();
 					plotInterpretations();
+				} else if(ui.newPanel.selector === '#interpretationTab') {
+					if($("#intensityPlot").highcharts()) {
+						$("#intensityPlot").highcharts().reflow();
+					}
 				}
 			}
 		}
@@ -2219,19 +2223,34 @@ function intensity ( sample ) {
 	
 	//Construct the data series for Highcharts, only interested in the intensity so use the Pythagorean Thereom.
 	var dataSeries = new Array();
+	var dataSeriesDecay = new Array();
+	var dataDecay = new Array();
+	var maxR = 0;
 	for(var i = 0; i < sample.data.length; i++) {
 		if(sample.data[i].visible) {
-		
 			//Remove mT, μT or whatever from step - just take a number
 			var step = sample.data[i].step.replace(/[^0-9.]/g, "");
 			var R = Math.sqrt(sample.data[i].x*sample.data[i].x + sample.data[i].y*sample.data[i].y+sample.data[i].z*sample.data[i].z);
 			dataSeries.push({
-				'x': step, 
+				'x': Number(step), 
 				'y': R/specimenVolume
-			});		
+			});
+			if(i > 0) {
+				dataDecay.push(Math.sqrt(Math.pow((sample.data[i].x - sample.data[i-1].x),2) + Math.pow((sample.data[i].y - sample.data[i-1].y), 2) + Math.pow((sample.data[i].z - sample.data[i-1].z), 2)));
+			}
+			if(R > maxR) {
+				maxR = R;
+			}
 		}
 	}
 	
+	//Implementation test for sum of differences
+	var maxRdiff = Math.max.apply(Math, dataDecay);
+	for(var i = 0; i < (dataDecay.length-1); i++) {
+		var step = sample.data[i+1].step.replace(/[^0-9.]/g, "");
+		dataSeriesDecay.push({'x': Number(step), 'y': (maxR*(dataDecay[i] + dataDecay[i+1])/maxRdiff)/specimenVolume});
+	}
+
 	var chartOptions = {
 		'chart': {
 			'animation': false,
@@ -2285,9 +2304,14 @@ function intensity ( sample ) {
         'series': [{
             'name': sample.name,
             'data': dataSeries
-        }]
+        }, {
+			'name': 'Sum of Difference Vector',
+			'data': dataSeriesDecay
+		}]
     }
 	new Highcharts.Chart(chartOptions);
+	$("#intensityPlot").show();
+	$("#intensityPlot").highcharts().reflow();
 }
 
 /* 
