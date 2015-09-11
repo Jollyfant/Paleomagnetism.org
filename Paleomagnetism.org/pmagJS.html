@@ -436,7 +436,8 @@
 				<!-- Exporting and Importing -->
 				<h2> Importing and Exporting </h2>
 				<p> 
-				<button id="exportData" title="Export all sites from this instance.">Export Data</button><button id="importData" type="button" onClick="$('#file-type').click();" title="Import a previously exported file.">Import Data</button>
+				<button id="exportData" title="Export all sites from this instance.">Export Application Save</button>
+				<button id="importData" type="button" onClick="$('#file-type').click();" title="Import a previously exported file.">Import Application Save</button>
 				<input style="display: none" id="file-type" type="file" size="4" name="file" onChange="module.IO.importing(event)"/>
 				<p>
 				Data can be imported and exported from and to the custom <b>.pmag</b> format. This save can be loaded and used in other instances. The exported file is a JSON encoded plain text object and can be opened with any text editor.
@@ -513,7 +514,7 @@
 				<p> Sites can be deleted from the application. Select the sites you would like to remove and click <b>delete selected sites</b> to remove them from the instance.
 				<p>
 				<button id="clrStorage" title="Clearing location storage removes all saved information of this instance.">Reset Application and Clear Local Storage</button>
-				<p>	Clearing location storage will remove all saved sites and reload the application. Please remember to <b><a id="exportHighlight" href="#">export</a></b> your instance before resetting the application if you wish to save your data.
+				<p>	Clearing location storage will remove all saved sites and reload the application. Please remember to export your instance before resetting the application if you wish to save your data.
 			</div>
 		</div>
 	</div>

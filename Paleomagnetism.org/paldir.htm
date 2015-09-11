@@ -164,24 +164,24 @@
 			<div id="advancedTab">
 				<div class="information">
 					<h1>Interpretation Portal: Advanced Options</h1>
-					<h2> Importing and Exporting <small> save or load instance </small> </h2>
+					<h2> Importing and Exporting </h2>
 					<p> 
 					<!-- Exporting -->
-					Data can be imported and exported from and to the custom <b>.dir</b> format. This save can be loaded and used in other instances. The exported file is a JSON encoded plain text object and can be opened with any text editor.
-					<p>
-					<button id="importApplication" type="button" onClick="$('#file-type2').click();" title="Import a previously exported file.">Import Application Save</button>
 					<button id="exportApplication" type="button" onClick="exporting()" title="Import a previously exported file.">Export Application Save</button>
-					<p> Exporting a table of interpreted directions.
-					<p><button id="exportInterpretation" type="button" onClick="exportInterpretation()" title="Export your interpreted data">Export Interpretation</button>
+					<button id="importApplication" type="button" onClick="$('#file-type2').click();" title="Import a previously exported file.">Import Application Save</button>
+					<p>	Data can be imported and exported from and to the custom <b>.dir</b> format. This save can be loaded and used in other instances. The exported file is a JSON encoded plain text object and can be opened with any text editor.
+					<p><button id="exportInterpretation" type="button" onClick="exportInterpretation()" title="Export your interpreted data">Export Interpreted Directions</button>
+					<p> Export a table of the interpreted directions and negative poles of the fitted great circles. Great circle solutions can be downloaded form the chart illustrating the fitted directions.
 			
-					<h2> Other Options <small> present day field </small> </h2>
-					<p> Click here to add a sticky component to the equal area projection.
+					<h2> Other Options </h2>
 					<p><button id="addSticky">Add Sticky</button><button id="removeSticky">Remove Stickies</button>
-					<p> <input type="checkbox" id="labelFlag"><label for="labelFlag"> Show data labels for demagnetization steps </label>
-					<p> <input type="checkbox" id="originFlag"><label for="originFlag"> Include origin as point </label>
-					<h2> Reset Instance <small> clear data </small> </h2>
-					<p> Click here to reset the instance and remove all data.
+					<p> Click here to add a sticky component to the equal area projection. This component will be visible for all specimens and can be used to indicate a present day field component.
+					<p> <input type="checkbox" id="labelFlag"><label for="labelFlag"><b> Show data labels for demagnetization steps</b> </label>
+					<p> <input type="checkbox" id="originFlag"><label for="originFlag"><b> Include origin as point</b> </label>
+					
+					<h2> Reset Application </h2>
 					<p><button id="clearStorage" type="button" onClick="clearStorage()" title="Clear local storage">Clear local storage</button>
+					<p>	Clearing location storage will remove all saved sites and reload the application. Please remember to export your instance before resetting the application if you wish to save your data.
 				</div>
 			</div>
 		</div>
