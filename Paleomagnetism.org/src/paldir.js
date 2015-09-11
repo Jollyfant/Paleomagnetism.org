@@ -2214,11 +2214,6 @@ function intensity ( sample ) {
 
 	"use strict";
 	
-	//For the xAxis we use a category (based on strings, not a numerical scale)
-	//Often the step is identified with numbers and letters (e.g. 200mT), this makes it difficult to get a numerical xAxis
-	//Disadvantage of this is that "distance" between steps is always standard and not representative of actual distance
-	var categories = new Array();
-	
 	//Reduce the intensity by diving by the sample volume (default at 10.5cc)
 	var specimenVolume = 10.5;
 	
@@ -2226,9 +2221,14 @@ function intensity ( sample ) {
 	var dataSeries = new Array();
 	for(var i = 0; i < sample.data.length; i++) {
 		if(sample.data[i].visible) {
+		
+			//Remove mT, μT or whatever from step - just take a number
+			var step = sample.data[i].step.replace(/[^0-9.]/g, "");
 			var R = Math.sqrt(sample.data[i].x*sample.data[i].x + sample.data[i].y*sample.data[i].y+sample.data[i].z*sample.data[i].z);
-			categories.push(sample.data[i].step);
-			dataSeries.push(R/specimenVolume);		
+			dataSeries.push({
+				'x': step, 
+				'y': R/specimenVolume
+			});		
 		}
 	}
 	
@@ -2253,7 +2253,7 @@ function intensity ( sample ) {
 		},
         'yAxis': {
 	        'title': {
-                'text': 'Intensity (A/m)'
+                'text': 'Intensity (μA/m)'
             },		
         },
 		'tooltip': {
@@ -2262,7 +2262,6 @@ function intensity ( sample ) {
 			}
 		},
         'xAxis': {
-			'categories': categories,
             'title': {
                 'text': 'Demagnetization steps'
             },
