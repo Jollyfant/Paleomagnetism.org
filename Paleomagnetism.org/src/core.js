@@ -202,13 +202,13 @@ var pseudo = function ( data ) {
  * Input: vector1Dec, vector1Inc, vector2Dec, vector2Inc
  * Output: angle between vectors
  */
-var angle = function(mDec, mInc, dec, inc) {
+var angle = function(decOne, incOne, decTwo, incTwo) {
 
 	"use strict";
-	
+
 	//Find the Cartesian coordinates of both directions
-	var A = cart(mDec, mInc)
-	var B = cart(dec, inc)
+	var A = cart(decOne, incOne);
+	var B = cart(decTwo, incTwo);
 
 	//Dot product to find angle (https://en.wikipedia.org/wiki/Dot_product#Geometric)
 	//vector norms ||A|| ||B|| are equal to 1 so the equation reduces to: A·B = cos(theta)

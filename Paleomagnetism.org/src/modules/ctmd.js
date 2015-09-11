@@ -49,33 +49,15 @@ module.CTMD.running = false;
 		var sampledOne = new pseudo(sites[one][coordinates].dir.accepted);
 		var sampledTwo = new pseudo(sites[two][coordinates].dir.accepted);
 		
-		/* Testing for eigenvector approach (5000 bootstraps takes ~ 2seconds)
-		//Bucket for Cartesian coordinates
-		var coords = new Array();
-		for(var j = 0; j<sampledTwo.length; j++){
-			coords.push(cart(sampledTwo[j][0], sampledTwo[j][1]));
-		}
-		var T = TMatrix(coords);
-		var s = numeric.eig(T);
-		*/
-		
 		//Get simple Fisher means for both sites
 		var fisherOne = new fisher(sampledOne, 'dir', 'simple');
 		var fisherTwo = new fisher(sampledTwo, 'dir', 'simple');
 		
-		//Flip Fisher means to normal polarity if reversal
-		//If the difference between the means is more than 120 in declination or 60 in inclination -
-		//it is probably a reversal. Otherwise, we might be near the equator with mixed rev/norm polarities
-		//Perhaps it is better to use an eigenvector approach instead
-		if(Math.abs(fisherOne.mDec - fisherTwo.mDec) > 120 || Math.abs(fisherOne.mInc - fisherTwo.mInc) > 60) {
-			if(fisherOne.mInc < 0) {
-				fisherOne.mInc = Math.abs(fisherOne.mInc);
-				fisherOne.mDec = (fisherOne.mDec+180)%360;
-			}
-			if(fisherTwo.mInc < 0) {
-				fisherTwo.mInc = Math.abs(fisherTwo.mInc);
-				fisherTwo.mDec = (fisherTwo.mDec+180)%360;
-			}
+		//Flip Fisher means to normal polarity if the angle between the directions exceeds 90 degrees
+		var angleBetween = angle(fisherOne.mDec, fisherOne.mInc, fisherTwo.mDec, fisherTwo.mInc);
+		if(angleBetween > 90) {
+			fisherOne.mInc = -fisherOne.mInc;
+			fisherOne.mDec = (fisherOne.mDec+180)%360;
 		}	
 		
 		//Fisher means to Cartesian coordinates
@@ -288,21 +270,20 @@ module.CTMD.monte = function (N, R, K, X, Y, Z) {
 	var simulatedWatson = module.CTMD.sampleWatson(N, K);
 	
 	//Dot product between the two vectors
-	var dot = X[0]*X[1] + Y[0]*Y[1] + Z[0]*Z[1];
-	if(dot < 0) {
+	//Reverse one polarity if necessary
+	var directionOne = dir(X[0], Y[0], Z[0]);
+	var directionTwo = dir(X[1], Y[1], Z[1]);
+
+	var angleBetween = angle(directionOne.dec, directionOne.inc, directionTwo.dec, directionTwo.inc);
+	
+	if(angleBetween > 90) {
 		X[1] = -X[1];
 		Y[1] = -Y[1];
 		Z[1] = -Z[1];
-	} else if(dot > 1) {
-		dot = 1;
 	}
 	
-	//Angle between the set of two directions
-	var theta = Math.acos(Math.abs(dot));
-	var angleBetween = theta/rad;
-	
 	//Format directional data for the subroutines
-	var watsonData = [];
+	var watsonData = new Array();
 	for(var i = 0; i < 2; i++) {
 		watsonData.push({
 			'k': K[i], 
@@ -326,20 +307,20 @@ module.CTMD.monte = function (N, R, K, X, Y, Z) {
 	//Finds probability that an angle exceeds the critical angle
 	//Taken from the CTMD.f95 routine
 	if(probability > 0.05) {
-		var angle = 5;
-		var vAngle = module.CTMD.vMake(R, K, angle);
+		var angleSet = 5;
+		var vAngle = module.CTMD.vMake(R, K, angleSet);
 		var probability = module.CTMD.findProbability(vAngle, simulatedWatson);
 		if(probability <= 0.05) {
 			var classification = 'A';
 		} else {
-			var angle = 10;
-			var vAngle = module.CTMD.vMake(R, K, angle);
+			var angleSet = 10;
+			var vAngle = module.CTMD.vMake(R, K, angleSet);
 			var probability = module.CTMD.findProbability(vAngle, simulatedWatson);
 			if(probability <= 0.05) {
 				var classification = 'B';
 			} else {
-				var angle = 20;
-				var vAngle = module.CTMD.vMake(R, K, angle);
+				var angleSet = 20;
+				var vAngle = module.CTMD.vMake(R, K, angleSet);
 				var probability = module.CTMD.findProbability(vAngle, simulatedWatson);
 				if(probability <= 0.05) {
 					var classification = 'C';
@@ -366,16 +347,16 @@ module.CTMD.monte = function (N, R, K, X, Y, Z) {
  * Input: R, k, and angle
  * OUTPUT: watson parameter
  */
-module.CTMD.vMake = function (R, K, angle) {
+module.CTMD.vMake = function (R, K, angleSet) {
 	 
 	"use strict";
 		
-	var angle = angle*rad;
+	var angleSet = angleSet*rad;
 	 
 	//Create Cartesian coordinates for two vectors with angle between them
-	var X = [0, Math.sin(angle)];
+	var X = [0, Math.sin(angleSet)];
 	var Y = [0, 0];
-	var Z = [1, Math.cos(angle)];
+	var Z = [1, Math.cos(angleSet)];
 	 
 	var watsonAngle = new Array();
 	 
