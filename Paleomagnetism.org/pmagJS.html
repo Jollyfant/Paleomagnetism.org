@@ -89,10 +89,10 @@
 				<h1>1. Statistics Portal: Home  </h1>
 				<p> Welcome to the statistics portal of Paleomagnetism.org; an online environment for paleomagnetic analysis.
 				<p>
-				New sites can be added to the application by clicking the <b> add new site </b> button below. Once a site has been added, the data can be evaluated and visualized in the available modules.
+				New sites can be added to the application by clicking the <b> add site </b> button below. Once a site with magnetic directions has been added, the data can be evaluated and visualized in the available modules.
 				<p>
 				<div style="text-align: center;">
-				<button id="add" style="height: 50px; width: 150px; border: 1px dashed; " title="Load new data to the application"> add new site </button>
+				<button id="add" style="margin: 10px; height: 50px; width: 150px; border: 1px solid; " title="Load new data to the application"> Add Site </button>
 				</div>
 			</div>
 		</div>
@@ -601,12 +601,14 @@
 	</div>
 	<div class="lit box">
 		<h2> Literature Directions <small> Input Data </small> </h2>
-		<p><b> Input parameters: </b>
-		<br> Declination, Inclination, Number of Samples (N), Kappa (κ) </p>
+		<p>
 		<div id="sampleFish" style="display: inline-block;">
 			<input type="radio" value="fishVGP" id="fishVGP" name="radioSample" checked><label for="fishVGP"> Fisherian VGPs </label>
 			<input type="radio" value="fishDIR" id="fishDIR" name="radioSample"><label for="fishDIR"> Fisherian Directions </label>
 		</div>
+		<p> Select the type of distribution to sample.
+		<p><b> Input parameters: </b>
+		<br> Declination, Inclination, Number of Samples (N), Kappa (κ) </p>
 	</div>
 	<div class="int box">
 		<h2> Interpreted Directions <small> Input Data </small> </h2>

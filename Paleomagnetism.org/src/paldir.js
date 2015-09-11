@@ -2244,11 +2244,14 @@ function intensity ( sample ) {
 		}
 	}
 	
-	//Implementation test for sum of differences
+	//Implementation test for sum of differences (normalized to absolute intensity)
 	var maxRdiff = Math.max.apply(Math, dataDecay);
-	for(var i = 0; i < (dataDecay.length-1); i++) {
+	for(var i = 0; i < (dataDecay.length - 1); i++) {
 		var step = sample.data[i+1].step.replace(/[^0-9.]/g, "");
-		dataSeriesDecay.push({'x': Number(step), 'y': (maxR*(dataDecay[i] + dataDecay[i+1])/maxRdiff)/specimenVolume});
+		dataSeriesDecay.push({
+			'x': Number(step), 
+			'y': (maxR*(dataDecay[i] + dataDecay[i+1])/maxRdiff)/specimenVolume
+		});
 	}
 
 	var chartOptions = {
@@ -2306,7 +2309,10 @@ function intensity ( sample ) {
             'data': dataSeries
         }, {
 			'name': 'Sum of Difference Vector',
-			'data': dataSeriesDecay
+			'data': dataSeriesDecay,
+			'marker': {
+				'symbol': 'circle'
+			}
 		}]
     }
 	new Highcharts.Chart(chartOptions);
