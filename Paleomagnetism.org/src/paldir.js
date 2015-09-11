@@ -597,11 +597,11 @@ $(function() {
 		'multiple': false,
 		'selectedList': 1,
 		'close': function () {
-		
+
 			var sample = getSampleIndex();
 			
 			//Call function showData to build body for particular specimen
-			if(sample !== null) {
+			if(sample !== undefined && sample !== null) {
 				showData(sample); 
 				
 				//Set the hover and selection on the first point of the series
@@ -997,11 +997,12 @@ function fitCirclesToDirections() {
 						'sample': sample
 					});
 					
-					var row = [sample, 0, dec, inc, 'dir'];
+					var row = [sample, data[i].info, dec, inc, 'dir'];
 					isSet = true;
 					
 					//Highcharts data array for plotting the set points, these can be used directly
 					pointsSet.push({
+						'info': data[i].info ? data[i].info : "",
 						'x': dec,
 						'y': eqArea(inc),
 						'inc': inc,
@@ -1013,7 +1014,7 @@ function fitCirclesToDirections() {
 						}
 					});
 				} else if(data[i][coordType][j].type === 'GC') {
-					row = [sample, 0, dec, inc, 'gc'];
+					row = [sample, data[i].info, dec, inc, 'gc'];
 				}
 				fitData.push(row);
 			}
@@ -1043,7 +1044,7 @@ function fitCirclesToDirections() {
 
 	//@Circle is an array containing Cartesian coordinates of pole to great circle
 	var xCircle = new Array(), yCircle = new Array(), zCircle = new Array();
-	var sampleCircle = new Array();
+	var sampleCircle = new Array(), infoCircle = new Array();
 	
 	//Number of set points and great circles
 	var nPoints = 0, nCircles = 0;
@@ -1071,6 +1072,7 @@ function fitCirclesToDirections() {
 			var circleCoordinates = cart(fitData[i][2], fitData[i][3]);
 			xCircle.push(circleCoordinates.x), yCircle.push(circleCoordinates.y), zCircle.push(circleCoordinates.z);
 			sampleCircle.push(fitData[i][0]);
+			infoCircle.push(fitData[i][1]);
 			
 		} else {
 			notify('failure', 'Unfamiliar fitting type; expected "fake", "dir", or "gc"');
@@ -1168,6 +1170,7 @@ function fitCirclesToDirections() {
 
 		//Data array for points fitted on great circle
 		pointsCircle.push({
+			'info': infoCircle[i] ? infoCircle[i] : "",
 			'x': direction.dec, 
 			'sample': sample,
 			'y': eqArea(direction.inc), 
@@ -1263,7 +1266,7 @@ function fitCirclesToDirections() {
 	},  {
 		name: 'Mean',
 		type: 'scatter',
-		data: [{sample: 'Direction Mean', x: newMean.dec, y: eqArea(newMean.inc), inc: newMean.inc}],
+		data: [{sample: 'Direction Mean', x: newMean.dec, y: eqArea(newMean.inc), inc: newMean.inc, 'info': 'Direction Mean'}],
 		color: 'rgb(119, 191, 152)',
 		marker: {
 			symbol: 'circle',
@@ -1587,7 +1590,8 @@ var drawInterpretations = function ( sample ) {
 	
 		//Get the user entered remark, if there is none put default message
 		var remark = data[sample][coordType][i].remark;
-		if(remark == '') {
+			
+		if(remark === '') {
 			remark = 'Click to Change';
 		}
 		
@@ -2669,16 +2673,16 @@ function getEqualAreaInterpretationCSV(self) {
 	csv += self.userOptions.chart.coordinates;
 	csv += lineDelimiter + lineDelimiter;	
 	
-	var row = ['Specimen', 'Declination', 'Inclination', 'Type'];
+	var row = ['Specimen', 'Declination', 'Inclination', 'Type', 'Information'];
 	csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
 
 	for(var i = 0; i < self.series[0].data.length; i++) {
-		row = [self.series[0].data[i].options.sample, self.series[0].data[i].x, self.series[0].data[i].options.inc, 'Direction'];
+		row = [self.series[0].data[i].options.sample, self.series[0].data[i].x, self.series[0].data[i].options.inc, 'Direction', self.series[0].data[i].info];
 		csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;		
 	}
 	
 	for(var i = 0; i < self.series[1].userOptions.poles.length; i++) {
-		row = [self.series[0].data[i].options.sample, self.series[1].userOptions.poles[i].dec, self.series[1].userOptions.poles[i].inc, 'Negative Pole to Plane'];
+		row = [self.series[0].data[i].options.sample, self.series[1].userOptions.poles[i].dec, self.series[1].userOptions.poles[i].inc, 'Negative Pole to Plane', self.series[0].data[i].info];
 		csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;		
 	}
 	
@@ -2724,19 +2728,16 @@ function getEqualAreaFittedCSV(self) {
 	
 	csv += lineDelimiter + lineDelimiter;	
 	
-	var row = ['Specimen', 'Declination', 'Inclination', 'Type'];
+	var row = ['Specimen', 'Declination', 'Inclination', 'Type', 'Information'];
 	csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
 	
 	for(var i = 0; i < self.series[0].data.length; i++) {
-		row = [self.series[0].data[i].options.sample, self.series[0].data[i].x, self.series[0].data[i].inc, 'Direction'];
+		row = [self.series[0].data[i].options.sample, self.series[0].data[i].x, self.series[0].data[i].inc, 'Direction', self.series[0].data[i].info];
 		csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;		
 	}	
 	
 	for(var i = 0; i < self.series[1].data.length; i++) {
-		row = [self.series[0].data[i].options.sample,  	
-		
-		
-		self.series[1].data[i].x, self.series[1].data[i].inc, 'Fitted Direction'];
+		row = [self.series[0].data[i].options.sample, self.series[1].data[i].x, self.series[1].data[i].inc, 'Fitted Direction', self.series[1].data[i].info];
 		csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;		
 	}	
 	
@@ -2825,7 +2826,7 @@ function exportInterpretation () {
 	var lineDelimiter = '\n';
 	
 	// Header row
-	row = ["Sample Name", "Declination", "Inclination", "Intensity", "MAD", "Forced", "Type", "Coordinates", "Bedding Strike", "Bedding Dip", "Num Step", "Min Step", "Max Step", "Remark"];
+	row = ["Sample Name", "Declination", "Inclination", "Intensity", "MAD", "Forced", "Type", "Coordinates", "Bedding Strike", "Bedding Dip", "Num Step", "Min Step", "Max Step", "Remark", "Information"];
 	csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
 	
 	//Loop over the interpretations in Geographic Coordinates and add them to the CSV string
@@ -2834,7 +2835,7 @@ function exportInterpretation () {
 			noData = false;
 			for(var j = 0; j < data[i]['GEO'].length; j++) {
 				var row = new Array();
-				row.push(data[i].name, data[i]['GEO'][j].dec, data[i]['GEO'][j].inc, data[i]['GEO'][j].intensity, data[i]['GEO'][j].MAD, data[i]['GEO'][j].forced, data[i]['GEO'][j].type, 'Geographic Coordinates', data[i].bedStrike, data[i].bedDip, data[i]['GEO'][j].nSteps, data[i]['GEO'][j].minStep, data[i]['GEO'][j].maxStep, data[i]['GEO'][j].remark);
+				row.push(data[i].name, data[i]['GEO'][j].dec, data[i]['GEO'][j].inc, data[i]['GEO'][j].intensity, data[i]['GEO'][j].MAD, data[i]['GEO'][j].forced, data[i]['GEO'][j].type, 'Geographic Coordinates', data[i].bedStrike, data[i].bedDip, data[i]['GEO'][j].nSteps, data[i]['GEO'][j].minStep, data[i]['GEO'][j].maxStep, data[i]['GEO'][j].remark, data[i].info);
 				csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
 			}
 		}
@@ -2847,7 +2848,7 @@ function exportInterpretation () {
 			noData = false;
 			for(var j = 0; j < data[i]['TECT'].length; j++) {
 				var row = new Array();
-				row.push(data[i].name, data[i]['TECT'][j].dec, data[i]['TECT'][j].inc, data[i]['TECT'][j].intensity, data[i]['TECT'][j].MAD, data[i]['TECT'][j].forced, data[i]['TECT'][j].type, 'Tectonic Coordinates', data[i].bedStrike, data[i].bedDip, data[i]['TECT'][j].nSteps, data[i]['TECT'][j].minStep, data[i]['TECT'][j].maxStep, data[i]['TECT'][j].remark);
+				row.push(data[i].name, data[i]['TECT'][j].dec, data[i]['TECT'][j].inc, data[i]['TECT'][j].intensity, data[i]['TECT'][j].MAD, data[i]['TECT'][j].forced, data[i]['TECT'][j].type, 'Tectonic Coordinates', data[i].bedStrike, data[i].bedDip, data[i]['TECT'][j].nSteps, data[i]['TECT'][j].minStep, data[i]['TECT'][j].maxStep, data[i]['TECT'][j].remark, data[i].info);
 				csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
 			}
 		}
@@ -2904,6 +2905,8 @@ function importUtrecht(applicationData, text) {
 					}
 				}						
 				
+				var information = parameterPoints[1].replace(/['"]+/g, '');
+				
 				var coreAzi = Number(parameterPoints[2]);	
 				if(isNaN(coreAzi)) {
 					coreAzi = 0;
@@ -2951,6 +2954,7 @@ function importUtrecht(applicationData, text) {
 		
 		//Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
 		data.push({
+			'info'			: information,
 			'GEO'			: new Array(),
 			'TECT'			: new Array(),
 			'interpreted'	: false,
@@ -3280,7 +3284,7 @@ var plotInterpretationsGraph = function ( dataBucket, nCircles, container, title
         },
 		tooltip: {
 			formatter: function () {
-					return '<b> Specimen: </b> ' + this.point.sample + '<br><b>Declination: </b>' + this.x.toFixed(1) + '<br> <b>Inclination </b>' + this.point.inc.toFixed(1)
+					return '<b> Specimen: </b> ' + this.point.sample + '<br><b>Declination: </b>' + this.x.toFixed(1) + '<br> <b>Inclination: </b>' + this.point.inc.toFixed(1);
 			}
 		},
 		credits: {
@@ -3368,9 +3372,10 @@ function plotInterpretations() {
 
 					//Push to Highcharts formatted data array
 					plotDataDir.push({
+						'info': data[i].info ? data[i].info : "",
 						'x': dec, 
 						'sample': sample,
-						'y': eqArea(inc), 
+						'y': eqArea(inc),
 						'inc': inc,
 						'marker': {
 							'fillColor' : color,
@@ -3430,7 +3435,7 @@ function plotInterpretations() {
 	}, {
 		'name': 'Mean',
 		'type': 'scatter',
-		'data': [{'sample': 'Direction Mean', 'x': parameters.mDec, 'y': eqArea(parameters.mInc), 'inc': parameters.mInc}],
+		'data': [{'sample': 'Direction Mean', 'x': parameters.mDec, 'y': eqArea(parameters.mInc), 'inc': parameters.mInc, 'info': 'Direction Mean'}],
 		'color': 'rgb(119, 191, 152)',
 		'marker': {
 			'symbol': 'circle',
