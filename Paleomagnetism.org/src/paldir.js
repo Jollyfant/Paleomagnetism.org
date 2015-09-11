@@ -1315,10 +1315,10 @@ function fitCirclesToDirections() {
 	//Plot graph with the data, and provide user with information on the fit in a table
 	plotInterpretationsGraph( plotData, nCircles, 'eqAreaFitted', 'Interpreted Directions and Fitted Great Circles', coordinateNice );
 	$("#eqAreaFitted").css('display', 'inline-block');
-	$("#fitCirclesDivText").html('<b>Great circles have been fitted in ' + nIterations + ' iterations.</b>');
+	$("#fitCirclesDivText").html('<b>Great circle solutions have been fitted in ' + nIterations + ' iteration(s).</b>');
 	
-	$("#fittingTable").html('<table class="sample" id="fittingTableInfo"><tr><th> Number of Directions </th> <th> Number of Great Circles </th> <th>Mean Declination </th> <th>Mean Inclination </th> <th> k </th> <th> a95 </th> <th> am95 </th> <th> t95 </th> </tr>');
-	$("#fittingTableInfo").append('<tr> <td> ' + nPoints + ' </td> <td> ' + nCircles + '<td> ' + newMean.dec.toFixed(1) + ' </td> <td> ' + newMean.inc.toFixed(1) + ' </td> <td> ' + k.toFixed(1) + '</td> <td> ' + a95.toFixed(1) + '</td> <td> ' + am95.toFixed(1) + ' </td> <td> ' + t95.toFixed(1) + ' </td> </tr> </table>');
+	$("#fittingTable").html('<table class="sample" id="fittingTableInfo"><tr><th> N<small> (setpoints) </small> </th> <th> N<small> (great circle solutions) </small> </th> <th> N<small> (total) </small> </th> <th>Mean Declination </th> <th>Mean Inclination </th>  </tr>');
+	$("#fittingTableInfo").append('<tr> <td> ' + nPoints + ' </td> <td> ' + nCircles + '<td> ' + (nPoints + nCircles) + ' </td> <td> ' + newMean.dec.toFixed(1) + ' </td> <td> ' + newMean.inc.toFixed(1) + ' </td> </tr> </table>');
 	$("#fittingTable").show();
 
 }
@@ -1680,9 +1680,10 @@ var drawInterpretations = function ( sample ) {
 				'zIndex': 100,
 				'marker': {
 					'symbol': 'circle',
-					'lineColor': 'rgb(191, 119, 152)',
-					'lineWidth': 1,
-					'fillColor': PCADirection.inc < 0 ? 'white' : 'rgb(191, 119, 152)'
+					'radius': 4,
+					'lineColor': 'rgb(141, 69, 102)',
+					'lineWidth': 2,
+					'fillColor': PCADirection.inc < 0 ? 'white' : 'rgb(191, 119, 152)',
 				},
 			});
 			
@@ -3460,8 +3461,8 @@ function plotInterpretations() {
 	}];
 
 	plotInterpretationsGraph( plotData, nCircles, 'eqAreaInterpretations', 'Interpreted Directions and Great Circles', coordinateNice );
-	$("#fittingTable").html('<table class="sample" id="fittingTableInfo"><tr><th> Number of Directions </th> <th>Mean Declination </th> <th>Mean Inclination </th> <th> k </th> <th> a95 </th> </tr>');
-	$("#fittingTableInfo").append('<tr> <td> ' + nPoints + ' </td> <td> ' + parameters.mDec.toFixed(1) + ' </td> <td> ' + parameters.mInc.toFixed(1) + ' </td> <td> ' + parameters.k.toFixed(1) + '</td> <td> ' + parameters.a95.toFixed(1) + '</td> </tr> </table>');
+	$("#fittingTable").html('<table class="sample" id="fittingTableInfo"><tr><th> N <small> (setpoints) </small> </th> <th>Mean Declination </th> <th>Mean Inclination </th> </tr>');
+	$("#fittingTableInfo").append('<tr> <td> ' + nPoints + ' </td> <td> ' + parameters.mDec.toFixed(1) + ' </td> <td> ' + parameters.mInc.toFixed(1) + ' </td> </tr> </table>');
 	$("#fittingTable").show();
 	
 	if(nCircles > 0) {

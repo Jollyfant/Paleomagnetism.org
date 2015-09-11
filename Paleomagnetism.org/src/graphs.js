@@ -90,14 +90,17 @@ var eqAreaDirections = function(siteName) {
                 }
             }
         },
-		'title': {
+		'subtitle': {
             'text': 'ChRM Directions',
 			'style': { 
-				'fontSize': '32px'
+				'fontSize': '16px'
 			}
         },
-		'subtitle': {
+		'title': {
             'text': siteName === 'TEMP' ? 'Temporary Site' : siteName,
+			'style': { 
+				'fontSize': '26px'
+			}
         },
       	'pane': {
 			'startAngle': 0,
@@ -294,14 +297,17 @@ var eqAreaVGPs = function(name) {
         		return '<b>Sample: </b>' + this.point.sample + '<br><b>Longitude: </b>' + this.x.toFixed(1) + '<br><b>Latitude: </b>' + this.point.inc.toFixed(1) + '<br><p><i>VGP positions are relative to the mean VGP</i>'
     		}
 		},
-		'title': {
+		'subtitle': {
             'text': 'VGP Positions',
 			'style': { 
-				'fontSize': '32px'
+				'fontSize': '16px'
 			}
         },
-		'subtitle': {
-			'text': name == 'TEMP' ? 'Temporary Sites' : name,        
+		'title': {
+			'text': name == 'TEMP' ? 'Temporary Sites' : name,  
+			'style': { 
+				'fontSize': '26px'
+			}			
 		},
       	'pane': {
 			'startAngle': 0,
@@ -468,7 +474,7 @@ var plotMeans = function(siteData, container, title) {
 		'title': {
             'text': title,
 			'style': { 
-				'fontSize': '32px'
+				'fontSize': '26px'
 			}
         },
 		'legend': {
@@ -476,7 +482,11 @@ var plotMeans = function(siteData, container, title) {
             'enabled': true,
         },
         'subtitle': {
-			'text': 'Mean Directions'
+			'text': 'Mean Directions',
+			'style': { 
+				'fontSize': '16px'
+			}
+			
         },
       	'pane': {
 			'startAngle': 0,
