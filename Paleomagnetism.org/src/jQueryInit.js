@@ -567,7 +567,7 @@ function jQueryInit () {
 	
 	// Wally was here (.. but only sometimes!)
 	if(Math.random() < 0.01 ){
-		$("#wld").html("<img id='waldo' src='../images/waldo.png' title='..!'>")
+		$("#wld").html("<img id='waldo' src='images/waldo.png' title='..!'>")
 		$("#waldo").hover( function() {
 			$("#waldo").fadeOut('slow').html("");
 		});
