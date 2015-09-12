@@ -1,16 +1,15 @@
 /* PALEOMAGNETISM.ORG MAIN FRAMEWORK FUNCTIONS
  * 
- * VERSION: ALPHA.1507
- * LAST UPDATED: 7/23/2015
+ * VERSION: ALPHA.1509
+ * LAST UPDATED: 09/12/2015
  *
  * JavaScript file containing main functionality procedures for the Paleomagnetism.org statistics portal.
- * This file includes many necessary jQuery UI definitions and handles the main interaction with the DOM (and may therefore be slightly spaghetti-ish..)
  *
  * This open-source application is licensed under the GNU General Public License v3.0 and may be used, modified, and shared freely
  */
  
  //Current application version
-version = 'vALPHA.1508.3';
+version = 'vALPHA.1509.1';
 
 //Create the modules object that will carry all functional modules
 module = new Object();
