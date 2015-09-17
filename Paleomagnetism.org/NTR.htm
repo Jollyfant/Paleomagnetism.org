@@ -461,7 +461,8 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 	
 	var i = 0;
 	var bar = $("#iterationBar");
-	var strikeData = new Array();
+	var dataOne = new Array();
+	var dataTwo = new Array();
 	
 	//Asynchronous implementation of iterations
 	function timed() {
@@ -588,8 +589,8 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				'dykeStrike': ((intercept.two.dec+90)%360).toFixed(1),
 				'dykeDip': (90-intercept.two.inc).toFixed(1)
 			});
-			strikeData.push(Number((intercept.one.dec)%360));
-			strikeData.push(Number((intercept.two.dec)%360));
+			dataOne.push(Number((intercept.one.dec)%360));
+			dataTwo.push(Number((intercept.two.dec)%360));
 		};
 		
 		//One iteration completed
@@ -809,12 +810,6 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				color: 'orange',
 				dashStyle: 'ShortDash',
 				enableMouseTracking: false,
-				data: beddingdata.one
-			}, {
-				type: 'line',
-				color: 'orange',
-				linkedTo: ':previous',
-				enableMouseTracking: false,		
 				data: beddingdata.two
 			}, {
 				name: 'Solution 2 - Rotated Bedding',
@@ -822,12 +817,6 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				color: 'orange',
 				dashStyle: 'ShortDash',
 				enableMouseTracking: false,
-				data: beddingdata2.one
-			}, {
-				type: 'line',
-				color: 'orange',
-				linkedTo: ':previous',
-				enableMouseTracking: false,		
 				data: beddingdata2.two
 			});
 		}
@@ -954,7 +943,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 		//Call plotting series
 		drawGraph(plotSeries, container);
 		if(iterate) {
-			plotWindRose(strikeData, 'windrosePlot');
+			plotWindRose(dataOne, dataTwo, 'windrosePlot');
 		}
 		isRunning = false;
 			}
@@ -1264,54 +1253,73 @@ function getPlaneData ( dirIn, type, MAD, signInc ) {
  * Input: data array with the declinations, and container for chart to be rendered in
  * Output: VOID (calls Highcharts constructor for new chart)
  */
-function plotWindRose(newDatArray, container) {
+function plotWindRose(dataOne, dataTwo, container) {
+
+	var binSize = 5;
 	
-	//This algorithm sorts declinations in the newDatArray to bins of binSize degrees
-	//Notice: 360 % binSize must be 0 
-	var sortedArr = new Object();
-	var binSize = 6;
+	function prepData(newDatArray) {
 	
-	for(var i = 0; i < newDatArray.length; i++) {
-	
-		//Round to the nearest bin degrees
-		var declination = Math.abs(Math.round(newDatArray[i] / binSize) * binSize)%360;
-		
-		//If the bin already exists, increment by one, otherwise create the bin starting at 1
-		sortedArr[declination] ? sortedArr[declination] += 1 : sortedArr[declination] = 1;
-	}
-	
-	//Define bucket for data to be used in the chart, and define a max variable to find the maximum declinations in any bin
-	var dataList = new Array();
-	var max = 0;
-	
-	console.log(sortedArr);
-	
-	//Go over all 36 bins in the 0 - 350 range
-	for(var i = 0; i < 360; i+= binSize) {
-	
-		//If we have declinations in the particular bin, put the y value to the sqrt of this number (to prevent linear stretching if one bin becomes very large)
-		//Otherwise, push a y value of 0, which will be added to the series but is invisible to the user
-		//We need to do this, otherwise the rose chart does not always take bins of size 10 degrees
-		if(sortedArr[i] !== undefined) {
-			dataList.push({x: i, y: Math.sqrt(sortedArr[i])});
-		} else {
-			dataList.push({x: i, y: 0});		
+		//This algorithm sorts declinations in the newDatArray to bins of binSize degrees
+		//Notice: 360 % binSize must be 0 
+		var sortedArr = new Object();
+		sortedArr['dump'] = 0;
+		for(var i = 0; i < newDatArray.length; i++) {
+			//Do not show North petal (North determinations are usually a result of no solution)
+			if(Math.round(newDatArray[i])%360 === 0) {
+				sortedArr['dump'] += 1;
+			} else {
+				//Round to the nearest bin degrees
+				//If the bin already exists, increment by one, otherwise create the bin starting at 1
+				var declination = Math.abs(Math.round(newDatArray[i] / binSize) * binSize)%360;
+				sortedArr[declination] ? sortedArr[declination] += 1 : sortedArr[declination] = 1;
+			}
 		}
 		
-		//Get the maximum value of declinations, this will be the maximum y-value for the chart as wells
-		if(sortedArr[i] > max) {
-			max = sortedArr[i];
+		//Define bucket for data to be used in the chart, and define a max variable to find the maximum declinations in any bin
+		var dataList = new Array();
+		var max = 0;
+
+		//Go over all 36 bins in the 0 - 350 range
+		for(var i = 0; i <= 360; i+= binSize) {
+		
+			//If we have declinations in the particular bin, put the y value to the sqrt of this number (to prevent linear stretching if one bin becomes very large)
+			//Otherwise, push a y value of 0, which will be added to the series but is invisible to the user
+			//We need to do this, otherwise the rose chart does not always take bins of size 10 degrees
+			if(sortedArr[i] !== undefined) {
+				dataList.push({x: i, y: Math.sqrt(sortedArr[i])});
+			} else {
+				dataList.push({x: i, y: 0});		
+			}
+			
+			//Get the maximum value of declinations, this will be the maximum y-value for the chart as wells
+			if(sortedArr[i] > max) {
+				max = sortedArr[i];
+			}
 		}
+		return {'data': dataList, 'max': max}
 	}
-	console.log(dataList);
+
+
+	var data1 = prepData(dataOne);
+	var data2 = prepData(dataTwo);
+	
+	var max = data1.max;
 	
 	//Data series for the rose chart
 	var dataSeries = [{
 		'borderWidth': 1, 
-		'borderColor': 'grey',  
+		'borderColor': 'grey',
+		'color': 'rgb(119, 152, 191)',
 		'zIndex': 100, 
 		'name': 'data', 
-		'data': dataList
+		'data': data1.data
+	}, {
+		'borderWidth': 1, 
+		'borderColor': 'grey',  
+		'color': 'rgb(191, 152, 119)',
+		'zIndex': 100, 
+		'name': 'data', 
+		'data': data2.data
 	}];
 
     // Parse the data from an inline table using the Highcharts Data plugin
@@ -1325,7 +1333,10 @@ function plotWindRose(newDatArray, container) {
 			enabled: false,
         },
 		title: {
-			text: ''
+			text: 'Density of Original Dyke Pole'
+		},
+		subtitle: {
+			text: 'Showing the intersections of Beta with the horizontal',
 		},
         xAxis: {
 			minorTickPosition: 'outside',
@@ -1349,8 +1360,7 @@ function plotWindRose(newDatArray, container) {
      	},
         yAxis: {
       	    min: 0,
-			max: Math.sqrt(max),
-			tickPositions: [0, Math.sqrt(max)],
+			tickPositions: [0, this.max],
 			endOnTick: false,
 			labels: {
 				enabled: false
@@ -1358,7 +1368,7 @@ function plotWindRose(newDatArray, container) {
         },
         tooltip: {
             formatter: function () {
-				return '<b> Cumulative Declination </b> <br><b>Declination Bin: </b>' + this.x + '<br><b>Number of Declinations: </b>' + this.y.toFixed(0);
+				return '<b> Cumulative Declination </b> <br><b>Declination Bin: </b>' + this.x + '<br><b>Number of Declinations: </b>' + Math.pow(this.y, 2).toFixed(1);
 			}
         },
 		credits: {
@@ -1367,12 +1377,13 @@ function plotWindRose(newDatArray, container) {
 		},
         plotOptions: {
             series: {
+				stacking: 'normal',
                 shadow: false,
                 groupPadding: 0,
-                pointPlacement: 'on'
+                pointPlacement: 'on',
             },
 			column: {
-				colorByPoint: true
+				colorByPoint: false
 			}
         },
 		series: dataSeries,
