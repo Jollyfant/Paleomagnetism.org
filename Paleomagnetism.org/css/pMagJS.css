@@ -138,10 +138,7 @@ div#body_container, div#footer_container {
 }
 
 .literature {
-	display: inline-block;
-	float: right;
 	text-align: right;
-
 }
 
 #EIBar, #progressbar, #CTMDBar, #exportBar {
@@ -250,13 +247,13 @@ table.sample {
 table.sample th {
 	border-width: 1px;
 	padding: 1px;
-	text-align: left;
+	text-align: center;
 	border-style: none;
 	border-color: white;
 	font-size: 16px;
 }
 table.sample td {
-
+	text-align: center;
 	border-width: 1px;
 	padding: 1px;
 	border-style: none;
