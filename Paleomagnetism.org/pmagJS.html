@@ -166,7 +166,7 @@
 		<!-- SITE MEAN MODULE -->
 		<div id="tabs-3">
 			<div class="information">
-				<h1> 3. Site Means Directions </h1>
+				<h1> 3. Site Mean Directions </h1>
 				<p> This module shows the geomagnetic directions for one or multiple sites in a geographic or corrected (tectonic) reference frame with untilted beddings. 
 				<!-- Site Selector -->
 				<p>
@@ -214,7 +214,7 @@
 			<div class="information">
 			
 				<h1> 4. Map Overview </h1>
-				<p> The Google Maps overview illustrates vertical-axis rotations for the selected sites including confidence parachutes (ΔDx). Expected site declinations, inclinations, paleolatitudes, and apparant polar wander paths can be plotted for major plates.
+				<p> The Google Maps overview illustrates vertical-axis rotations for the selected sites including confidence parachutes (ΔDx). Declinations, inclinations, paleolatitudes, and apparant polar wander paths can be plotted for major plates.
 				<!-- Site Selector -->
 				<p><select multiple id="mapSel" title="" onClick="module.map.mapAddSites();" class="siteSelector"></select>
 			</div>
@@ -239,7 +239,7 @@
 						<input type="radio" id="mapRadio2" name="mapRadio" checked value="GEO"><label for="mapRadio2"> Geographic </label>
 					</div>
 					<hr>
-					<h2> Expected Directions <small> of location </small></h2>
+					<h2> Magnetic Directions <small> of location </small></h2>
 					<p>					
 					<b>Lat </b><input type="text" id="palatLat" size="5"> <b>Lon </b><input type="text" id="palatLon" size="5">
 					<p>
@@ -268,7 +268,7 @@
 						<option value="besse2002">Besse and Courtillot, 2002</option>
 						<option value="kent2010">Kent and Irving, 2010</option>
 					</select>
-					<p><button id="requestAPWP" title="Calculate Paleolatitude">Calculate Expected Directions</button>
+					<p><button id="requestAPWP" title="Calculate Paleolatitude">Calculate Magnetic Directions</button>
 				</div>
 				<div id="map-canvas" style="border: 1px solid rgb(119, 152, 191); height: 600px; width: 100%;"></div>
 			</div>
@@ -281,9 +281,9 @@
 				<p>
 				<div id="poleTabs" style="display: none;">
 					<ul>
-					<li><a href="#palatTab" title="View expected paleolatitude">Expected Paleolatitude </a></li>
-					<li><a href="#decTab" title="View expected declination">Expected Declination </a></li>
-					<li><a href="#incTab" title="View expected inclination">Expected Inclination </a></li>
+					<li><a href="#palatTab" title="View expected paleolatitude">Paleolatitude </a></li>
+					<li><a href="#decTab" title="View expected declination">Declination </a></li>
+					<li><a href="#incTab" title="View expected inclination">Inclination </a></li>
 					<li><a href="#mapTab" title="View Apparent Polar Wander Paths">Apparent Polar Wander Paths </a></li>
 					</ul>
 					<div id="palatTab">
@@ -644,7 +644,7 @@
 	<p><b>Disclaimer:</b> Paleomagnetism.org is an open-source initiative licensed under the <a href="https://www.gnu.org/licenses/gpl.html">GNU General Public License v3.0</a>. All data processing is handled on the client-side within your browser. Graph exporting is delivered via the Highcharts content delivery network under the Highcharts <a href="http://www.highcharts.com/docs/export-module/privacy-disclaimer/">exporting privacy policy</a>.
 	<hr>
 	<div style="text-align: right; display: inline-block;">
-		<a href="http://www.uu.nl/"><img style="margin: 0px; height: 60px;" src="./images/UU.png"></a>
+		<a href="http://www.geo.uu.nl/~forth/"><img style="margin: 0px; height: 60px;" src="./images/UU.png"></a>
 		<a href="http://erc.europa.eu/"><img style="margin: 0px; height: 60px;" src="./images/ERC.png"></a>
 		<a href="http://www.nwo.nl/"><img style="margin: 0px; height: 60px;" src="./images/logo NWO_plain.png"></a>
 	</div>
