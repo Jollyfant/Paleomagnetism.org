@@ -73,10 +73,10 @@ $(function() {
 		//magnetizationVector = Site Remanent Magnetization Vector
 		//dykePole = Pole to Dyke Orientation
 		var referencePole = {
-			dec: Number($("#refPoleDec").val()), 
+			dec: Number($("#refPoleDec option:selected").text()), 
 			inc: Number($("#refPoleInc").val())
 		};
-		
+
 		var magnetizationVector = {
 			dec: Number($("#magDec").val()), 
 			inc: Number($("#magInc").val())
@@ -112,7 +112,7 @@ $(function() {
  */
  var ellipseEndpoints = function(mDec, mInc, dDx, dIx, color) {
  
-	var correctApproach = !$('#NTRApproach').prop('checked');
+	var NTRApproach = !$('#NTRApproach').prop('checked');
 	
 	var dDx = dDx*rad;
 	var dIx = dIx*rad;
@@ -190,7 +190,7 @@ $(function() {
 			var fillColor = color;
 		}
 		
-		if(correctApproach) {
+		if(NTRApproach) {
 			discreteEllipsePoints.push({
 				x: coords.dec, 
 				y: eqArea(coords.inc), 
@@ -204,9 +204,7 @@ $(function() {
 		}
 	}
 	
-	//I'm having issues with the NTR Analysis program. It appears to take dec + confidence as an endpoint on the ellipse which is not true.
-	//This gives a false representation of the real confidence.
-	if(!correctApproach) {
+	if(!NTRApproach) {
 		discreteEllipsePoints.push({x: mDec+dDx/rad, y: eqArea(mInc), inc: mInc});
 		discreteEllipsePoints.push({x: mDec-dDx/rad, y: eqArea(mInc), inc: mInc});
 		discreteEllipsePoints.push({x: mDec, y: eqArea(mInc+dIx/rad), inc: mInc+dIx/rad});
@@ -933,7 +931,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 			}, {
 				name: 'Solution 1 (Confidence Interval)',
 				type: 'scatter',
-				color: 'rgb(119, 152, 191)',
+				color: 'violet',
 				data: intersectionArray1,
 				marker: {
 					symbol: 'circle',
@@ -942,7 +940,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 			}, {
 				name: 'Solution 2 (Confidence Interval)',
 				type: 'scatter',
-				color: 'rgb(191, 119, 152)',
+				color: 'orange',
 				data: intersectionArray2,
 				marker: {
 					symbol: 'circle',
@@ -1514,7 +1512,10 @@ function dlItem ( string, extension ) {
 							</thead>
 							<tbody>
 								<td>
-									<input type="text" size="5" value="0" disabled id="refPoleDec" title="The reference pole must always be at North.">
+									<select id="refpoleDec" style="width: 50px; text-align: center;">
+										<option value="0">0</option>
+										<option value="180">180</option>
+									</select>
 									<input type="text" size="5" id="refPoleInc"> 
 								</td>
 								<td>
