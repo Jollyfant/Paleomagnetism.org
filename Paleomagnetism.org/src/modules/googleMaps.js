@@ -195,6 +195,7 @@ module.map.mapAddSites = function() {
 			nMissing++;
 		}
 	}
+	console.log(module.map.markers)
 }
 
 /* 
