@@ -372,7 +372,7 @@ function getCross ( cart1, cart2 ) {
  */
 function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, container) {
 	
-	//If iterate, we need confidence envelopes and calculate 125 permutations that we wish to compared
+	//If iterate, we need confidence envelopes and calculate 75 permutations that we wish to compared
 	if(iterate) {
 	
 		//Parameters to determine confidence ellipses on the three specified vector
@@ -461,6 +461,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 	
 	var i = 0;
 	var bar = $("#iterationBar");
+	var strikeData = new Array();
 	
 	//Asynchronous implementation of iterations
 	function timed() {
@@ -587,6 +588,8 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				'dykeStrike': ((intercept.two.dec+90)%360).toFixed(1),
 				'dykeDip': (90-intercept.two.inc).toFixed(1)
 			});
+			strikeData.push(Number((intercept.one.dec)%360));
+			strikeData.push(Number((intercept.two.dec)%360));
 		};
 		
 		//One iteration completed
@@ -598,11 +601,54 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 			
 		//Escape the timed routine
 		} else {
-							
+			
 			if(!iterate) {
 				//Update table with found information
 				$("#NTRInputTable").html('<table class="sample" style="text-align: center"> <thead> <tr> <th> Reference Vector </th> <th> Site Vector </th> <th> Pole to Dyke </th> <th> Beta </th> </tr> </thead> <tbody> <tr> <td> <b> Declination </b>' + referencePole.dec.toFixed(1) + '<br> <b> Inclination </b>' + referencePole.inc.toFixed(1) + ' </td> <td> <b> Declination </b>' + magnetizationVector.dec.toFixed(1) + '<br> <b> Inclination </b>' + magnetizationVector.inc.toFixed(1) + ' </td> <td> <b> Declination </b>' + dykePole.dec.toFixed(1) + '<br> <b> Inclination </b>' + dykePole.inc.toFixed(1) + ' </td> <td> ' + beta.toFixed(1) + ' </td> </tr> </tbody> </table>').show(); 
 				$("#NTRSolutionTable").html('<table class="sample" style="text-align: center"> <thead> <tr> <th> Solution 1 - Rotation Pole </th> <th>Solution 2 - Rotation Pole </th>  </tr> </thead> <tbody> <tr> <td> <b> Declination </b>' + intS.dec.toFixed(1) + '<br> <b> Inclination </b>' + intS.inc.toFixed(1) + '<br> <b> Angle of Rotation </b> ' + angle1.toFixed(1) + ' <br> <b> Sense of Rotation </b> ' + type1 + ' <br> <b> Angle Between Planes </b> ' + anglePlane1.toFixed(1) + ' <hr> <b> Initial Dyke Strike </b> ' + ((intercept.one.dec+90)%360).toFixed(1) +  ' <br> <b> Initial Dyke Dip </b> ' + (90-intercept.one.inc).toFixed(1) + '</td> <td> <b> Declination </b>' + intS2.dec.toFixed(1) + '<br> <b> Inclination </b>' + intS2.inc.toFixed(1) + '<br> <b> Angle of Rotation </b> ' + angle2.toFixed(1) + ' <br>  <b> Sense of Rotation </b> ' + type2 + ' <br> <b> Angle Between Planes </b> ' + anglePlane2.toFixed(1) + ' <hr> <b> Initial Dyke Strike </b> ' + ((intercept.two.dec+90)%360).toFixed(1) +  ' <br> <b> Initial Dyke Dip </b> ' + (90-intercept.two.inc).toFixed(1) + ' </td> </tr> </table>').show();
+			
+				//Rodrigues' rotation formula (https://en.wikipedia.org/wiki/Rodrigues'_rotation_formula)
+				//To calculate point after rotation around axis.
+				var vVector = {'x': 0, 'y': 0, 'z': 1};
+				
+				var kVector = cart(intS.dec, intS.inc);
+				var crossProd = getCross(kVector, vVector);
+				var dot = kVector.x * vVector.x + kVector.y * vVector.y + kVector.z * vVector.z;
+
+				//Seems OK.
+				if(type1 === 'CCW') {
+					var theta = angle1;
+				} else if(type1 === 'CW') {
+					var theta = -angle1;
+				}
+				
+				var vRotated = {'x': 0, 'y': 0, 'z': 0};
+				vRotated.x = vVector.x * Math.cos(theta * rad) + crossProd.x * Math.sin(theta * rad) + kVector.x * dot * (1 - Math.cos(theta * rad));
+				vRotated.y = vVector.y * Math.cos(theta * rad) + crossProd.y * Math.sin(theta * rad) + kVector.y * dot * (1 - Math.cos(theta * rad));
+				vRotated.z = vVector.z * Math.cos(theta * rad) + crossProd.z * Math.sin(theta * rad) + kVector.z * dot * (1 - Math.cos(theta * rad));
+
+				var pointLoc = dir(vRotated.x, vRotated.y, vRotated.z);
+				var beddingdata = getPlaneData(pointLoc, 'GC');
+				
+				var kVector = cart(intS2.dec, intS2.inc);
+				var crossProd = getCross(kVector, vVector);
+				var dot = kVector.x * vVector.x + kVector.y * vVector.y + kVector.z * vVector.z;
+
+				//Seems OK.
+				if(type2 === 'CCW') {
+					var theta = angle2;
+				} else if(type2 === 'CW') {
+					var theta = -angle2;
+				}
+				
+				var vRotated = {'x': 0, 'y': 0, 'z': 0};
+				vRotated.x = vVector.x * Math.cos(theta * rad) + crossProd.x * Math.sin(theta * rad) + kVector.x * dot * (1 - Math.cos(theta * rad));
+				vRotated.y = vVector.y * Math.cos(theta * rad) + crossProd.y * Math.sin(theta * rad) + kVector.y * dot * (1 - Math.cos(theta * rad));
+				vRotated.z = vVector.z * Math.cos(theta * rad) + crossProd.z * Math.sin(theta * rad) + kVector.z * dot * (1 - Math.cos(theta * rad));
+
+				var pointLoc = dir(vRotated.x, vRotated.y, vRotated.z);
+				var beddingdata2 = getPlaneData(pointLoc, 'GC');
+			
 			}
 	
 		//Do the proper positive/negative color scheme for vectors
@@ -757,6 +803,32 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				marker: {
 					symbol: 'circle'
 				}
+			}, {
+				name: 'Solution 1 - Rotated Bedding',
+				type: 'line',
+				color: 'orange',
+				dashStyle: 'ShortDash',
+				enableMouseTracking: false,
+				data: beddingdata.one
+			}, {
+				type: 'line',
+				color: 'orange',
+				linkedTo: ':previous',
+				enableMouseTracking: false,		
+				data: beddingdata.two
+			}, {
+				name: 'Solution 2 - Rotated Bedding',
+				type: 'line',
+				color: 'orange',
+				dashStyle: 'ShortDash',
+				enableMouseTracking: false,
+				data: beddingdata2.one
+			}, {
+				type: 'line',
+				color: 'orange',
+				linkedTo: ':previous',
+				enableMouseTracking: false,		
+				data: beddingdata2.two
 			});
 		}
 		
@@ -881,6 +953,9 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 		
 		//Call plotting series
 		drawGraph(plotSeries, container);
+		if(iterate) {
+			plotWindRose(strikeData, 'windrosePlot');
+		}
 		isRunning = false;
 			}
 		}
@@ -980,6 +1055,8 @@ function drawGraph( plotSeries, container ) {
 	chartFoldLeft = new Highcharts.Chart(chartOptions); //Initialize chart with specified options.
 	$("#"+container).show();
 }
+
+
 /* FUNCTION getPlaneData
  * Description: calculates discrete points about a pole (dirIn)
  *            : either type GC (plane) or MAD (ellipse)
@@ -1180,6 +1257,129 @@ function getPlaneData ( dirIn, type, MAD, signInc ) {
 	
 }(Highcharts));
 
+
+/*
+ * FUNCTION plotWindRose
+ * Description: code for the plotting of a wind rose and sorting of declination in bins of 10 degrees
+ * Input: data array with the declinations, and container for chart to be rendered in
+ * Output: VOID (calls Highcharts constructor for new chart)
+ */
+function plotWindRose(newDatArray, container) {
+	
+	//This algorithm sorts declinations in the newDatArray to bins of binSize degrees
+	//Notice: 360 % binSize must be 0 
+	var sortedArr = new Object();
+	var binSize = 6;
+	
+	for(var i = 0; i < newDatArray.length; i++) {
+	
+		//Round to the nearest bin degrees
+		var declination = Math.abs(Math.round(newDatArray[i] / binSize) * binSize)%360;
+		
+		//If the bin already exists, increment by one, otherwise create the bin starting at 1
+		sortedArr[declination] ? sortedArr[declination] += 1 : sortedArr[declination] = 1;
+	}
+	
+	//Define bucket for data to be used in the chart, and define a max variable to find the maximum declinations in any bin
+	var dataList = new Array();
+	var max = 0;
+	
+	console.log(sortedArr);
+	
+	//Go over all 36 bins in the 0 - 350 range
+	for(var i = 0; i < 360; i+= binSize) {
+	
+		//If we have declinations in the particular bin, put the y value to the sqrt of this number (to prevent linear stretching if one bin becomes very large)
+		//Otherwise, push a y value of 0, which will be added to the series but is invisible to the user
+		//We need to do this, otherwise the rose chart does not always take bins of size 10 degrees
+		if(sortedArr[i] !== undefined) {
+			dataList.push({x: i, y: Math.sqrt(sortedArr[i])});
+		} else {
+			dataList.push({x: i, y: 0});		
+		}
+		
+		//Get the maximum value of declinations, this will be the maximum y-value for the chart as wells
+		if(sortedArr[i] > max) {
+			max = sortedArr[i];
+		}
+	}
+	console.log(dataList);
+	
+	//Data series for the rose chart
+	var dataSeries = [{
+		'borderWidth': 1, 
+		'borderColor': 'grey',  
+		'zIndex': 100, 
+		'name': 'data', 
+		'data': dataList
+	}];
+
+    // Parse the data from an inline table using the Highcharts Data plugin
+    var chartOptions = {
+        chart: {
+            polar: true,
+            type: 'column',
+			renderTo: container,
+        },
+        legend: {
+			enabled: false,
+        },
+		title: {
+			text: ''
+		},
+        xAxis: {
+			minorTickPosition: 'outside',
+			type: 'linear',
+			min: 0,
+			max: 360,
+            minorGridLineWidth: 0,
+            tickPositions: [0, 90, 180, 270, 360],
+            minorTickInterval: 10,
+            minorTickLength: 2,
+            minorTickWidth: 1,
+            labels: {
+                formatter: function () {
+                    return this.value + '\u00B0'; //Add degree symbol to x-axis labels.
+                }
+            }
+        },
+		pane: {
+			startAngle: 0,
+			endAngle: 360
+     	},
+        yAxis: {
+      	    min: 0,
+			max: Math.sqrt(max),
+			tickPositions: [0, Math.sqrt(max)],
+			endOnTick: false,
+			labels: {
+				enabled: false
+			},
+        },
+        tooltip: {
+            formatter: function () {
+				return '<b> Cumulative Declination </b> <br><b>Declination Bin: </b>' + this.x + '<br><b>Number of Declinations: </b>' + this.y.toFixed(0);
+			}
+        },
+		credits: {
+			text: "Paleomagnetism.org [Oroclinal Module]",
+			href: ''
+		},
+        plotOptions: {
+            series: {
+                shadow: false,
+                groupPadding: 0,
+                pointPlacement: 'on'
+            },
+			column: {
+				colorByPoint: true
+			}
+        },
+		series: dataSeries,
+    }
+	new Highcharts.Chart(chartOptions);
+}
+
 // Now we want to add "Download CSV" to the exporting menu.
 // Code changed after https://github.com/highslide-software/export-csv
 // Original Author: Torstein Honsi (Highcharts)
@@ -1255,7 +1455,7 @@ function dlItem ( string, extension ) {
 			
 			<!-- Tab for NTR Analysis -->
 			<div id="NTRTab" style="text-align: center;">
-				<h2> Net Tectonic Rotation Analysis <small> blablablabla </small> </h2>
+				<h2> Net Tectonic Rotation Analysis </small> </h2>
 				<div style="margin: 0 auto; width: 800px; border: 1px dotted rgb(119, 152, 191);">
 					<table class="sample" style="text-align: center;"> 
 						<thead> 
@@ -1265,7 +1465,7 @@ function dlItem ( string, extension ) {
 						</thead>
 						<tbody>
 							<td>
-								<b> Dec: </b> <input type="text" size="5" id="refPoleDec">
+								<b> Dec: </b> <input type="text" size="5" value="0" disabled id="refPoleDec">
 								<br><b> Inc: </b> <input type="text" size="5" id="refPoleInc"> 
 							</td>
 							<td>
@@ -1291,7 +1491,7 @@ function dlItem ( string, extension ) {
 				
 				<button id="iterationButton"> Iterate over Confidence Intervals </button>
 				<p>
-				<input type="checkbox" id="incorrect"><label for="incorrect"> Use approach by NTR software to benchmark (incorrect approach) </label>
+				<input type="checkbox" id="incorrect"><label for="incorrect"> Use approach by NTR software to benchmark (to be removed) </label>
 				<div id="iterationBar" style="width: 200px; display: inline-block;"> </div>
 
 				<table class="sample" style="text-align: center;">
@@ -1309,6 +1509,7 @@ function dlItem ( string, extension ) {
 				</table>
 				</div>
 				<div id="iterationPlot" style="width: 800px; height: 800px; margin: 0 auto; display: none;"></div>
+				<div id="windrosePlot" style="width: 800px; height: 800px; margin: 0 auto;"></div>
 			</div>
 			
 			<div id="optionsTab">
