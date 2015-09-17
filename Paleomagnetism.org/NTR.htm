@@ -66,7 +66,7 @@ $(function() {
 			return;
 		}
 		
-		isRunning = true;
+
 		
 		//Definition of known vectors
 		//referencePole = Known Reference Pole
@@ -87,6 +87,13 @@ $(function() {
 			inc: Number($("#dykeInc").val())
 		};
 	
+		if(referencePole.dec === 0 && referencePole.inc === 0 && magnetizationVector.dec === 0 && magnetizationVector.inc === 0 && dykePole.dec === 0 && dykePole.inc === 0) {
+			notify('failure', 'Please fill in the required input.');
+			return;
+		}
+		
+		isRunning = true;
+		
 		if(event.target.id == 'initializeNTR') {
 			NTRAnalysis(referencePole, magnetizationVector, dykePole, false, 'initialPlot');
 			$("#interationDiv").show();
@@ -710,9 +717,9 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				turboThreshold: 0,
 				data: sCircle.pos,
 				color: 'grey',
-				dashStyle: 'Dot',
+				dashStyle: 'ShortDash',
 				enableMouseTracking: false,
-				lineWidth: 2,
+				lineWidth: 1,
 				marker: {
 					enabled: false	
 				}
@@ -729,7 +736,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				name: 'Bisector (Site Pole - Reference Direction)',
 				type: 'line',
 				color: 'red',
-				lineWidth: 2,
+				lineWidth: 1,
 				enableMouseTracking: false,
 				marker: {
 					enabled: false
@@ -742,7 +749,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				color: 'red',
 				dashStyle: 'ShortDash',
 				enableMouseTracking: false,
-				lineWidth: 2,
+				lineWidth: 1,
 				marker: {
 					enabled: false
 				},
@@ -752,7 +759,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				type: 'line',
 				enableMouseTracking: false,
 				color: 'blue',
-				lineWidth: 2,
+				lineWidth: 1,
 				marker: {
 					enabled: false
 				},
@@ -763,7 +770,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				color: 'blue',
 				dashStyle: 'ShortDash',
 				enableMouseTracking: false,
-				lineWidth: 2,
+				lineWidth: 1,
 				marker: {
 					enabled: false
 				},
@@ -773,7 +780,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				type: 'line',
 				color: 'green',
 				enableMouseTracking: false,
-				lineWidth: 2,
+				lineWidth: 1,
 				marker: {
 					enabled: false
 				},
@@ -783,7 +790,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				type: 'line',
 				color: 'green',
 				dashStyle: 'ShortDash',
-				lineWidth: 2,
+				lineWidth: 1,
 				linkedTo: ':previous',
 				enableMouseTracking: false,
 				marker: {

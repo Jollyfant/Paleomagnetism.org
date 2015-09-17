@@ -68,7 +68,13 @@
 			<li class="menuLink"><a class="link" href="./cite.html"> References </a>
 			<li class="menuLink"><a class="link" href="mailto:fort@paleomagnetism.org"> Contact </a>
 		</div>
-		
+		<div id="control" style="border: 1px dotted rgb(119, 152, 191); margin: 5px; padding: 0px; font-size: 10px;">
+			<table class="sample">
+				<div style="position: absolute; padding: 5px"><button id="hideControls" style="height: 20px;"></button></div>
+				<thead> <th> Navigation </th> <th> PCA Line (Forced) </th> <th> Projection (W/Up-N/Up) </th> <th> Specimen Coordinates </th> <th> Tectonic Coordinates </th> <th> PCA Great Circle (Forced) </th> <th> Step Visibility </th> <th> Step Selection </th> </thead>
+				<tbody> <td> Arrow Keys or WSDA </td> <td> 1 (2) </td> <td> 3 (toggle) </td> <td> 7 (toggle) </td> <td> 8 (toggle) </td> <td> 9 (0) </td> <td> z or - </td> <td> x or + </td> </tbody>
+			</table>
+		</div>
 		<div id="tabs">
 			<ul>
 				<li><a href="#homeTab" title="Home"> Home </a></li>
@@ -129,9 +135,7 @@
 						<p>
 						</div>
 						<div id="intensityPlot" style="display: none; width: auto; height: 500px; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
-				<div style="width:auto; margin:0 auto; text-align: center;">
-					<p><b> Controls: </b>Use the arrow keys (or wsda) to navigate; 1 (2) for line (forced); 3 for toggle W/Up-N/Up; 7 toggle for specimen coordinates; 8 for toggle tilt correction; 9 (0) for plane (forced); x (+) to toggle selection; z (-) to toggle visibility
-				</div>
+
 			</div>
 	
 			<!-- DIRECTION FITTING TAB -->
@@ -178,6 +182,7 @@
 					<p> Click here to add a sticky component to the equal area projection. This component will be visible for all specimens and can be used to indicate a present day field component.
 					<p> <input type="checkbox" id="labelFlag"><label for="labelFlag"><b> Show data labels for demagnetization steps</b> </label>
 					<p> <input type="checkbox" id="originFlag"><label for="originFlag"><b> Include origin as point</b> </label>
+					<p> <button id="showControls"> Show Controls </button>
 					
 					<h2> Reset Application </h2>
 					<p><button id="clearStorage" type="button" onClick="clearStorage()" title="Clear local storage">Clear local storage</button>

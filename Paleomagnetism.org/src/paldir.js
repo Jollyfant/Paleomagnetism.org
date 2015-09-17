@@ -97,6 +97,17 @@ function moveDemagnetizationStep ( direction ) {
 //Fire on DOM ready
 $(function() {
 	
+	$("#hideControls").button({
+		icons: { primary: "ui-icon-close"},
+		text: false
+	}).click( function () {
+		$("#control").hide();
+	});
+	
+	$("#showControls").button().click( function () {
+		$("#control").show();
+	});
+	
 	//Click function to add sticky direction to equal area projections
 	$("#addSticky").click( function () {
 		var input = prompt("Please enter name, declination, inclination seperated by a comma.");
