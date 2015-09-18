@@ -9,6 +9,34 @@
     margin: 10px;
 }
 
+input {
+	text-align: center;
+}
+
+table.team tr td {
+	padding-bottom: 10px;
+	font-size: 12px;
+	padding-right: 20px;
+	vertical-align: top;
+}
+
+table.team tr td.avatar {
+	vertical-align: middle;
+
+}
+table.team tr td { 
+	padding-bottom: 20px;
+}
+table.team tr td.avatar img {
+	border: 2px solid #DDD;;
+	border-radius: 75px;
+	opacity: 1;
+}
+
+table.team tr td.avatar img:hover {
+	border: 2px solid #AAA;
+	opacity: 0.8;
+}
 
  .link {
 	padding: 5px;
