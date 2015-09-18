@@ -9,7 +9,7 @@
  */
  
  //Current application version
-version = 'vALPHA.1509.1';
+version = 'vALPHA.1509.2';
 
 //Create the modules object that will carry all functional modules
 module = new Object();
