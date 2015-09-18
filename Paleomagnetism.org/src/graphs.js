@@ -97,7 +97,7 @@ var eqAreaDirections = function(siteName) {
 			}
         },
 		'title': {
-            'text': siteName === 'TEMP' ? 'Temporary Site' : siteName,
+            'text': siteName === 'TEMP' ? 'Temporary Site (Unsaved)' : siteName,
 			'style': { 
 				'fontSize': '26px'
 			}
@@ -304,7 +304,7 @@ var eqAreaVGPs = function(name) {
 			}
         },
 		'title': {
-			'text': name == 'TEMP' ? 'Temporary Sites' : name,  
+			'text': name == 'TEMP' ? 'Temporary Site (Unsaved)' : name,  
 			'style': { 
 				'fontSize': '26px'
 			}			
