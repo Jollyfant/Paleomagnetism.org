@@ -2933,8 +2933,12 @@ function importUtrecht(applicationData, text) {
 		var skip = false;
 		
 		for(var j = 0; j < parameters.length; j++) {
-		
-			var parameterPoints = parameters[j].split(/[,\s\t]+/); //Split by commas
+			
+			//Split by commas and trim for leading/trailing spaces
+			var parameterPoints = parameters[j].split(/[,]+/); 
+			for(var k = 0; k < parameterPoints.length; k++) {
+				parameterPoints[k] = parameterPoints[k].trim();
+			}
 			
 			//Get specimen name, core and bedding orientation from Utrecht format contained in first row of datablock (there j = 0)
 			//Check if NaN (number("")) becomes NaN is field is empty -> simply set value to 0.
