@@ -1453,7 +1453,7 @@ function plotResiduals (data, databs, min, max) {
 			'name': '100 Summed Bootstrapped Residuals',
 			'color': 'rgba(191, 152, 119, 0.5)',
 			'data': data2bs
-		}] '
+		}]
     });
 }
 
