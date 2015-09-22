@@ -207,7 +207,7 @@ module.CTMD.initialize = function () {
 		//Outer loop: let i run from 1 to (N - 1)
 		//Inner loop: let j run from (i + 1) to N
 		//Length is defined as (N - 1)
-		//When j reaches N -> increment i, otherwise increment j
+		//When j reaches N -> increment i and reset j to i+1, otherwise increment j
 		if(i < length) {
 			j++;
 			if(j > length) {
@@ -275,7 +275,6 @@ module.CTMD.monte = function (N, R, K, X, Y, Z) {
 	var directionTwo = dir(X[1], Y[1], Z[1]);
 
 	var angleBetween = angle(directionOne.dec, directionOne.inc, directionTwo.dec, directionTwo.inc);
-	
 	if(angleBetween > 90) {
 		X[1] = -X[1];
 		Y[1] = -Y[1];
@@ -288,9 +287,9 @@ module.CTMD.monte = function (N, R, K, X, Y, Z) {
 		watsonData.push({
 			'k': K[i], 
 			'R': R[i], 
-			'mX': X[i], 
-			'mY': Y[i], 
-			'mZ': Z[i]
+			'xMean': X[i], 
+			'yMean': Y[i], 
+			'zMean': Z[i]
 		});
 	};
 
@@ -298,14 +297,16 @@ module.CTMD.monte = function (N, R, K, X, Y, Z) {
 	var dataWatson = module.CTMD.findWatsonParam(watsonData);
 	
 	//Looks through simulated Watson parameters to find the Monte Carlo probability of observing a value that exceeds V.
-	var probability = module.CTMD.findProbability(dataWatson, simulatedWatson)
+	var probability = module.CTMD.findProbability(dataWatson, simulatedWatson);
 	
 	//Get the critical angle from the critical Watson parameter
-	var criticalAngle = module.CTMD.resmonte(simulatedWatson.v95, R, K)
+	var criticalAngle = module.CTMD.resmonte(simulatedWatson.v95, R, K);
 	
 	//Classification according to McFadden and McElhinny (1990)
-	//Finds probability that an angle exceeds the critical angle
+	//Finds probability that two mean vectors sharing angle angleSet fall within the simulated Watson parameters
 	//Taken from the CTMD.f95 routine
+	
+	//If the probability is > 5%, within 95% confidence the Watson parameter falls in the simulated list (null hypothesis is rejected)
 	if(probability > 0.05) {
 		var angleSet = 5;
 		var vAngle = module.CTMD.vMake(R, K, angleSet);
@@ -344,33 +345,33 @@ module.CTMD.monte = function (N, R, K, X, Y, Z) {
 
 /* FUNCTION module.CTMD.vMake
  * Description: Calculates the V statistics if mean directions were angle apart
- * Input: R, k, and angle
+ * Input: R@array, kappa@array, and angle@float
  * OUTPUT: watson parameter
  */
-module.CTMD.vMake = function (R, K, angleSet) {
+module.CTMD.vMake = function (R, kappa, setAngle) {
 	 
 	"use strict";
 		
-	var angleSet = angleSet*rad;
+	var setAngle = setAngle*rad;
 	 
 	//Create Cartesian coordinates for two vectors with angle between them
-	var X = [0, Math.sin(angleSet)];
-	var Y = [0, 0];
-	var Z = [1, Math.cos(angleSet)];
+	var xVector = [0, Math.sin(setAngle)];
+	var yVector = [0, 0];
+	var zVector = [1, Math.cos(setAngle)];
 	 
+	//Format data for the findWatsonParam routine
 	var watsonAngle = new Array();
-	 
 	for(var i = 0; i < 2; i++) {
 		watsonAngle.push({
-			'k': K[i], 
+			'k': kappa[i], 
 			'R': R[i], 
-			'mX': X[i], 
-			'mY': Y[i], 
-			'mZ': Z[i]
+			'xMean': xVector[i], 
+			'yMean': yVector[i], 
+			'zMean': zVector[i]
 		});
 	};
 	
-	 return module.CTMD.findWatsonParam(watsonAngle);
+	return module.CTMD.findWatsonParam(watsonAngle);
 }
 
 
@@ -393,19 +394,17 @@ module.CTMD.resmonte = function (v95, R, k) {
 	//McFadden and McElhinny (1990) (equation: 19)
 	var A = (((Rwc*Rwc) - (Math.pow(k[0]*R[0], 2)) - (Math.pow(k[1]*R[1], 2))) / (2 * k[0]*R[0] * k[1]*R[1]));
 
-	//Check
+	//Check floating point numbers
 	if(A <= -0.9999) {
 		console.log('Solution is not resolvable.');
 		return 0;
-	} else {
-	
-		if(A > 1) {
-			A = 1;
-		}
-		
-		//Convert to critical angle
-		return Math.acos(A)/rad;
+	} else if(A > 1) {
+		A = 1;
 	}
+		
+	//Convert to critical angle
+	return Math.acos(A)/rad;
+	
 }
 
 /* FUNCTION module.CTMD.findProbability
@@ -425,15 +424,12 @@ module.CTMD.findProbability = function (dataWatson, simulatedWatson) {
 	//Loop through all sampled Watson parameters and find the index where out Watson parameter is larger than the test values
 	//This index will help us calculated the probability.
 	var length = simulatedWatson.parameters.length;
-
 	for( var i = 0; i < length; i++ ) {
 		if( dataWatson <= simulatedWatson.parameters[i] ) {
 			return ( 1 - ((i)/(length-1)) );
 		}
 	}
-	
 	return 0; //Unfound: probability is 0.
-
 }
 
 /* Function: module.CTMD.sampleWatson
@@ -446,10 +442,10 @@ module.CTMD.sampleWatson = function (NI, KI) {
 	"use strict";
 	
 	//Bucket to capture Watson parameters and number of samples
-	var nSamples = 2500;
+	var nSimulations = 2500;
 	var WatsonParams = new Array();
 	
-	for(var i = 0; i < nSamples; i++) {
+	for(var i = 0; i < nSimulations; i++) {
 	
 		//Monte Carlo sampling of directions with (N, k) and calculation of Watson parameter for the simulated data set
 		var sampleParams = module.CTMD.pick(NI, KI);
@@ -465,9 +461,9 @@ module.CTMD.sampleWatson = function (NI, KI) {
 	});
 
 	//Return the parameter array and the 99% and 95% confidence bound respectively
-	//These are the critical Watson parameters
-	var conf99 = parseInt(0.99*nSamples);
-	var conf95 = parseInt(0.95*nSamples);
+	//These are the critical Watson parameters at the specified confidence limits
+	var conf99 = parseInt(0.99*nSimulations);
+	var conf95 = parseInt(0.95*nSimulations);
 
 	return { 'parameters': WatsonParams, 'v99': WatsonParams[conf99], 'v95': WatsonParams[conf95] };
 
@@ -491,9 +487,9 @@ module.CTMD.findWatsonParam = function (sampleParams) {
 	//Weighed sum
     for(var i = 0; i < 2; i++) {
 		Sw += sampleParams[i].k * sampleParams[i].R;
-		X1 += sampleParams[i].k * sampleParams[i].R * sampleParams[i].mX;
-		X2 += sampleParams[i].k * sampleParams[i].R * sampleParams[i].mY;
-		X3 += sampleParams[i].k * sampleParams[i].R * sampleParams[i].mZ;
+		X1 += sampleParams[i].k * sampleParams[i].R * sampleParams[i].xMean;
+		X2 += sampleParams[i].k * sampleParams[i].R * sampleParams[i].yMean;
+		X3 += sampleParams[i].k * sampleParams[i].R * sampleParams[i].zMean;
     }
     
 	//Weighed overall resultant vector
@@ -558,9 +554,9 @@ module.CTMD.mean = function (N, coords) {
 	var kappa = (N === 1) ? 0 : (N - 1)/(N - R);
 	
 	return {
-		'mX': xMean, 
-		'mY': yMean, 
-		'mZ': zMean, 
+		'xMean': xMean, 
+		'yMean': yMean, 
+		'zMean': zMean, 
 		'R' : R, 
 		'k': kappa
 	};
