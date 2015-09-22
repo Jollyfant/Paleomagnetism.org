@@ -1076,10 +1076,10 @@ var processUserInput = function ( data, type, name ) {
 	
 	//Sanitization for literature (sampled) and magnetic directions is different
 	//Type: magnetic directions (interpreted or default)
-	if(type == 'dir' || type == 'int') {
+	if(type === 'dir' || type === 'int') {
 	
 		//Return if no input or less than 2 directions
-		if(lines.length == 0) {
+		if(lines.length === 0) {
 			sanitized = false;
 			notify('failure', 'Data input is empty.');
 		} if(lines.length < 2) {
@@ -1098,41 +1098,29 @@ var processUserInput = function ( data, type, name ) {
 			p = $.grep(p, function(n) { 
 				return(n) 
 			});
+			
+			//Default bedding parameters and sample name
+			var bedOrient = 0, bedDip = 0;
+			var sampleName = name + '.' + (i+1);
+			
+			//Three (five) columns in the input, overwrite sample name from column three (five)
+			if(p.length === 3) {
+				var sampleName = p[2];
+			} else if (p.length === 5) {
+				var sampleName = p[4];
+			}	
+			
+			//Four or more columns, take bedding parameters
+			if(p.length > 3) {
+				var bedOrient = p[2];
+				var bedDip = p[3];
+			}
 	
-			p[0] = (p[0]%360);
-		
-			//Bedding orientations defaults to 0 - if user input bedding on column 3 read the data
-			var bedOrient = 0;
-			if(p[2] != undefined) {
-				if(!$.isNumeric(Number(p[2]))){
-					var c3name = true;				//Did user put sample name on column 3 instead of bedding -> put c3name to true
-				} else {
-					bedOrient = p[2];				//Otherwise take the bedding
-				}
-			}
-
-			var bedDip = 0;							//Identical for bedding dip
-			if(p[3] != undefined) {
-				if(!isNaN(Number(p[3]))) {
-					bedDip = p[3];
-				} else {
-					bedDip = 0;
-				}
-			}
-		
-			var sampleName = name + '.' + (i+1);	//Default sample name is the site name concatenated with an increment
-			if(c3name) {
-				sampleName = p[2]; 					//If user put sample name on column 3 instead of 5
-			}
-			if(p[4] != undefined) {
-				sampleName = p[4];					//Otherwise, if it exists, take sample name from the last column
-			}
-
 			//Check declination/inclination bounds (0, 360) and (-90, 90)
+			//If we find a problem, break the procedure
 			if( Number(p[0]) >= 0 && Number(p[0]) <= 360 && Number(p[1]) >= -90 && Number(p[1]) <= 90 && Number(bedOrient) >= 0 && Number(bedOrient) <= 360)  {
 				output.push([Number(p[0]), Number(p[1]), Number(bedOrient), Number(bedDip), sampleName]);
 			} else {
-				//Found a problem, break the procedure
 				sanitized = false;
 				break;								
 			}
