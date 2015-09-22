@@ -789,7 +789,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				type: 'line',
 				visible: false,
 				color: 'orange',
-				dashStyle: 'ShortDash	',
+				dashStyle: 'ShortDash',
 				enableMouseTracking: false,
 				marker: {
 					enabled: false
@@ -797,7 +797,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				data: beddingdata2.two
 			});
 		}
-
+		
 		//If the user wishes to iterate over the confidence intervals, show these intervals on the graph
 		if(iterate) {
 			plotSeries.push({
@@ -955,7 +955,7 @@ function drawGraph( plotSeries, container ) {
 			}
         },
         subtitle: {
-			text: container === 'iterationPlot' ? 'Collection of solutions for rotation poles ' : 'Solution for rotation poles',
+			text: container === 'iterationPlot' ? 'Collection of solutions for rotation poles ' : 'Solution for rotation poles (dotted planes are lower hemisphere)',
         },
       	pane: {
 			startAngle: 0,
@@ -974,9 +974,9 @@ function drawGraph( plotSeries, container ) {
 		tooltip: {
 			formatter: function() {
 				if(this.series.name == 'Solution 1 (Confidence Interval)' || this.series.name == 'Solution 2 (Confidence Interval)') {
-					return '<b>Name:</b> ' + this.series.name + '<br><b>Declatinion:</b> ' + this.x.toFixed(1) + '<br><b>Inclination:</b> ' + this.point.inc.toFixed(1) + '<br><b>Rotation:</b> ' + this.point.rotation.toFixed(1) + ' ' + this.point.rotationSense + '<br><b>Initial Dyke Strike:</b> ' + this.point.dykeStrike + '<br><b>Initial Dyke Dip:</b> ' + this.point.dykeDip
+					return '<b>Name:</b> ' + this.series.name + '<br><b>Declatinion:</b> ' + this.x.toFixed(1) + '<br><b>Inclination:</b> ' + this.point.inc.toFixed(1) + '<br><b>Rotation:</b> ' + this.point.rotation.toFixed(1) + ' ' + this.point.rotationSense + '<br><b>Initial Dyke Strike:</b> ' + this.point.dykeStrike + '<br><b>Initial Dyke Dip:</b> ' + this.point.dykeDip;
 				} else {
-					return '<b>Name:</b> ' + this.series.name + '<br><b>Declatinion:</b> ' + this.x.toFixed(1) + '<br><b>Inclination:</b> ' + this.point.inc.toFixed(1)
+					return '<b>Name:</b> ' + this.series.name + '<br><b>Declatinion:</b> ' + this.x.toFixed(1) + '<br><b>Inclination:</b> ' + this.point.inc.toFixed(1);
 				}
 			}
 		},

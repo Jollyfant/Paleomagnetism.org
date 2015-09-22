@@ -233,7 +233,7 @@ function calcCircularVariance( data ) {
 	xCoord = xCoord/data.length;
 	yCoord = yCoord/data.length;
 	
-	return Math.sqrt(xCoord*xCoord + yCoord*yCoord);
+	return 1 - Math.sqrt(xCoord*xCoord + yCoord*yCoord);
 }
 
 function varianceFoldtest() {
@@ -298,7 +298,7 @@ function varianceFoldtest() {
 				tilts.push([unfoldedDeclination, 0]);		
 			}
 						
-			//Obtain the eigenvalues of these directions
+			//Obtain the circular variance of these directions
 			var sdev = calcCircularVariance(tilts);
 			taus.push(sdev);
 			
