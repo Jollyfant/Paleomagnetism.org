@@ -2239,7 +2239,7 @@ function intensity ( sample ) {
 	var maxR = 0;
 	for(var i = 0; i < sample.data.length; i++) {
 		if(sample.data[i].visible) {
-			//Remove mT, μT or whatever from step - just take a number
+			//Remove mT, μT or whatever from step - just take a number (regex)
 			var step = sample.data[i].step.replace(/[^0-9.]/g, "");
 			var R = Math.sqrt(sample.data[i].x*sample.data[i].x + sample.data[i].y*sample.data[i].y+sample.data[i].z*sample.data[i].z);
 			dataSeries.push({
@@ -2252,17 +2252,21 @@ function intensity ( sample ) {
 			if(R > maxR) {
 				maxR = R;
 			}
+		} else {
+			dataDecay.push(null);
 		}
 	}
-	
+		
 	//Implementation test for sum of differences (normalized to absolute intensity)
 	var maxRdiff = Math.max.apply(Math, dataDecay);
 	for(var i = 0; i < (dataDecay.length - 1); i++) {
-		var step = sample.data[i+1].step.replace(/[^0-9.]/g, "");
-		dataSeriesDecay.push({
-			'x': Number(step), 
-			'y': (maxR*(dataDecay[i] + dataDecay[i+1])/maxRdiff)/specimenVolume
-		});
+		if(dataDecay[i] !== null) {
+			var step = sample.data[i+1].step.replace(/[^0-9.]/g, "");
+			dataSeriesDecay.push({
+				'x': Number(step), 
+				'y': (maxR*(dataDecay[i] + dataDecay[i+1])/maxRdiff)/specimenVolume
+			});
+		}
 	}
 
 	var chartOptions = {
