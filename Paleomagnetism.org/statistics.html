@@ -46,6 +46,17 @@
 	<script src="./src/modules/ctmd.js"></script> <!-- Mainframe -->
 	<script src="./src/modules/apwp.js"></script> <!-- APWPs -->
 	<script src="./src/modules/foldtest.js"></script> <!-- APWPs -->
+
+	<!-- Google Analytics -->
+	<script>
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-68024347-1', 'auto');
+	ga('send', 'pageview');
+	</script>
+
 </HEAD>
 
 <BODY>
@@ -403,11 +414,12 @@
 				<p>
 				<b> Data usage: </b>the inclination shallowing module use accepted directional data after the cutoff is applied from the sites selecte below. A minimum of 80 directions is required for the module to run.
 				<p>
+				<select multiple id="EISel" title="" class="siteSelector"></select>
+				<p>
 				<div id="EIRadio" style="display: inline-block;">
 					<input type="radio" id="EIRadio1" name="EIRadio" value="TECT"><label for="EIRadio1"> Tectonic Coordinates </label>
 					<input type="radio" id="EIRadio2" name="EIRadio" checked value="GEO"><label for="EIRadio2"> Geographic Coordinates </label>
 				</div>
-				<select multiple id="EISel" title="" class="siteSelector"></select>
 				<p>
 				<div id="display: inline-block;">
 					<button id="EIInit" onClick="module.EI.initialize();">Initialize EI Method</button> 
@@ -638,7 +650,7 @@
 		<button id="confirm">Add site</button>
 	</div>
 </div>
-
+		
 <!-- FOOTER -->
 <div id="footer" class="textplot" style="margin: 10px;">
 	<small> © 2015 Paleomagnetism.org. Please <a href="./cite.html">cite</a> all contributors if you use this application for your research.
