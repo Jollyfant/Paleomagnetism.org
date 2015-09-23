@@ -2036,10 +2036,6 @@ function zijderveld ( samples ) {
 	//Loop over all points and do rotations if requested (e.g. Specimen, Geographic, or Tectonic coordinates in N/Up or W/Up projection)
 	for(var i = 0; i < samples.data.length; i++) {
 		if(samples.data[i].visible) {
-		
-			if(samples.data[i].x === 0 && samples.data[i].y === 0 && samples.data[i].z === 0) {
-				continue;
-			}
 			
 			//Rotate to geographic coordinates
 			var direction = rotateGeographic(coreBedding, coreDip, [samples.data[i].x, samples.data[i].y, samples.data[i].z]);
