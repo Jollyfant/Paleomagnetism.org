@@ -56,7 +56,7 @@
 	<!-- Paleomagnetism.org header -->
 	<div id="title" style="margin: 0 auto; padding: 5px; background-color: #fff">
 		<div style="display: inline-block; padding-right: 10px;">
-			<a href="./home.html"><img style="margin: 0px; height: 60px;" src="./images/icon.png"></a>
+			<img style="margin: 0px; height: 60px;" src="./images/icon.png">
 		</div>		
 		<div id="wld" style="display: inline-block; float: right;"></div>
 	</div>
@@ -64,13 +64,14 @@
 	
 	<!-- MENU -->
 	<div style="background-color: #7798BF; color: white; padding: 10px;">
-		<li class="menuLink"><a class="link" href="./home.html"> Home </a>
-		<li class="menuLink"><a class="link" href="./paldir.htm"> Interpretation Portal </a>
+		<li class="menuLink"><a class="link" href="./index.html"> Home </a>
+		<li class="menuLink"><a class="link" href="./interpretation.html"> Interpretation Portal </a>
 		<li class="menuLink"><a class="link" style="background: #DED;"><img height="16" width="16" src="./images/icon.ico" style="vertical-align: middle;">&nbsp Statistics Portal </a> 
-		<li class="menuLink"><a class="link" href="./miscellaneous.htm"> Miscellaneous Portal </a> 
+		<li class="menuLink"><a class="link" href="./miscellaneous.html"> Miscellaneous Portal </a> 
 		<li class="menuLink"><a class="link" href="./cite.html"> References </a>
 		<li class="menuLink"><a class="link" href="./team.htm"> Team and Code </a>
-		<li class="menuLink"><a class="link" href="mailto:fort@paleomagnetism.org"> Contact </a>
+		<!-- <li class="menuLink"><a class="link" href="mailto:fort@paleomagnetism.org"> Contact </a> -->
+		<li class="menuLink"><a class="link" href="mailto:paleomagnetism.org@gmail.com" title="temporary address"> Contact </a>
 	</div>
 
 	<!-- ENCOMPASSING TABS DIV -->
@@ -236,8 +237,8 @@
 					<input type="checkbox" onClick="module.map.mapAddSites()" id="invFlag"><label for="invFlag"> Convert all directions to normal polarity </label>
 					<p>
 					<div id="mapRadio" style="display: inline-block;">
-						<input type="radio" id="mapRadio1" name="mapRadio" value="TECT"><label for="mapRadio1"> Tectonic </label>
-						<input type="radio" id="mapRadio2" name="mapRadio" checked value="GEO"><label for="mapRadio2"> Geographic </label>
+						<input type="radio" id="mapRadio1" name="mapRadio" value="TECT"><label for="mapRadio1"> Tectonic Coordinates </label>
+						<input type="radio" id="mapRadio2" name="mapRadio" checked value="GEO"><label for="mapRadio2"> Geographic Coordinates </label>
 					</div>
 					<hr>
 					<h2> Magnetic Directions <small> of location </small></h2>
@@ -310,14 +311,13 @@
 		<div id="tabs-5">
 			<div class="information">
 				<h1>5. Common True Mean Directions</h1>
-				<b> Information </b>
-				<p> For the selected sites, all possible permutations are compared using the classical reversal test. Clicking a matrix tile will complete a coordinate bootstrap as described by Lisa Tauxe, 2008
+				<p> For the selected sites, all possible permutations are compared using the classical reversal test (McFadden and McElhinny, 1988). Clicking on a resulting matrix tile will complete a coordinate bootstrap as described by Tauxe et al., 2014.
 				<p>
 				<select multiple id="ctmdSel" title="" class="siteSelector"></select>
 				<p>
 				<div id="CTMDRadio" style="display: inline-block;">
-					<input type="radio" id="CTMDRadio1" name="CTMDRadio" value="TECT"><label for="CTMDRadio1"> Tectonic </label>
-					<input type="radio" id="CTMDRadio2" name="CTMDRadio" checked value="GEO"><label for="CTMDRadio2"> Geographic </label>
+					<input type="radio" id="CTMDRadio1" name="CTMDRadio" value="TECT"><label for="CTMDRadio1"> Tectonic Coordinates </label>
+					<input type="radio" id="CTMDRadio2" name="CTMDRadio" checked value="GEO"><label for="CTMDRadio2"> Geographic Coordinates </label>
 				</div>
 				<p>
 				<div id="CTMDVGPRadio" style="display: inline-block;">
@@ -404,8 +404,8 @@
 				<b> Data usage: </b>the inclination shallowing module use accepted directional data after the cutoff is applied from the sites selecte below. A minimum of 80 directions is required for the module to run.
 				<p>
 				<div id="EIRadio" style="display: inline-block;">
-					<input type="radio" id="EIRadio1" name="EIRadio" value="TECT"><label for="EIRadio1"> Tectonic </label>
-					<input type="radio" id="EIRadio2" name="EIRadio" checked value="GEO"><label for="EIRadio2"> Geographic </label>
+					<input type="radio" id="EIRadio1" name="EIRadio" value="TECT"><label for="EIRadio1"> Tectonic Coordinates </label>
+					<input type="radio" id="EIRadio2" name="EIRadio" checked value="GEO"><label for="EIRadio2"> Geographic Coordinates </label>
 				</div>
 				<select multiple id="EISel" title="" class="siteSelector"></select>
 				<p>

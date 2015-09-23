@@ -2979,12 +2979,13 @@ function importUtrecht(applicationData, text) {
 					return n
 				});
 				
-				//Skip the step is x, y, z are all 0 (this gives problems because it is not a direction)
+				//Skip the step is x, y, z are all 0 (this gives problems because it is not a vector)
 				if(Number(parameterPoints[1]) === 0 && Number(parameterPoints[2]) === 0 && Number(parameterPoints[3]) === 0) {
 					continue;
 				}
 				
-				//Push particular specimen to parsed data (UTRECHT format uses a, b, c coordinate system which is equal to -y, z, -x)
+				//Push particular specimen to parsed data (UTRECHT format uses a, b, c coordinate system which is equal to our -y, z, -x)
+				//See function cart for our reference frame
 				//visible and include methods indicate whether particular step is shown in graphs or included for PCA.
 				parsedData.push({
 					'visible'	: true, 
@@ -3241,6 +3242,7 @@ function importing (event, format)  {
 
 		//Parsing formats refer to own functions
 		//Contact us if you would like your custom format to be added
+		//See the importUtrecht function as an example parser
 		if(format === 'UTRECHT') {
 			data = importUtrecht(data, text);
 		} else if(format === 'APP') {
