@@ -19,14 +19,12 @@ $(function() {
   
 	$("#tabs").tabs();
 
-	$("#initializeNTR, #iterationButton").button().click( function (event) {
+	$("#initializeNTR, #iterationButton").button().click( function () {
 	
 		if(isRunning) {
 			notify('failure', 'NTR Analysis is already running. Please wait');
 			return;
 		}
-		
-
 		
 		//Definition of known vectors
 		//referencePole = Known Reference Pole
@@ -52,12 +50,14 @@ $(function() {
 			return;
 		}
 		
+		console.log(this);
+		
 		isRunning = true;
 		
-		if(event.target.id == 'initializeNTR') {
+		if(this.id == 'initializeNTR') {
 			NTRAnalysis(referencePole, magnetizationVector, dykePole, false, 'initialPlot');
 			$("#interationDiv").show();
-		} else if ( event.target.id == 'iterationButton') {
+		} else if ( this.id == 'iterationButton') {
 			NTRAnalysis(referencePole, magnetizationVector, dykePole, true, 'iterationPlot');
 		}
 		

@@ -45,10 +45,9 @@
 			<select id="importFormats" title="Select an importing format" style="text-align: center; width: 150px;">
 				<option value="UTRECHT"> Utrecht (.TH, .AF) </option>
 				<!-- <option value="SPINNER"> Spinner </option> -->
-				<option value="DEFAULT"> Default </option>
+				<!-- <option value="DEFAULT"> Default </option> -->
 			</select>
 			<button id="import" type="button" onClick="$('#file-type').click();" title="Import a previously exported file.">Import Demagnetization Data </button>
-			<button id="customHelp">?</button>
 			<p> <input type="checkbox" id="appendFlag"><label for="appendFlag"> Append import to existing data </label>
 		</div>
 		
@@ -92,6 +91,9 @@
 					<div style="text-align: center;">
 						<button id="add" style="margin: 10px; height: 50px; width: 200px; border: 1px solid; " title="Load new data to the application"> Add Demagnetization Data </button>
 					</div>
+					<h2> Example Data </h2>
+					<p> <b> Note: </b> Currently, the only supported format for direct input is the <a href="./examples/Utrecht_Example.AF">Utrecht Format</a>. This file can be used as an example to test the application usage.
+					<p> If you wish your format to be added, please send us an example of your input format or write your own data parser. Multiple parameters are required: <b> name, step, dec, inc (x, y, z) </b> and we recommend adding core and bedding orientations for rotation between specimen/geographic/tectonic coordinates.
 				</div>
 			</div>
 			<div id="interpretationTab">
