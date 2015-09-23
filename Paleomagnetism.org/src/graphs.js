@@ -161,7 +161,7 @@ var eqAreaDirections = function(siteName) {
 			}
        	},
     	'series': [{
-			'name': 'Accepted Directions',
+			'name': 'Accepted',
 			'data': acceptedDirections,
            	'color': 'rgb(119, 152, 191)',
 			'type': 'scatter',
@@ -171,7 +171,7 @@ var eqAreaDirections = function(siteName) {
             },
 			'zIndex': 10
 		}, {
-			'name': 'Rejected Directions',
+			'name': 'Rejected',
 			'data': rejectedDirections,
 			'color': 'rgb(191, 119, 152)',
 			'type': 'scatter',
@@ -358,7 +358,7 @@ var eqAreaVGPs = function(name) {
 			}
        	},
     	'series': [{
-			'name': 'Accepted Directions',
+			'name': 'Accepted',
            	'color': 'rgb(119, 152, 191)',
 			'type': 'scatter',
 			'data': acceptedVGPs,
@@ -369,7 +369,7 @@ var eqAreaVGPs = function(name) {
 		}, {
 			'color': 'rgb(191, 119, 152)',
 			'type': 'scatter',
-			'name': 'Rejected Directions',
+			'name': 'Rejected',
 			'data': rejectedVGPs,
 			'marker': {
 				'symbol': 'circle',

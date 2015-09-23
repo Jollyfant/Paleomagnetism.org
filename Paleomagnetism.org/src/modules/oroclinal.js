@@ -211,7 +211,7 @@ function plotWindRose(newDatArray, container) {
  * Description: calculates the circular variance of an array of data
  *			  : see http://www.ebi.ac.uk/thornton-srv/software/PROCHECK/nmr_manual/man_cv.html
  * Input: data array containing declinations
- * Output: The circular variance (from 0 [scatter] to 1 [pefect])
+ * Output: The circular variance (from 0 [perfect] to 1 [scatter])
  */
 function calcCircularVariance( data ) {
 	
@@ -1431,6 +1431,10 @@ function plotResiduals (data, databs, min, max) {
 			'min': min,
 			'max': max
 		},
+		credits: {
+			text: "Paleomagnetism.org [Oroclinal Test] - Residuals",
+			href: ''
+		},		
 		 plotOptions: {
             'series': {
 				'stacking': 'normal',
@@ -1579,10 +1583,6 @@ function plotCDF (one, lower, upper, container, title, x1, x2, x3, type) {
         subtitle: {
 			text: ' Decimated to ' + nb + ' bootstraps'
         },
-		credits: {
-			text: "Paleomagnetism.org [Oroclinal Module]",
-			href: ''
-		},
 		plotOptions: {
 			series: {
 				turboThreshold: 0

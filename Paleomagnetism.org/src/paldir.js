@@ -2037,9 +2037,13 @@ function zijderveld ( samples ) {
 	for(var i = 0; i < samples.data.length; i++) {
 		if(samples.data[i].visible) {
 		
+			if(samples.data[i].x === 0 && samples.data[i].y === 0 && samples.data[i].z === 0) {
+				continue;
+			}
+			
 			//Rotate to geographic coordinates
 			var direction = rotateGeographic(coreBedding, coreDip, [samples.data[i].x, samples.data[i].y, samples.data[i].z]);
-			
+
 			//Rotate to tectonic coordinates if requested and not viewing in specimen coordinates
 			if(tcFlag && !specFlag) {
 				var coordinateInformation = '(Tectonic)';
@@ -2978,6 +2982,11 @@ function importUtrecht(applicationData, text) {
 				parameterPoints = $.grep(parameterPoints, function(n) { 
 					return n
 				});
+				
+				//Skip the step is x, y, z are all 0 (this gives problems because it is not a direction)
+				if(Number(parameterPoints[1]) === 0 && Number(parameterPoints[2]) === 0 && Number(parameterPoints[3]) === 0) {
+					continue;
+				}
 				
 				//Push particular specimen to parsed data (UTRECHT format uses a, b, c coordinate system which is equal to -y, z, -x)
 				//visible and include methods indicate whether particular step is shown in graphs or included for PCA.
