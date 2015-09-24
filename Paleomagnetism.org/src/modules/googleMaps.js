@@ -45,10 +45,10 @@ module.map.initialize = function () {
 	
 	//Add listener for a click event
 	google.maps.event.addListener(module.map.map, "click", function (e) {
-	
+			
 		//Capture latitude and longitude of click event and put it in the select box
-		$("#palatLat").val(e.latLng.G.toFixed(3));
-		$("#palatLon").val(e.latLng.K.toFixed(3));
+		$("#palatLat").val(e.latLng.H.toFixed(3));
+		$("#palatLon").val(e.latLng.L.toFixed(3));
 		
 	});
 	
