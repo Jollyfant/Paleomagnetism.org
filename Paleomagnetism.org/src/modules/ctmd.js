@@ -31,7 +31,7 @@ module.CTMD.running = false;
 
 	var coordinates = $("#CTMDRadio input[type='radio']:checked").val() === "TECT" ? 'dataTC' : 'data';
 	
-	//Number of boostraps
+	//Number of bootstraps
 	var nBootstraps = 5000;
 	
 	//Data buckets for Cartesian coordinates
@@ -247,16 +247,19 @@ module.CTMD.initialize = function () {
 	})();
 };
 
-/* Monte-Carlo Simulated CTMD
- * Description: uses Monte Carlo sampling to randomly draw a new set of directions from (N, k) and calculates Watson parameters
+/* 
+ * FUNCTION module.CTMD.monte
+ * Similar to the Watson test as described by Lisa Tauxe, Chapt: 11.3.4
+ * Description: uses Monte Carlo sampling to randomly draw a new set of directions from (N1, k1), (N2, k2) and calculates the Watson parameters
  * Input: Arrays of N, R, and k for two particular sets, including x, y, and z coordinates
  *
  * This subroutine works as follows:
- * 1. Calculation of 2500 Watson parameters (Wv) from 2500 Monte-Carlo sampled (N, k) distributions for the directions to be compared
+ * 1. Calculation of 2500 Watson parameters (Wv) from 2500 Monte-Carlo sampled (N1, k1), (N2, k2) distributions for the directions to be compared
  * 2. Sort the 2500 Watson parameters; The 0.95*2500th Watson parameter becomes the critical Watson parameter; on this parameter we can test the null hypothesis
  * 3. The null hypothesis is tested to see if the Watson parameter for our actual data set falls below the critical Watson parameter
+ * 4. If so, purely by chance two distributions sampled around a common mean could share an angle determined by this critical parameter.
  *
- * If the Watson parameter of our data set falls within the determined critical value, the null hypothesis is rejected.
+ * If the Watson parameter of our data set falls within the determined critical value, the null hypothesis is rejected and classified according to McFadden and McElhinny, 1990
  */
 module.CTMD.monte = function (N, R, K, X, Y, Z) {
 	
@@ -299,20 +302,21 @@ module.CTMD.monte = function (N, R, K, X, Y, Z) {
 	//Looks through simulated Watson parameters to find the Monte Carlo probability of observing a value that exceeds V.
 	var probability = module.CTMD.findProbability(dataWatson, simulatedWatson);
 	
-	//Get the critical angle from the critical Watson parameter
+	//Convert back to the critical angle from the critical Watson parameter
+	//We don't really use it, but we show it as it easier to visualize than a critical Watson parameter
 	var criticalAngle = module.CTMD.resmonte(simulatedWatson.v95, R, K);
 	
 	//Classification according to McFadden and McElhinny (1990)
-	//Finds probability that two mean vectors sharing angle angleSet fall within the simulated Watson parameters
 	//Taken from the CTMD.f95 routine
-	
 	//If the probability is > 5%, within 95% confidence the Watson parameter falls in the simulated list (null hypothesis is rejected)
+	//Classification is then based on angle between mean directions at which the null hypothesis would be rejected with 95% confidence.
+	// A < 5; 5 < B < 10; 10 < C < 20; I > 20
 	if(probability > 0.05) {
 		var angleSet = 5;
 		var vAngle = module.CTMD.vMake(R, K, angleSet);
 		var probability = module.CTMD.findProbability(vAngle, simulatedWatson);
 		if(probability <= 0.05) {
-			var classification = 'A';
+			var classification = 'A'; //Rejected at 5 degrees with 95% confidence
 		} else {
 			var angleSet = 10;
 			var vAngle = module.CTMD.vMake(R, K, angleSet);
@@ -429,7 +433,8 @@ module.CTMD.findProbability = function (dataWatson, simulatedWatson) {
 			return ( 1 - ((i)/(length-1)) );
 		}
 	}
-	return 0; //Unfound: probability is 0.
+	//Unfound: probability is 0.
+	return 0; 
 }
 
 /* Function: module.CTMD.sampleWatson
