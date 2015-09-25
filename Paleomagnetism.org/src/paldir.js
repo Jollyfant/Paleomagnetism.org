@@ -2061,13 +2061,19 @@ function zijderveld ( samples ) {
 			decDat.push({
 				'x': carts.x, 
 				'y': -carts.y, 
+				'dec': direction.dec,
+				'inc': direction.inc,
+				'int': direction.R,
 				'step': samples.data[i].step
 			});
 			
 			//Inclination is x, -z plane
 			incDat.push({
 				'x': carts.x, 
-				'y': -carts.z, 
+				'y': -carts.z,
+				'dec': direction.dec,
+				'inc': direction.inc,
+				'int': direction.R,
 				'step': samples.data[i].step
 			});
 			
@@ -2106,11 +2112,7 @@ function zijderveld ( samples ) {
 		},
 		'tooltip': {
 			'formatter': function () {
-				if(this.series.name == 'Declination') {
-					return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>x-coordinate: </b>' + this.x.toFixed(1) + '<br> <b>y-coordinate: </b>' + this.y.toFixed(1);
-				} else if ( this.series.name == 'Inclination') {
-					return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>x-coordinate: </b>' + this.x.toFixed(1) + '<br> <b>z-coordinate </b>' + this.y.toFixed(1);
-				}
+				return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>Declination: </b>' + this.point.dec.toFixed(1) + '<br> <b>Inclination: </b>' + this.point.inc.toFixed(1);
 			}
 		},
 		'subtitle': {
