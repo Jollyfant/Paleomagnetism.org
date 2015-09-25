@@ -1598,7 +1598,7 @@ var drawInterpretations = function ( sample ) {
 	}
 	
 	//Update the parameter table
-	$("#update").html('<p> <table class="sample" id="infoTable"><tr><th> Component </th> <th> Type </th> <th> Declination </th> <th> Inclination </th> <th> Intensity (A/m) </th> <th> MAD </th> <th> Coordinates </th> <th> Remark </th> <th> Remove </th> </tr>');
+	$("#update").html('<p> <table class="sample" id="infoTable"><tr><th> Component </th> <th> Type </th> <th> Declination </th> <th> Inclination </th> <th> Intensity (µA/m) </th> <th> MAD </th> <th> Coordinates </th> <th> Remark </th> <th> Remove </th> </tr>');
 	
 	//Loop over all interpretations in a particular coordinate reference frame (either Tectonic or Geographic)
 	for(var i = 0; i < data[sample][coordType].length; i++) {
@@ -2063,7 +2063,7 @@ function zijderveld ( samples ) {
 				'y': -carts.y, 
 				'dec': direction.dec,
 				'inc': direction.inc,
-				'int': direction.R,
+				'intensity': direction.R/10.5,
 				'step': samples.data[i].step
 			});
 			
@@ -2073,7 +2073,7 @@ function zijderveld ( samples ) {
 				'y': -carts.z,
 				'dec': direction.dec,
 				'inc': direction.inc,
-				'int': direction.R,
+				'intensity': direction.R/10.5,
 				'step': samples.data[i].step
 			});
 			
@@ -2111,8 +2111,9 @@ function zijderveld ( samples ) {
 			'text': 'Zijderveld Diagram (' + samples.name + ')'
 		},
 		'tooltip': {
+			'useHTML': true,
 			'formatter': function () {
-				return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>Declination: </b>' + this.point.dec.toFixed(1) + '<br> <b>Inclination: </b>' + this.point.inc.toFixed(1);
+				return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>Declination: </b>' + this.point.dec.toFixed(1) + '<br> <b>Inclination: </b>' + this.point.inc.toFixed(1) + '<br> <b>Intensity: </b>' + this.point.intensity.toFixed(1) + 'µA/m';
 			}
 		},
 		'subtitle': {
