@@ -168,6 +168,7 @@ $(function() {
 				if(ui.newPanel.selector === '#fittingTab') {
 					//Redraw the interpretations to the equal area projection
 					$("#eqAreaFitted").hide();
+					exportData = new Array();
 					plotInterpretations();
 				} else if(ui.newPanel.selector === '#interpretationTab') {
 					if($("#intensityPlot").highcharts()) {
