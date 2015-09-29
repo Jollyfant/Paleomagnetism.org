@@ -511,13 +511,19 @@ $(function() {
 			return;
 		}
 		
+		//Check if the site name already exists, if so, ask if the user wishes to overwrite the data.
+		//Then splice the site from the array and add a new one, otherwise return
 		for(var i = 0; i < parsedObj.length; i++) {
 			if(name === parsedObj[i].name) {
-				notify('failure', 'A site with this name already exists.');
-				return;
+				if(confirm('Site already exists. Do you wish to overwrite?')) {
+					parsedObj.splice(i, 1);
+				} else {
+					notify('failure', 'Site has not been saved.');
+					return;
+				}
 			}
 		}
-		
+				
 		parsedObj.push({
 			'name': name, 
 			'data': exportData, 
@@ -525,10 +531,10 @@ $(function() {
 			'coordType': coordType
 		});
 
-		localStorage.setItem('savedInt', JSON.stringify(parsedObj));
-		notify('success', 'Site ' + name + ' has been added to interpreted directions (' + type + ', ' + coordType + ')');	
-		
-		exportData = new Array();
+			localStorage.setItem('savedInt', JSON.stringify(parsedObj));
+			notify('success', 'Site ' + name + ' has been added to interpreted directions (' + type + ', ' + coordType + ')');	
+			
+			exportData = new Array();
 		
 	});
 	
