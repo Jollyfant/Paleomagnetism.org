@@ -47,8 +47,8 @@ module.map.initialize = function () {
 	google.maps.event.addListener(module.map.map, "click", function (e) {
 			
 		//Capture latitude and longitude of click event and put it in the select box
-		$("#palatLat").val(e.latLng.H.toFixed(3));
-		$("#palatLon").val(e.latLng.L.toFixed(3));
+		$("#palatLat").val(e.latLng.lat().toFixed(3));
+		$("#palatLon").val(e.latLng.lng().toFixed(3));
 		
 	});
 	

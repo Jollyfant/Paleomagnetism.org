@@ -570,8 +570,9 @@ function eqArea(inc) {
 	
 	//Get the projection flag
 	var projFlag = $('#projFlag').prop('checked');
-	
-	if(!projFlag) {
+
+	//Undefined for other portals
+	if(!projFlag || projFlag === undefined) {
 		//Equal area projection
 		return (90-(Math.sqrt(2)*90*Math.sin(Math.PI*(90-inc)/(360)))); 
 	} else {
