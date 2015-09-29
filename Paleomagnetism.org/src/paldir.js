@@ -252,6 +252,7 @@ $(function() {
 	$( "#coordinates" ).buttonset();
 
 	$("#coordinates").change( function () {
+		exportData = new Array();
 		plotInterpretations();
 		$("#saveInterpretation").text('Save Interpreted Directions');
 		$("#eqAreaFitted").hide();
@@ -477,7 +478,7 @@ $(function() {
 		} else {
 			var parsedObj = new Array();
 		}
-
+				
 		//Has not been fitted
 		if(exportData.length === 0) {
 			var type = 'directions';
