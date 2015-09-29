@@ -515,7 +515,7 @@ $(function() {
 		//Then splice the site from the array and add a new one, otherwise return
 		for(var i = 0; i < parsedObj.length; i++) {
 			if(name === parsedObj[i].name) {
-				if(confirm('Site already exists. Do you wish to overwrite?')) {
+				if(confirm('A site with this name already exists. Do you wish to overwrite?')) {
 					parsedObj.splice(i, 1);
 				} else {
 					notify('failure', 'Site has not been saved.');
