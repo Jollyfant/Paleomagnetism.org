@@ -1604,7 +1604,7 @@ var drawInterpretations = function ( sample ) {
 	}
 	
 	//Update the parameter table
-	$("#update").html('<p> <table class="sample" id="infoTable"><tr><th> Component </th> <th> Type </th> <th> Declination </th> <th> Inclination </th> <th> Intensity (A/m) </th> <th> MAD </th> <th> Coordinates </th> <th> Remark </th> <th> Remove </th> </tr>');
+	$("#update").html('<p> <table class="sample" id="infoTable"><tr><th> Component </th> <th> Type </th> <th> Declination </th> <th> Inclination </th> <th> Intensity (µA/m) </th> <th> MAD </th> <th> Coordinates </th> <th> Remark </th> <th> Remove </th> </tr>');
 	
 	//Loop over all interpretations in a particular coordinate reference frame (either Tectonic or Geographic)
 	for(var i = 0; i < data[sample][coordType].length; i++) {
@@ -2067,13 +2067,19 @@ function zijderveld ( samples ) {
 			decDat.push({
 				'x': carts.x, 
 				'y': -carts.y, 
+				'dec': direction.dec,
+				'inc': direction.inc,
+				'intensity': direction.R/10.5,
 				'step': samples.data[i].step
 			});
 			
 			//Inclination is x, -z plane
 			incDat.push({
 				'x': carts.x, 
-				'y': -carts.z, 
+				'y': -carts.z,
+				'dec': direction.dec,
+				'inc': direction.inc,
+				'intensity': direction.R/10.5,
 				'step': samples.data[i].step
 			});
 			
@@ -2111,12 +2117,9 @@ function zijderveld ( samples ) {
 			'text': 'Zijderveld Diagram (' + samples.name + ')'
 		},
 		'tooltip': {
+			'useHTML': true,
 			'formatter': function () {
-				if(this.series.name == 'Declination') {
-					return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>x-coordinate: </b>' + this.x.toFixed(1) + '<br> <b>y-coordinate: </b>' + this.y.toFixed(1);
-				} else if ( this.series.name == 'Inclination') {
-					return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>x-coordinate: </b>' + this.x.toFixed(1) + '<br> <b>z-coordinate </b>' + this.y.toFixed(1);
-				}
+				return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>Declination: </b>' + this.point.dec.toFixed(1) + '<br> <b>Inclination: </b>' + this.point.inc.toFixed(1) + '<br> <b>Intensity: </b>' + this.point.intensity.toFixed(1) + 'µA/m';
 			}
 		},
 		'subtitle': {
@@ -2909,7 +2912,86 @@ function exportInterpretation () {
 	
 }
 
+/*
+ * Importing parser for Munich format
+ * Currently cannot chain multiple samples
+ */
+function importMunich(applicationData, text) {
+	
+	"use strict"
+	
+	var lines = text.split(/[\n]/);
+	var parsedData = new Array();
+	var nSamples = 1;
+	
+	for(var k = 0; k < 1; k++) {
+		for(var i = 0; i < lines.length; i++) {
+			
+			//Reduce empty lines
+			var parameters = lines[i].split(/[,\s\t]+/);
+			parameters = $.grep(parameters, function(n) { 
+				return n;
+			});
+			
+			//Get the header
+			if(i === 0) {
+				var name = parameters[0];
+				
+				//Check if sample with name exists -> append copy text
+				for(var k = 0; k < applicationData.length; k++) {
+					if(name === applicationData[k].name) {
+						var skip = true;
+					}
+				}
+				
+				//Different convention for core orientation than Utrecht
+				var coreAzi = Number(parameters[1]);
+				var coreDip = 90 - Number(parameters[2]);
+				
+				//Bedding strike needs to be decreased by 90 for input convention
+				var bedStrike = parameters[3] - 90;
+				var bedDip = parameters[4];
+				var info = parameters[5];
+			} else {
+				//Get Cartesian coordinates for specimen coordinates, intensity multiply by 10.5 (volume, this is later reduced) and 1000 from mili to micro
+				var cartesianCoordinates = cart(Number(parameters[3]), Number(parameters[4]), Number(parameters[1])*10.5*1000);
+				parsedData.push({
+					'visible'	: true, 
+					'include'	: false,
+					'step'		: parameters[0],
+					'x'			: cartesianCoordinates.x,
+					'y'			: cartesianCoordinates.y,
+					'z'			: cartesianCoordinates.z,
+					'a95'		: parameters[4],
+					'info'		: info
+				});			
+			}
+		}
+		
+		if(skip) {
+			notify('failure', 'Found duplicate ' + name + '; skipping specimen');
+			nSamples--;
+			continue;
+		}
+	
+		//Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
+		applicationData.push({
+			'info'			: info,
+			'GEO'			: new Array(),
+			'TECT'			: new Array(),
+			'interpreted'	: false,
+			'name'			: name,
+			'coreAzi'		: Number(coreAzi),
+			'coreDip'		: Number(coreDip),
+			'bedStrike'		: Number(bedStrike),
+			'bedDip'		: Number(bedDip),
+			'data'			: parsedData
+		});
+	}
 
+	notify('success', 'Importing was succesful; added ' + nSamples + ' samples');
+	return applicationData;
+}
 
 /*
  * Importing parser for Utrecht format
@@ -3013,7 +3095,7 @@ function importUtrecht(applicationData, text) {
 		}
 		
 		//Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
-		data.push({
+		applicationData.push({
 			'info'			: information,
 			'GEO'			: new Array(),
 			'TECT'			: new Array(),
@@ -3028,6 +3110,7 @@ function importUtrecht(applicationData, text) {
 	}
 	
 	notify('success', 'Importing was succesful; added ' + nSamples + ' samples');
+	
 	return applicationData;
 	
 }
@@ -3258,6 +3341,8 @@ function importing (event, format)  {
 			return;
 		} else if(format === 'DEFAULT') {
 			data = importDefault(data, text);
+		} else if(format === 'MUNICH') {
+			data = importMunich(data, text);
 		}
 		
 		//Refresh the specimen scroller with the new data
