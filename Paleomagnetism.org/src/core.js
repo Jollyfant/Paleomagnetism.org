@@ -38,7 +38,7 @@ var pseudoDirection = function (k) {
  * Input: number of samples (N) with dispersion parameter kappa (k)
  * Output: Arrays of Cartesian coordinates and directions {x[], y[], z[], dec[], and inc[]}
  */
-var sample = function (N, k) {
+var sampleFisher = function (N, k) {
 
 	"use strict";
 	

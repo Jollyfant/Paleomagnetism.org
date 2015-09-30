@@ -521,7 +521,7 @@ module.CTMD.pick = function (N, K) {
 	for(var i = 0; i < 2; i++) {
 		
 		//Randomly sample a (N, kappa) distribution
-		var sampledParameters = sample(N[i], K[i]); 		
+		var sampledParameters = sampleFisher(N[i], K[i]); 		
 	
 		//Custom function to calculate some Fisher parameters in addition to mean Cartesian coordinates
 		means.push(module.CTMD.mean(N[i], sampledParameters)); 

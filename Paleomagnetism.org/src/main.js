@@ -1173,7 +1173,7 @@ var processUserInput = function ( data, type, name ) {
 				var sampleVGP = $("#sampleFish input[type='radio']:checked").val();				
 				
 				//Sample a Fisherian distribution with N and Kappa
-				var sampled = sample(N, K);
+				var sampled = sampleFisher(N, K);
 				
 				//Pole longitude, pole latitude, bedding orientation, bedding dip, and name 
 				for(var i = 0; i < sampled.dec.length; i++) {

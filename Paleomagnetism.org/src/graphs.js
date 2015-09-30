@@ -383,7 +383,7 @@ var eqAreaVGPs = function(name) {
 				'symbol': 'circle',
 			},
 			'name': 'Mean', 
-			'data': ([{sample: 'Mean', x: 0, y: 90, inc: 90}]) //Cheat and set mean declination to 0 and inclination to 90. It should be 0, 90 anyway. Always.
+			'data': ([{'sample': 'Mean', x: 0, y: 90, inc: 90}]) //Cheat and set mean declination to 0 and inclination to 90. It should be 0, 90 anyway. Always.
 		}, {
 			'type': 'line',
 			'data': ellipse.neg,
