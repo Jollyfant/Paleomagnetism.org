@@ -34,6 +34,7 @@ $(function() {
 		$("#exportAllCsv").button()	
 	$("#initializeOroclinal").button().click( function () {
 		$("#showBooty").hide();
+		$("#showWrapper").hide();
 		initializeSampling();
 	});
 	
@@ -281,7 +282,7 @@ function varianceFoldtest() {
 			}
 		}
 		
-		var max = 0;
+		var max = 1;
 		
 		//Unfold over range in increments of 10 degrees
 		for(var j = unfoldingMin; j <= unfoldingMax; j+=10) {	
@@ -299,7 +300,7 @@ function varianceFoldtest() {
 			var variance = calcCircularVariance(tilts);
 			taus.push(variance);
 			
-			if(variance > max) {
+			if(variance < max) {
 				max = variance;
 				index = j
 			}
@@ -324,14 +325,18 @@ function varianceFoldtest() {
 				}
 						
 				var variance = calcCircularVariance(tilts);
-					if(variance > max) {
+					if(variance < max) {
 					max = variance;
 					index = (oldIndex+j);
 				}
 				
 			}
 		}
-				
+		
+		if(i === 0) {
+			var realMax = index;
+		}	
+		
 		//Show the first 25 bootstraps and first actual data
 		if(i <= 26) {
 			bootTaus.push(taus);
@@ -351,10 +356,12 @@ function varianceFoldtest() {
 	
 	lower = untilt[parseInt(0.025*nBootstraps, 10)];
 	upper = untilt[parseInt(0.975*nBootstraps, 10)];
+	
 	var sub = (Date.now() - timeInit);
 	
+	console.log(untilt);
 	//Call the foldtest plotting function
-	grfoldtestOro ( cdfData, bootTaus, lower, upper, unfoldingMin, unfoldingMax, sub, data );
+	grfoldtestOro ( cdfData, bootTaus, lower, upper, unfoldingMin, unfoldingMax, sub, data, realMax );
 }
 
 /*
@@ -489,6 +496,7 @@ function initializeFoldtest () {
 	upper = untilt[parseInt(0.975*nBootstraps, 10)];
 	var sub = 'Don\'t forget to add a subtitle ';
 	
+
 	//Call the foldtest plotting function
 	grfoldtestOro ( cdfData, bootTaus, lower, upper, unfoldingMin, unfoldingMax, sub, data );
 		
@@ -498,7 +506,7 @@ function initializeFoldtest () {
  * FUNCTION grfoldtestOro
  * Description: handles plotting for the oroclinal foldtest (to be renamed)
  */ 
-function grfoldtestOro (cdfData, data, lower, upper, begin, end, sub, input ) {
+function grfoldtestOro (cdfData, data, lower, upper, begin, end, sub, input, max ) {
 	
 	//Create plotband for 95% bootstrapped confidence interval (upper to lower)
 	var plotBands =  [{
@@ -696,6 +704,10 @@ function grfoldtestOro (cdfData, data, lower, upper, begin, end, sub, input ) {
     }
 	
 	new Highcharts.Chart(chartOptions);
+	
+	console.log('hi');
+	$('#foldTable').html('<table class="sample" style="text-align: center"> <thead> <th> Number of Bootstraps </th> <th> Minimum Variance at % Unfolding (Data) </th> <th> Confidence Interval (Bootstraps) </th> </thead> <tbody> <td> ' + cdfData.length + '</td> <td> ' + max + ' </td> <td> ' + lower + ' - ' + upper + ' </td>  </tbody> </table>');
+	$('#foldTable').show();
 	
 	//Show plots
 	$("#container5").show();
@@ -1052,7 +1064,7 @@ function weighedData( getParams ) {
 	}];
 	
 	plotGraph(plotSeries, minPlot, maxPlot, false);
-	
+	$("#pClu").hide();
 	$("#parameterTable").html('<table class="sample" style="text-align: center"> <thead> <th> Type of Regression </th> <th> Slope </th> <th> Intercept </th> <th> a95 Slope </th> <th> a95 Intercept </th> </thead> <tbody> <td> Weighed </td> <td> ' + slope.toFixed(3) + ' </td> <td> ' + intercept.toFixed(3) + ' </td> <td> ' + slope95.toFixed(3) + ' </td> <td> ' + intercept95.toFixed(3) + ' </td> </tbody> </table>')
 	$("#parameterTable").show();
 }
@@ -1159,8 +1171,8 @@ function bootstrapData(type) {
 			//Do a linear regression on this data, and save to the regression@array
 			regressions.push(linearRegression(sampleStrike, sampleDec));
 			
-			//For 100 bootstraps save the sampled declinations and strikes (we use this to calculate bootstrapped residuals)
-			if(i < 100) {
+			//For 1000 bootstraps save the sampled declinations and strikes (we use this to calculate bootstrapped residuals)
+			if(i < 1000) {
 				sampledStuff.push({dec: sampleDec, strike: sampleStrike});
 			}
 			
@@ -1383,7 +1395,7 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 	}];
 	
 	plotGraph(plotSeries, minPlot, maxPlot, true);
-	$("#parameterTable").html('<table class="sample" style="text-align: center"> <thead> <th> Type of Regression </th> <th> Average Slope </th> <th> Average Intercept </th> <th> Regression Slope </th> <th> Regression Intercept </th> <th> Regression R2 </th> </thead> <tbody> <td> ' + type + ' </td> <td> ' + slopeAverage.toFixed(3) + ' </td> <td> ' + interceptAverage.toFixed(3) + ' </td> <td> ' + lr.slope.toFixed(3) + ' </td> <td> ' +	lr.intercept.toFixed(3) + ' </td> <td> ' +	lr.r2.toFixed(3) + ' </td> </tbody> </table>')
+	$("#parameterTable").html('<table class="sample" style="text-align: center"> <thead> <th> Type of Regression </th> <th> Regression Slope </th> <th> Regression Intercept </th> <th> Regression R2 </th> </thead> <tbody> <td> ' + type + ' </td> <td> ' + lr.slope.toFixed(3) + ' </td> <td> ' +	lr.intercept.toFixed(3) + ' </td> <td> ' +	lr.r2.toFixed(3) + ' </td> </tbody> </table>')
 	$("#parameterTable").show();
 	
 }
@@ -1416,7 +1428,7 @@ function plotResiduals (data, databs, min, max) {
 	for(var key in sortedArrBs) {
 		data2bs.push({
 			'x': Number(key), 
-			'y': -Number(sortedArrBs[key])/100
+			'y': -Number(sortedArrBs[key])/1000
 		});
 	}
 	
@@ -1454,11 +1466,12 @@ function plotResiduals (data, databs, min, max) {
 			'data': data2
 		}, {
 			'type': 'bar',
-			'name': '100 Summed Bootstrapped Residuals',
+			'name': '1000 Summed Bootstrapped Residuals',
 			'color': 'rgba(191, 152, 119, 0.5)',
 			'data': data2bs
 		}]
     });
+	
 }
 
 function getCDF ( type ) {
@@ -1520,6 +1533,16 @@ function plotCDF (one, lower, upper, container, title, x1, x2, x3, type) {
 		id: 'confidence'
 	}];
 
+	if(type === 'Regression intercept') {
+		var show = interceptAverage.toFixed(3);
+		var showTitle = 'Average Bootstrapped Intercept';
+	} else if(type === 'Regression slope') {
+		var show = slopeAverage.toFixed(3);
+		var showTitle = 'Average Bootstrapped Slope';		
+	}
+	$("#bootTable").html('<table class="sample" style="text-align: center"> <thead> <th> Type </th> <th> ' + showTitle + ' </th> <th> Confidence Interval </th> </thead> <tbody> <td> ' + type + ' (Bootstrapped) </td> <td> ' + show + ' </td> <td> ' + one[lower].toFixed(3) + ' - ' + one[upper].toFixed(3) + ' </td> </tbody> </table>')
+	$("#bootTable").show();
+	
 	//Define the cumulative distribution function
 	mySeries = [{
 		name: 'Bootstrapped Regression', 
@@ -1713,8 +1736,13 @@ function plotGraph(plotSeries, min, max, b) {
 		var chart = new Highcharts.Chart(chartOptions);
 	}
 	
+	$("#showWrapper").show();
+	
 	if(b) {
 		getCDF($("#getCDF").val());
 		$("#showBooty").show();
+		$("#pClu").show();
 	}
+	$("#initialPlot").highcharts().reflow();
+	$("#pClu").highcharts().reflow();
 }

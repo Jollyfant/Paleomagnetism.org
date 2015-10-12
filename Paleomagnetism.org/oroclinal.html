@@ -91,11 +91,14 @@ ga('send', 'pageview');
 			
 			<input style="display: none" id="importFile" type="file" size="4" name="file" onChange="importing(event)"/>
 			<p>
+			<div id="showWrapper">
 			<div id="parameterTable" style="display: none; text-align: center; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
 			<div id="initialPlot"></div>
 			<p>
 			<div style="text-align: center; display: none;" id="showBooty">
-				<h2> Show bootstrapped parameters </h2>
+				<h2> Bootstrapped Parameters </h2>
+				<p>
+				<div id="bootTable" style="display: none; text-align: center; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
 				<p>
 				<select id="getCDF">  
 					<option value="intercept">Intercept</option>
@@ -106,6 +109,7 @@ ga('send', 'pageview');
 			</div>
 			<div id="pClu"></div>
 
+			</div>
 		</div>
 		
 		<div id="oroclineFoldtestTab">
@@ -115,6 +119,8 @@ ga('send', 'pageview');
 				<input type="radio" id="radio4" value="Standard" name="radio2"> <label for="radio4"> Standard Sampling </label>
 				<input type="radio" selected="selected" id="radio5" value="Gauss" name="radio2" checked> <label for="radio5"> Gaussian Sampling </label>
 			</div>
+			<p>
+			<div id="foldTable" style="display: none; text-align: center; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
 			<p>
 			<div id="container5"></div>
 			<small> Tip: Click the thick red line to view the declination distribution for that percentage of unfolding. </small> 
@@ -128,7 +134,7 @@ ga('send', 'pageview');
 			<button style="display: inline-block;" id="importData" type="button" onClick="$('#importFile').click();" title="Import a previously exported file.">Import Data</button>
 			<button id="inputHelp">?</button>
 			<p>
-			<input type="checkbox" id="makeSquare"><label for="makeSquare">	Scale oroclinal test graph to square</label>
+			<!-- <input type="checkbox" id="makeSquare"><label for="makeSquare">	Scale oroclinal test graph to square</label> -->
 		</div>		
 	</div>
 	
