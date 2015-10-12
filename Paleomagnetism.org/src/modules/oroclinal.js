@@ -735,17 +735,8 @@ function grfoldtestOro (cdfData, data, lower, upper, begin, end, sub, input, max
 		
 		notify('failure', 'Data downloading is not supported yet.');
 		return;
-		
-		var csv = "";
 		 
-		 if(this.userOptions.chart.id === 'oroclinal') {
-			
-			var columns = ['Declination', 'Declination Error', 'Strike', 'Strike Error'];
-			csv += '"' + columns.join(itemDelimiter) + '"' + lineDelimiter;
-	
-			
-		 } 
-
+		
 		return csv;
 		
     };  
@@ -1323,12 +1314,16 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 		'name': 'Input Data',
 		'type': 'scatter',  
 		'data': plotData,
-		'zIndex': 100
+		'zIndex': 100,
+		'marker': {
+			'radius': 3,
+		}
 	}, {
 		'name': 'Data Uncertainty',
 		'type': 'line',
 		'data': errorData,
 		'zIndex': 99,
+		'color': 'grey',
 		'enableMouseTracking': false,
 		'lineWidth': 1,
 		'marker': {
@@ -1672,6 +1667,8 @@ function plotGraph(plotSeries, min, max, b) {
 			itemHoverStyle: null
 		},
 		exporting: {
+			 sourceWidth: 1200,
+            sourceHeight: 600,
 			filename: 'Oroclinal_Test',
             buttons: {
                 contextButton: {
