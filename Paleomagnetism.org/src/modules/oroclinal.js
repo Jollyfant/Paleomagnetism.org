@@ -8,7 +8,7 @@
 
 //Define globals
 var applicationHasData = false;
-var dec, decErr, strike, strikeErr;
+var dec, decErr, strike, strikeErr, codes;
 var maxE, minPlot, maxPlot;
 var regressions;
 var slopeAverage = 0, interceptAverage = 0;
@@ -19,6 +19,18 @@ var lr;
 //Some jQuery UI initializations
 $(function() {
 
+	$("#weighed").button({
+		icons: { 
+			primary: "ui-icon-play" 
+		}
+	}).click( function () {
+		if(applicationHasData) {
+			weighedData(false);
+		} else {
+			notify('failure', 'Found no data in the application. Please load some.');
+		}
+	});
+	
 	//Toggle whether we use variance or eigenvalue approach (not implemented)
 	$("#oroFoldtest").click( function () {
 		//initializeFoldtest(); //foldtest using eigenvalues (don't use this: 180 === 0) which is not true for declinations only
@@ -67,16 +79,17 @@ $(function() {
 
 	
 	$('#importData').button({
-		icons: {
-			primary: 'ui-icon-arrowthickstop-1-n'
-		}
 	});
 	
 	$("#progressBar").progressbar({ value: 0 });
 	$('#sampleType').buttonset();
 	$('#sampleType2').buttonset();
 	
-	$("#radio1, #radio2, #radio3, #radio4, #radio5").button({
+	$("#radio1S, #radio1D, #radio2S, #radio2D").click( function () {
+		$('input:radio[name=radio3]').attr('checked', false);
+	})
+	
+	$("#radio4, #radio5").button({
 		icons: {
 			primary: 'ui-icon-gear'
 		}
@@ -241,10 +254,13 @@ function varianceFoldtest() {
 	}
 	
 	//(Gaussian or Standard sampling)
-	var type = $("#sampleType2 input[type='radio']:checked").val();
+	var typeStrike = $("#sampleType2 input[name='radio3']:checked").val();
+	var typeDec = $("#sampleType2 input[name='radio4']:checked").val();
+	var type = {'strike': typeStrike, 'dec': typeDec}
+	
 	var timeInit = Date.now();
 	
-	if(type === undefined) {
+	if(type.dec === undefined || type.dec === undefined) {
 		notify('failure', 'Please select a type.');
 		return;
 	}
@@ -274,14 +290,14 @@ function varianceFoldtest() {
 		//for the first bootstrap we use the actual data
 		for(var j = 0; j < dec.length; j++) {
 			if(i > 0) {
-				sampleDec.push(getRandom(dec[j], decErr[j], type));
-				sampleStrike.push(getRandom(strike[j], strikeErr[j], type));	
+				sampleDec.push(getRandom(dec[j], decErr[j], type.dec));
+				sampleStrike.push(getRandom(strike[j], strikeErr[j], type.strike));	
 			} else {
 				sampleDec.push(dec[j]);
 				sampleStrike.push(strike[j]);
 			}
 		}
-		
+
 		var max = 1;
 		
 		//Unfold over range in increments of 10 degrees
@@ -359,9 +375,8 @@ function varianceFoldtest() {
 	
 	var sub = (Date.now() - timeInit);
 	
-	console.log(untilt);
 	//Call the foldtest plotting function
-	grfoldtestOro ( cdfData, bootTaus, lower, upper, unfoldingMin, unfoldingMax, sub, data, realMax );
+	grfoldtestOro ( cdfData, bootTaus, lower, upper, unfoldingMin, unfoldingMax, sub, data, realMax, type );
 }
 
 /*
@@ -506,7 +521,7 @@ function initializeFoldtest () {
  * FUNCTION grfoldtestOro
  * Description: handles plotting for the oroclinal foldtest (to be renamed)
  */ 
-function grfoldtestOro (cdfData, data, lower, upper, begin, end, sub, input, max ) {
+function grfoldtestOro (cdfData, data, lower, upper, begin, end, sub, input, max, type ) {
 	
 	//Create plotband for 95% bootstrapped confidence interval (upper to lower)
 	var plotBands =  [{
@@ -705,8 +720,7 @@ function grfoldtestOro (cdfData, data, lower, upper, begin, end, sub, input, max
 	
 	new Highcharts.Chart(chartOptions);
 	
-	console.log('hi');
-	$('#foldTable').html('<table class="sample" style="text-align: center"> <thead> <th> Number of Bootstraps </th> <th> Minimum Variance at % Unfolding (Data) </th> <th> Confidence Interval (Bootstraps) </th> </thead> <tbody> <td> ' + cdfData.length + '</td> <td> ' + max + ' </td> <td> ' + lower + ' - ' + upper + ' </td>  </tbody> </table>');
+	$('#foldTable').html('<table class="sample" style="text-align: center"> <thead> <th> Type of sampling </th> <th> Number of Bootstraps </th> <th> Minimum Variance at % Unfolding (Data) </th> <th> Confidence Interval (Bootstraps) </th> </thead> <tbody> <td> Strike: ' + type.strike + '<br> Declination: ' + type.dec + ' <td> ' + cdfData.length + '</td> <td> ' + max + ' </td> <td> ' + lower + ' - ' + upper + ' </td>  </tbody> </table>');
 	$('#foldTable').show();
 	
 	//Show plots
@@ -773,11 +787,11 @@ function initializeSampling() {
 	}
 	
 	if(dec.length !== 0) {
-		var type = $("#sampleType input[type='radio']:checked").val();
+		var typeStrike = $("#sampleType input[name='radio1']:checked").val();
+		var typeDec = $("#sampleType input[name='radio2']:checked").val();
+		var type = {'strike': typeStrike, 'dec': typeDec}
 		
-		if(type === 'Weighed') {
-			weighedData(false);
-		} else if (type === 'Gauss' || type === 'Standard') {
+		if ((type.strike === 'Gauss' || type.strike === 'Standard') && (type.dec === 'Gauss' || type.dec === 'Standard')) {
 			weighedParameters = weighedData(true);
 			bootstrapData(type);
 		}
@@ -841,6 +855,7 @@ function importing(event) {
 	decErr = new Array();
 	strike = new Array();
 	strikeErr = new Array();
+	codes = new Array();
 
 	//Function fired when loading is completed
 	reader.onload = function () {
@@ -863,7 +878,7 @@ function importing(event) {
 			});	
 			
 			//Not four parameters, the file is not interpretable by the application
-			if(parameters.length !== 4) {
+			if(parameters.length < 4) {
 				notify('failure', 'Input file was not designed for the oroclinal test');
 				return;
 			}
@@ -872,6 +887,9 @@ function importing(event) {
 			decErr.push(Number(parameters[1]));
 			strike.push(Number(parameters[2]));
 			strikeErr.push(Number(parameters[3]));
+			
+			var code = parameters[4] || 'Unspecified';
+			codes.push(code);
 			
 		}
 
@@ -977,7 +995,7 @@ function weighedData( getParams ) {
 	var errorData = new Array();
 	
 	for(var i = 0; i < dec.length; i++) {
-		plotData.push({'y': dec[i], 'x': strike[i]});
+		plotData.push({'y': dec[i], 'x': strike[i], 'code': codes[i]});
 		
 		//Create error bars (Highcharts doesn't properly support this, so we draw lines from (x ± xErr, y ± yErr)
 		//Separate values by null, null so Highcharts doesn't draw unwanted connections between different error bars
@@ -1131,7 +1149,7 @@ function getRandom(value, error, type) {
  * Output: VOID (calls plotGraph@function)
  */
 function bootstrapData(type) {
-
+	
 	if(dec.length === 0) {
 		return;
 	}
@@ -1139,7 +1157,7 @@ function bootstrapData(type) {
 	regressions = new Array();
 	
 	//Number of bootstraps
-	var nb = 5000;
+	var nb = 1000;
 	var i = 0;
 	var bar = $("#progressBar");
 	var sampledStuff = new Array();
@@ -1155,8 +1173,8 @@ function bootstrapData(type) {
 			
 			//For each point, draw a random point from within the confidence interval (for type: Gaussian, Standard)
 			for(var j = 0; j < dec.length; j++) {
-				sampleDec.push(getRandom(dec[j], decErr[j], type)); //Draw a random sample
-				sampleStrike.push(getRandom(strike[j], strikeErr[j], type));
+				sampleDec.push(getRandom(dec[j], decErr[j], type.dec)); //Draw a random sample
+				sampleStrike.push(getRandom(strike[j], strikeErr[j], type.strike));
 			}
 
 			//Do a linear regression on this data, and save to the regression@array
@@ -1269,7 +1287,8 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 		var residual = (strike[i] * lr.slope + lr.intercept) - dec[i];
 		pointCloud.push({
 			'x': residual, 
-			'y': strike[i]
+			'y': strike[i],
+			'code': codes[i],
 		});
 	}
 	
@@ -1296,7 +1315,7 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 	var errorData = new Array();
 	
 	for(var i = 0; i < dec.length; i++) {
-		plotData.push({'y': dec[i], 'x': strike[i]});
+		plotData.push({'y': dec[i], 'x': strike[i], 'code': codes[i]});
 		
 		//Create error bars (Highcharts doesn't properly support this, so we draw lines from (x ± xErr, y ± yErr)
 		//Seperate values by null, null so Highcharts doesn't draw unwanted connections between different error bars
@@ -1390,7 +1409,7 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 	}];
 	
 	plotGraph(plotSeries, minPlot, maxPlot, true);
-	$("#parameterTable").html('<table class="sample" style="text-align: center"> <thead> <th> Type of Regression </th> <th> Regression Slope </th> <th> Regression Intercept </th> <th> Regression R2 </th> </thead> <tbody> <td> ' + type + ' </td> <td> ' + lr.slope.toFixed(3) + ' </td> <td> ' +	lr.intercept.toFixed(3) + ' </td> <td> ' +	lr.r2.toFixed(3) + ' </td> </tbody> </table>')
+	$("#parameterTable").html('<table class="sample" style="text-align: center"> <thead> <th> Type of Regression </th> <th> Regression Slope </th> <th> Regression Intercept </th> <th> Regression R2 </th> </thead> <tbody> <td> Strike: ' + type.strike + ' <br> Declination: ' + type.dec + ' </td> <td> ' + lr.slope.toFixed(3) + ' </td> <td> ' +	lr.intercept.toFixed(3) + ' </td> <td> ' +	lr.r2.toFixed(3) + ' </td> </tbody> </table>')
 	$("#parameterTable").show();
 	
 }
@@ -1448,6 +1467,15 @@ function plotResiduals (data, databs, min, max) {
                 'groupPadding': 0,
             },
         },
+		tooltip: {
+			formatter: function () {
+				if(this.series.name === "Residuals") {
+					return '<b> Strike: </b> ' + this.x + '<br><b>Declination: </b>' + this.y + '<br><b>Code: </b>' + this.point.code;
+				} else {
+					return '<b> Residual bin: </b>' + this.x + '<br><b> Number of points: </b>' + this.y
+				}
+			}
+		},
         series: [{
 			'type': 'scatter',
             'name': 'Residuals',
@@ -1477,13 +1505,12 @@ function getCDF ( type ) {
 		var average = interceptAverage;	
 	}
 	
-	var decimation = 5;
 	var data = new Array();
-	for(var i = 0; i < regressions.length; i+= decimation) {
+	for(var i = 0; i < regressions.length; i++) {
 		data.push(regressions[i][type]);
 	}
 	
-	plotCDF(data, lower/decimation, upper/decimation, 'CDFContainer', 'Cumulative Distribution Function', lr[type], average, weighedParameters[type], 'Regression ' + type);
+	plotCDF(data, lower, upper, 'CDFContainer', 'Cumulative Distribution Function', lr[type], average, weighedParameters[type], 'Regression ' + type);
 
 }
 
@@ -1599,7 +1626,7 @@ function plotCDF (one, lower, upper, container, title, x1, x2, x3, type) {
 			renderTo: container
 		},
         subtitle: {
-			text: ' Decimated to ' + nb + ' bootstraps'
+			text: nb + ' of bootstraps'
         },
 		plotOptions: {
 			series: {
@@ -1665,6 +1692,13 @@ function plotGraph(plotSeries, min, max, b) {
         },
 		legend: {
 			itemHoverStyle: null
+		},
+		tooltip: {
+			formatter: function () {
+				if(this.series.name === "Input Data") {
+					return '<b> Strike: </b> ' + this. x + '<br><b>Declination: </b>' + this.y + '<br><b>Code: </b>' + this.point.code;
+				}
+			}
 		},
 		exporting: {
 			 sourceWidth: 1200,

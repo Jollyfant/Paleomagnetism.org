@@ -65,28 +65,48 @@ ga('send', 'pageview');
 	
 	<div id="tabs">
 		<ul>
+			<li><a href="#introductionTab" title="General information">  Introduction </a></li>
 			<li><a href="#oroclineTab" title="General information"> Oroclinal Test </a></li>
 			<li><a href="#oroclineFoldtestTab" title="Oroclinal Foldtest">  Oroclinal Foldtest  </a></li>
-			<li><a href="#optionsTab" title="General information">  Advanced Options </a></li>
 		</ul>
 		
 		<!-- APP MAIN BODY FOR OROCLINAL TEST -->
+		<div id="introductionTab">
+			<div class="information">
+				<h1> Oroclinal Test: Home </h1>
+				<p>
+				The oroclinal tests uses bootstrapped (Gaussian or Standard) linear regressive techniques to determine the relationship between bi-dimensional data (e.g. strike and declination).
+				<p>
+				<button style="display: inline-block; margin: 10px; height: 50px; width: 200px; border: 1px solid; " title="Load new data to the application" id="importData" type="button" onClick="$('#importFile').click();" title="Import a previously exported file.">Add Data</button> 	<button id="inputHelp">?</button>
+				<p> Data can be loaded to the application by clicking the button above. The required input format can be viewed by clicking the ?-button.
+				<p>
+				<!-- <input type="checkbox" id="makeSquare"><label for="makeSquare">	Scale oroclinal test graph to square</label> -->
+			</div>	
+		</div>	
+		
 		<div id="oroclineTab">
 			<div class="information">
-				<h2> Oroclinal Test <small> linear regression </small> </h2>
+				<h2> Oroclinal Test <small> Linear Regression </small> </h2>
 				<p>
 				The oroclinal test does a linear regression on the provided data and calculates confidence bounds through Gaussian or standard sampling within the specified uncertainties.
 				<p>
-				Standard sampling and Gaussian sampling are bootstrapped.
+				Standard sampling and Gaussian sampling are bootstrapped. Choose the type of sampling for your data below.
 				<div id="sampleType" title="Sampling method" style="display: inline-block;">
-					<input type="radio" id="radio1" value="Standard" name="radio"> <label for="radio1"> Standard Sampling </label>
-					<input type="radio" id="radio2" value="Gauss" name="radio" checked> <label for="radio2"> Gaussian Sampling </label>
-					<input type="radio" id="radio3" value="Weighed" name="radio"> <label for="radio3"> Weighed </label>
+					<table class="sample"> <thead> <tbody> <tr>
+						<td> Strike </td>
+						<td> <input type="radio" id="radio1S" value="Standard" name="radio1"> <label for="radio1S"> Standard Sampling </label> </td>
+						<td> <input type="radio" id="radio1D" value="Gauss" name="radio1" checked> <label for="radio1D"> Gaussian Sampling </label>
+					</td> </tr> <tr>
+						<td> Declination </td>
+						<td> <input type="radio" id="radio2S" value="Standard" name="radio2"> <label for="radio2S"> Standard Sampling </label> </td>
+						<td> <input type="radio" id="radio2D" value="Gauss" name="radio2" checked> <label for="radio2D"> Gaussian Sampling </label>					
+					</tr></tbody>
+					</table>
 				</div>
-				<p>
 				<div style="display: inline-block;">
-				<button id="initializeOroclinal" style="display: inline-block;"> Initialize Oroclinal Test </button><div id="progressBar" title="Progress Bar" style="display: inline-block; vertical-align: middle; width: 200px;"></div>
+					<button id="initializeOroclinal" style="display: inline-block;"> Initialize Bootstrapped Regression </button><div id="progressBar" title="Progress Bar" style="display: inline-block; vertical-align: middle; width: 200px;"></div>
 				</div>
+				<p> <button id="weighed"> Non-bootstrapped Weighed Regression </button>
 			</div>
 			
 			<input style="display: none" id="importFile" type="file" size="4" name="file" onChange="importing(event)"/>
@@ -113,29 +133,35 @@ ga('send', 'pageview');
 		</div>
 		
 		<div id="oroclineFoldtestTab">
-			<button id="oroFoldtest">Initialize Oroclinal Foldtest</button>
+			<div class="information">
+			<h2> Oroclinal Foldtest <small> Circular Variance </small> </h2>
 			<p>
-			<div id="sampleType2" title="Sampling method" style="display: inline-block;">
-				<input type="radio" id="radio4" value="Standard" name="radio2"> <label for="radio4"> Standard Sampling </label>
-				<input type="radio" selected="selected" id="radio5" value="Gauss" name="radio2" checked> <label for="radio5"> Gaussian Sampling </label>
-			</div>
+			The oroclinal foldtest completes a classical foldtest for declinations using circular statistics with inclinations implicitly set to 0.
+			Choose the type of sampling for your data below.
+				<div id="sampleType2" title="Sampling method" style="display: inline-block;">
+					<table class="sample"> <thead> <tbody> <tr>
+						<td> Strike </td>
+						<td> <input type="radio" id="radio3S" value="Standard" name="radio3"> <label for="radio3S"> Standard Sampling </label> </td>
+						<td> <input type="radio" id="radio3D" value="Gauss" name="radio3" checked> <label for="radio3D"> Gaussian Sampling </label>
+					</td> </tr> <tr>
+						<td> Declination </td>
+						<td> <input type="radio" id="radio4S" value="Standard" name="radio4"> <label for="radio4S"> Standard Sampling </label> </td>
+						<td> <input type="radio" id="radio4D" value="Gauss" name="radio4" checked> <label for="radio4D"> Gaussian Sampling </label>					
+					</tr></tbody>
+					</table>
+					<button id="oroFoldtest">Initialize Oroclinal Foldtest</button>
+				</div>
+			<p>
+			</div>	
 			<p>
 			<div id="foldTable" style="display: none; text-align: center; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
 			<p>
 			<div id="container5"></div>
 			<small> Tip: Click the thick red line to view the declination distribution for that percentage of unfolding. </small> 
-		</div>		
+			</div>		
+	
 		
-		<div id="optionsTab">
-			<h2> Advanced Options <small> add data to application </small> </h2>
-			<p>
-			Data can be added to the application. A default format is required and can be viewed by clicking the ? button.
-			<p>
-			<button style="display: inline-block;" id="importData" type="button" onClick="$('#importFile').click();" title="Import a previously exported file.">Import Data</button>
-			<button id="inputHelp">?</button>
-			<p>
-			<!-- <input type="checkbox" id="makeSquare"><label for="makeSquare">	Scale oroclinal test graph to square</label> -->
-		</div>		
+	
 	</div>
 	
 	<hr>
@@ -144,7 +170,7 @@ ga('send', 'pageview');
 	<div id="inputHelpDialog" title="Oroclinal Test Input Format" style="display: none;">
 		<p><b>The required input format is specified below:</b></p>
 		<p style="padding: 10px; border: 1px dotted rgb(119, 152, 191); font-family: monospace;">
-		<br> Declination, Declination Uncertainty, Strike, Strike Uncertainty
+		<br> Declination, Declination Uncertainty, Strike, Strike Uncertainty, (code)
 		<br> ...
 		<br>
 		</p>
