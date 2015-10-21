@@ -141,18 +141,17 @@ var showGeomagneticDirections = function () {
 	//Give the user the option to save the site
 	//Show user option to save this combination
 	$('#saveGroupDiv').show().css('display', 'inline-block');
-	$('#saveGroupButton').hide();
-	
+
 	var selectedCutoff = $("#cutoffSelectorDirections").val()[0];
-	
+
 	if(siteNames.length !== 1 || selectedCutoff !== sites[siteNames[0]].userInput.metaData.cutoff) {
 	
-		$('#saveGroupButton').show().css('display', 'inline-block');
+		$('#saveGroupButton span').text("Save");
 	
 		//Bucket to keep data input for all sites to be merged
 		var siteDataArray = new Array();
 		for(var i = 0; i < siteNames.length; i++) {
-			siteDataArray.push(sites[siteNames[i]].userInput.data);
+			siteDataArray.push(sites[siteNames[i]].userInput.data.slice(0));
 		}
 		
 		//Merge the input data to a single array
@@ -177,6 +176,12 @@ var showGeomagneticDirections = function () {
 	
 		//Set the siteNames to the newly created TEMP site
 		var siteNames = 'TEMP';
+		
+	} else {
+		$('#saveGroupButton span').text("Copy");
+		var meta = $.extend({}, sites[siteNames].userInput.metaData);
+		meta.name = 'TEMP';
+		sites['TEMP'] = new site(meta, sites[siteNames].userInput.data, false);
 	}
 	
 	//Call plot functions for equal area projection and virtual geomagnetic poles
@@ -555,7 +560,8 @@ var addSiteCombination = function () {
 	//Ignore rejected samples if requested
 	var data = $("#excludeRejected").prop('checked') ? sites['TEMP'].data.dir.accepted : sites['TEMP'].userInput.data;
 	
-	// If checked, reverse all samples to normal polarity	
+	// If checked, reverse all samples to normal polarity
+	/*
 	if($("#reversePolarity").prop('checked')) {
 		for(var i = 0; i < data.length; i++) {
 			if(data[i][1] < 0) {
@@ -563,7 +569,7 @@ var addSiteCombination = function () {
 				data[i][0] = (data[i][0] + 180)%360;
 			}
 		}
-	}
+	}*/
 	
 	//Call site constructor with the updated metadata and directional data	
 	sites[name] = new site(metaData, data, true);

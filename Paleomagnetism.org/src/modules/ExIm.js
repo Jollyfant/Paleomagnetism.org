@@ -466,15 +466,13 @@ $(function() {
 				columns = ['sample', 'dec', 'inc'];
 				csv += '"' + columns.join(itemDelimiter) + '"' + lineDelimiter;
 				
-				//Add all directions (first 4 series)
-				for(var k = 0; k < 2; k++) {
-					for(var i = 0; i < this.series[k].data.length; i++) {
+				//Add all directions (first series)
+				for(var i = 0; i < this.series[0].data.length; i++) {
 				
-						//Sample name, declination, inclination, rejected/accepted on one line
-						row = [this.series[k].data[i].sample, this.series[k].data[i].x, this.series[k].data[i].inc, this.series[k].name];	
-						csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
+					//Sample name, declination, inclination, rejected/accepted on one line
+					row = [this.series[0].data[i].sample, this.series[0].data[i].x, this.series[0].data[i].inc, this.series[0].name];	
+					csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
 				
-					}
 				}
 			}
 			
