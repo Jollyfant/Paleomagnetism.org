@@ -3025,7 +3025,7 @@ function importUtrecht(applicationData, text) {
 		for(var j = 0; j < parameters.length; j++) {
 			
 			//Split by commas and trim for leading/trailing spaces
-			var parameterPoints = parameters[j].split(/[,]+/); 
+			var parameterPoints = parameters[j].split(/[,]/); 
 			for(var k = 0; k < parameterPoints.length; k++) {
 				parameterPoints[k] = parameterPoints[k].trim();
 			}
@@ -3033,9 +3033,9 @@ function importUtrecht(applicationData, text) {
 			//Get specimen name, core and bedding orientation from Utrecht format contained in first row of datablock (there j = 0)
 			//Check if NaN (number("")) becomes NaN is field is empty -> simply set value to 0.
 			if(j === 0) {
-			
+
 				var name = parameterPoints[0].replace(/['"]+/g, ''); //Remove quotes (for TH-demag, samples are written as ""SS1.1"". Not very nice.);
-				
+
 				//Check if sample with name exists -> append copy text
 				for(var k = 0; k < applicationData.length; k++) {
 					if(name === applicationData[k].name) {
