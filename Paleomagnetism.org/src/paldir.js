@@ -3029,11 +3029,16 @@ function importUtrecht(applicationData, text) {
 			for(var k = 0; k < parameterPoints.length; k++) {
 				parameterPoints[k] = parameterPoints[k].trim();
 			}
-			
+
 			//Get specimen name, core and bedding orientation from Utrecht format contained in first row of datablock (there j = 0)
 			//Check if NaN (number("")) becomes NaN is field is empty -> simply set value to 0.
 			if(j === 0) {
-
+				
+				//Error when not enough header items
+				if(parameterPoints.length !== 7) {
+					notify('failure', "Problem parsing header: expected 7 parameters ( " + parameterPoints[0] + ")");
+				}
+				
 				var name = parameterPoints[0].replace(/['"]+/g, ''); //Remove quotes (for TH-demag, samples are written as ""SS1.1"". Not very nice.);
 
 				//Check if sample with name exists -> append copy text
