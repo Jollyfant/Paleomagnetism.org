@@ -151,7 +151,7 @@ var showGeomagneticDirections = function () {
 		//Bucket to keep data input for all sites to be merged
 		var siteDataArray = new Array();
 		for(var i = 0; i < siteNames.length; i++) {
-			siteDataArray.push(sites[siteNames[i]].userInput.data.slice(0));
+			siteDataArray.push(JSON.parse(JSON.stringify(sites[siteNames[i]].userInput.data)));
 		}
 		
 		//Merge the input data to a single array
@@ -181,7 +181,10 @@ var showGeomagneticDirections = function () {
 		$('#saveGroupButton span').text("Copy");
 		var meta = $.extend({}, sites[siteNames].userInput.metaData);
 		meta.name = 'TEMP';
-		sites['TEMP'] = new site(meta, sites[siteNames].userInput.data, false);
+		
+		var data = JSON.parse(JSON.stringify(sites[siteNames].userInput.data));
+
+		sites['TEMP'] = new site(meta, data, false);
 	}
 	
 	//Call plot functions for equal area projection and virtual geomagnetic poles
@@ -561,7 +564,6 @@ var addSiteCombination = function () {
 	var data = $("#excludeRejected").prop('checked') ? sites['TEMP'].data.dir.accepted : sites['TEMP'].userInput.data;
 	
 	// If checked, reverse all samples to normal polarity
-	/*
 	if($("#reversePolarity").prop('checked')) {
 		for(var i = 0; i < data.length; i++) {
 			if(data[i][1] < 0) {
@@ -569,7 +571,7 @@ var addSiteCombination = function () {
 				data[i][0] = (data[i][0] + 180)%360;
 			}
 		}
-	}*/
+	}
 	
 	//Call site constructor with the updated metadata and directional data	
 	sites[name] = new site(metaData, data, true);
@@ -695,7 +697,7 @@ var site = function(metaData, inputData, notifyUser) {
 	
 	//Save original input data (use slice to create a copy)
 	this.userInput = {
-		data: inputData.slice(0),
+		data: JSON.parse(JSON.stringify(inputData)),
 		metaData: metaData
 	}
 
@@ -704,7 +706,7 @@ var site = function(metaData, inputData, notifyUser) {
 	var cutoff = metaData.cutoff ? metaData.cutoff : '45';
 		
 	//Start processing procedure in geographic coordinates
-	this.data = new processInput(inputData.slice(0), cutoff);
+	this.data = new processInput(JSON.parse(JSON.stringify(inputData)), cutoff);
 
 	//Get the tilt corrected directions
 	var rotatedInputData = new Array();
