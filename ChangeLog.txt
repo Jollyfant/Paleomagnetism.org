@@ -1,1 +1,2 @@
 # ChangeLog tests
+10/29/2015 - Fixed problem with fitting module always reducing to one iteration

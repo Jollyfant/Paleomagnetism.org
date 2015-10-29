@@ -1161,8 +1161,8 @@ function fitCirclesToDirections() {
 		//Get the maximum angle between a new and an old fitted direction (this should be lower than 0.1 for the procedure to continue); else break
 		var maxAngle = 0;
 		for(var i = 0; i < nCircles; i++) {
-			if(angle[i] > maxAngle) {
-				maxAngle = angle[i];
+			if(angles[i] > maxAngle) {
+				maxAngle = angles[i];
 			}
 		}
 		if(maxAngle < 0.1) {
@@ -2115,6 +2115,17 @@ function zijderveld ( samples ) {
 				}
 			}
 		},
+		'exporting': {
+			'filename': 'Zijderveld',
+            'sourceWidth': 600,
+            'sourceHeight': 600,
+            'buttons': {
+                'contextButton': {
+                    'symbolStroke': '#7798BF',
+					'align': 'right'
+                }
+            }
+        },
 		'title': {
 			'text': 'Zijderveld Diagram (' + samples.name + ')'
 		},
@@ -2296,6 +2307,17 @@ function intensity ( sample ) {
                  }
 			}
 		},
+		'exporting': {
+			'filename': 'Intensity',
+            'sourceWidth': 1000,
+            'sourceHeight': 600,
+            'buttons': {
+                'contextButton': {
+                    'symbolStroke': '#7798BF',
+					'align': 'right'
+                }
+            }
+        },
 		'title': {
 			'text': 'Intensity Diagram (' + sample.name + ')'
 		},
@@ -2431,6 +2453,17 @@ function eqAreaProjection ( sample ) {
                  }
 			},
 		},
+		'exporting': {
+			'filename': 'Equal Area Projection',
+            'sourceWidth': 600,
+            'sourceHeight': 600,
+            'buttons': {
+                'contextButton': {
+                    'symbolStroke': '#7798BF',
+					'align': 'right'
+                }
+            }
+        },
 		title: {
 			text: 'Equal Area Projection (' + sample.name + ')'
 		},

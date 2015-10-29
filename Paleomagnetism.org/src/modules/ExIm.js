@@ -293,13 +293,13 @@ module.IO.getSVG = function(id) {
 	for(var i = 0; i < charts.length; i++) {
 
 		var svg = charts[i].getSVG();
-		svg = svg.replace('<svg', '<g transform="translate('+725*i+',0)" ');
+		svg = svg.replace('<svg', '<g transform="translate('+600*i+',0)" ');
 		
 		svg = svg.replace('</svg>', '</g>');
 		svgArr.push(svg);
 	}
 
-    var svg = '<svg height="800" width="' + 725 * charts.length + '" version="1.1" xmlns="http://www.w3.org/2000/svg">' + svgArr.join('') + '</svg>';
+    var svg = '<svg height="600" width="' + 600 * charts.length + '" version="1.1" xmlns="http://www.w3.org/2000/svg">' + svgArr.join('') + '</svg>';
 	var form
     
     // merge the options

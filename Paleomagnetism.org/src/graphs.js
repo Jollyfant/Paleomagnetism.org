@@ -80,8 +80,8 @@ var eqAreaDirections = function(siteName) {
 			}
 		},
 		'exporting': {
-            'sourceWidth': 800,
-            'sourceHeight': 800,
+            'sourceWidth': 600,
+            'sourceHeight': 600,
 			'filename': siteName + ' (directions)',
             'buttons': {
                 'contextButton': {
@@ -283,8 +283,8 @@ var eqAreaVGPs = function(name) {
     	},
 		'exporting': {
 			'filename': name + '_45',
-            'sourceWidth': 800,
-            'sourceHeight': 800,
+            'sourceWidth': 600,
+            'sourceHeight': 600,
             'buttons': {
                 'contextButton': {
                     'symbolStroke': '#7798BF',
@@ -616,7 +616,7 @@ function CTMDXYZ (one, two, lower, upper, container, info, title, nBootstraps) {
         },
 		'exporting': {
 			'filename': 'CBOOT',
-		    'sourceWidth': 800,
+		    'sourceWidth': 600,
             'sourceHeight': 600,
             'buttons': {
                 'contextButton': {
@@ -1231,7 +1231,7 @@ function EIbootstraps (data, time, nb, input) {
 		
 	//Define the initial series (TK03.GAD Polynomial) and the unflattening of the actual non-bootstrapped data (kept in data[0])
 	mySeries = [{
-		'name': 'TK03.GAD (Tauxe, 2008)', 
+		'name': 'TK03.GAD', 
 		'data' : TK03Poly,
 		'dashStyle': 'ShortDash',
 		'lineWidth': 3,
@@ -1292,7 +1292,7 @@ function EIbootstraps (data, time, nb, input) {
         },
 		'exporting': {
 			'filename': 'TK03-EI',
-			'sourceWidth': 800,
+			'sourceWidth': 1000,
             'sourceHeight': 400,
             'buttons': {
                 'contextButton': {
@@ -1815,8 +1815,8 @@ function plotExpectedLocation( data, container, title, lat, lon ) {
 		},
 		'exporting': {
 			'filename': 'expected_' + title,
-            'sourceWidth': 1200,
-            'sourceHeight': 600,
+            'sourceWidth': 800,
+            'sourceHeight': 400,
             'buttons': {
                 'contextButton': {
                     'symbolStroke': '#7798BF',
@@ -1908,8 +1908,8 @@ function EICDF (data, orig, inc, incAv, lower, upper) {
         },
 		'exporting': {
 			'filename': 'TK03_CDF',
-		    'sourceWidth': 1200,
-            'sourceHeight': 600,
+		    'sourceWidth': 1000,
+            'sourceHeight': 400,
             'buttons': {
                 'contextButton': {
                     'symbolStroke': '#7798BF',
@@ -2068,8 +2068,8 @@ function plotFoldtestCDF (cdfdat, data, lower, upper, begin, end, sub, input ) {
         },
 		'exporting': {
 			'filename': 'Foldtest',
-		    'sourceWidth': 1200,
-            'sourceHeight': 600,
+		    'sourceWidth': 800,
+            'sourceHeight': 400,
             'buttons': {
                 'contextButton': {
                     'symbolStroke': '#7798BF',
