@@ -120,6 +120,25 @@ hr {
 
 #percentageProgress { width: 50px; margin: 0 auto; }
 
+#KMLbox {
+		width: auto;
+		text-align: center;
+		padding: 2px;
+        right: 0px;
+        font-size: 11px;
+        color: #111144;
+        background-color: #E3EEFE;
+        filter: alpha(opacity=75);  /* internet explorer */
+        -khtml-opacity: 0.75;      /* khtml, old safari */
+        -moz-opacity: 0.75;       /* mozilla, netscape */
+        opacity: 0.75;           /* fx, safari, opera */
+        border: 2px solid #FFFFFF;
+        border-radius: 5px 5px 5px 5px;
+        position: absolute;
+        margin: 10px;
+        z-index:99;	
+}
+
 #latandlon {
 		width: 250px;
 		text-align: center;

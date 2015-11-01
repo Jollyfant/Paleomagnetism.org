@@ -65,8 +65,9 @@ module.map.initialize = function () {
         document.getElementById('latspan').innerHTML = '-----------';
         document.getElementById('lngspan').innerHTML = '-----------';
     });
+
 }
-	
+
 /* 
  * FUNCTION module.map.mapAddSites
  * Description: loops over sites and puts all sites on the map for site latitude/longitude
@@ -195,8 +196,25 @@ module.map.mapAddSites = function() {
 			nMissing++;
 		}
 	}
-	console.log(module.map.markers)
 }
+
+module.map.addKML = function (event) {
+	
+    var input = event.target;
+    var reader = new FileReader();
+
+	reader.readAsText(input.files[0]);
+	
+	reader.onload = function() {
+		var myParser = new geoXML3.parser({map: module.map.map});
+		try {
+			myParser.parseKmlString(reader.result);
+		} catch (err) {
+			notify('failure', 'Could not add .KML file: ' + err);
+		}
+	}
+}
+
 
 /* 
  * FUNCTION module.map.changeColor

@@ -207,7 +207,7 @@ var changeAge = function (id) {
 	"use strict";
 	
 	var age = $("#" + id).val(); //Get select box input for the edit or original ID
-	
+		
 	//Check age and parse the appropriate ages
 	//Average, minimum, maximum
 	if(age == 'Blank') parseAgeName('', '', '', id);

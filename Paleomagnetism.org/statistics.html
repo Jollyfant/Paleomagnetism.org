@@ -47,6 +47,9 @@
 	<script src="./src/modules/apwp.js"></script> <!-- APWPs -->
 	<script src="./src/modules/foldtest.js"></script> <!-- APWPs -->
 
+	<script src="./src/libs/geoxml3.js"></script>
+	<script src="./src/libs/ProjectedOverlay.js"></script>
+	
 	<!-- Google Analytics -->
 	<script>
 	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -233,11 +236,14 @@
 				<!-- Site Selector -->
 				<p><select multiple id="mapSel" title="" onClick="module.map.mapAddSites();" class="siteSelector"></select>
 			</div>
-			
 			<p>
 			<!-- map -->
 			<div id="wrapper">
 				<!-- Option Box (top left) -->
+				<div id="KMLbox">
+					<button id="addKMLButton" type="button" onClick="$('#addKML').click();" title="Import a .KML file">Import KML file (experimental) </button>
+					<input style="display: none" id="addKML" type="file" size="4" name="file" onChange="module.map.addKML(event)"/>
+				</div>
 				<div id="latandlon" >
 					<div style="margin: 5px;">
 						<b>Latitude: </b> &nbsp; <b id="latspan" ></b> &nbsp; &nbsp; <b>Longitude: </b> &nbsp; <b id="lngspan" ></b>

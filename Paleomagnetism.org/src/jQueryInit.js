@@ -157,6 +157,7 @@ function jQueryInit () {
 	});
 			
 	$('.ageNames').multiselect({
+		width: 100,
 		selectedText: "# sites selected",
 		noneSelectedText: "Select an age",
 		multiple: false, 
@@ -283,6 +284,8 @@ function jQueryInit () {
 	$("#exportHighlight").click( function () {
 		$("#exportData").click();
 	});
+	
+	$("#addKMLButton").button();
 	
 	//Preset ages and function to call the parseAgeName function for specified ages
 	$(".ageNames").change( function () {
