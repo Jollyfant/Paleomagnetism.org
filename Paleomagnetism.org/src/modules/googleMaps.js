@@ -198,6 +198,13 @@ module.map.mapAddSites = function() {
 	}
 }
 
+/* 
+ * FUNCTION module.map.addKML (experimental)
+ * Description: attempts to add a .kml file to the Google Maps overview
+ *            : Note: input .kml file must contain a plain-text STRING.
+ * Input: Click event
+ * Output: VOID (adds .kml to map)
+ */
 module.map.addKML = function (event) {
 	
     var input = event.target;

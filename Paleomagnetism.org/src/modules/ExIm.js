@@ -12,6 +12,32 @@
  //Define I/O object
 module.IO = new Object();
 
+module.IO.downloadSelected = function () {
+	
+	var siteNames = $("#introSel").val();
+	if(siteNames == null) {
+		notify('failure', 'No site has been selected');
+		return;
+	}
+	
+	//Format for the export
+	var exportData = {
+		'version'	: version,
+		'apwp'		: APWPs,
+		'data'		: new Array()
+	};
+	
+	//Add all sites to the export data; ignore internally used site TEMP
+	for(var i = 0; i < siteNames.length; i++) {
+		if(sites[siteNames[i]].userInput.metaData.name != "TEMP") {
+			exportData.data.push(sites[siteNames[i]].userInput);
+		}
+	}
+
+	//Call downloading function for parsed data (JSON stringified)
+	module.IO.dlItem(JSON.stringify(exportData), 'export', 'pmag')
+}
+
 /*
  * FUNCTION: module.IO.importing
  * Description: Imports and parses the custom .pmag file

@@ -70,7 +70,7 @@ function jQueryInit () {
 		icons: { primary: "ui-icon-circle-plus"}
 	});
 	
-	$("#exportData").button({
+	$("#exportData, #downloadSelected").button({
 		icons: { primary: "ui-icon-arrowthickstop-1-s"}
 	});
 
@@ -251,6 +251,9 @@ function jQueryInit () {
 		module.IO.getSVG("dlBootstrapXYZ");
 	});
 	
+	$("#downloadSelected").click( function () {
+		module.IO.downloadSelected();
+	})
 	$("#addNewAPWP").click( function () {
 		$( "#addAPWP" ).dialog( "open" );
 	});
