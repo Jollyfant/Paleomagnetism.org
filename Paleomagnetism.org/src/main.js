@@ -525,7 +525,7 @@ var checkName = function ( name ) {
 	
 	//I decided to limit the name length to 15 characters
 	//Otherwise the name might overflow the text-areas
-	if(name.length > 15) {
+	if(name.length > 25) {
 		inputError($("#nameDiv"));
 		notify('failure', 'Site name is too long (15 characters maximum).');
 		return false;
