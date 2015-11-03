@@ -495,23 +495,60 @@
 								from <input type="text" id="siteMinAgeEdit" size="5"> to: <input id="siteMaxAgeEdit" type="text" size="5"> (Ma) </b>
 								<p>
 								<b> Age presets </b> <select multiple class="ageNames" id="ageNamesEdit" title="Select an age preset">
-									<option value="Blank"> Select an Age </option>
-									<option value="Holocene">Holocene</option>
-									<option value="Pleistocene">Pleistocene</option>
-									<option value="Pliocene">Pliocene</option>
-									<option value="Miocene">Miocene</option>
-									<option value="Oligocene">Oligocene</option>
-									<option value="Eocene">Eocene</option>
-									<option value="Paleocene">Paleocene</option>
-									<option value="Cretaceous">Cretaceous</option>
-									<option value="Jurassic">Jurassic</option>
-									<option value="Triassic">Triassic</option>
-									<option value="Permian">Permian</option>
-									<option value="Carboniferous">Carboniferous</option>
-									<option value="Devonian">Devonian</option>
-									<option value="Silurian">Silurian</option>
-									<option value="Ordovician">Ordovician</option>
-									<option value="Cambrian">Cambrian</option>
+									<option value="Quaternary" class="period">Quaternary</option>
+										<option value="Holocene" class="epoch">Holocene</option>	
+										<option value="Pleistocene" class="epoch">Pleistocene</option>
+									
+									<option value="Neogene" class="period">Neogene</option>
+										<option value="Pliocene" class="epoch">Pliocene</option>
+											<option value="Piacenzian" class="age">Piacenzian/Blancan</option>
+											<option value="Zanclean" class="age">Zanclean</option>
+										<option value="Miocene" class="epoch">Miocene</option>
+											<option value="Messinian" class="age">Messinian</option>
+											<option value="Tortonian" class="age">Tortonian</option>
+											<option value="Serravallian" class="age">Serravallian</option>
+											<option value="Langhian" class="age">Langhian</option>
+											<option value="Burdigalian" class="age">Burdigalian</option>
+											<option value="Aquitanian" class="age">Aquitanian</option>
+				
+									<option value="Paleogene" class="period">Paleogene</option>
+										<option value="Oligocene" class="epoch">Oligocene</option>
+											<option value="Chattian" class="age">Chattian</option>
+											<option value="Rupelian" class="age">Rupelian</option>
+										<option value="Eocene" class="epoch">Eocene</option>
+											<option value="Priabonian" class="age">Priabonian</option>
+											<option value="Bartonian" class="age">Bartonian</option>
+											<option value="Lutetian" class="age">Lutetian</option>
+											<option value="Ypresian" class="age">Ypresian</option>
+										<option value="Paleocene" class="epoch">Paleocene</option>
+											<option value="Thanetian" class="age">Thanetian</option>
+											<option value="Selandian" class="age">Selandian</option>
+											<option value="Danian" class="age">Danian</option>
+											
+									<option value="Cretaceous" class="period">Cretaceous</option>
+										<option value="Late Cretaceous" class="epoch">Late Cretaceous</option>
+											<option value="Maastrichtian" class="age">Maastrichtian</option>
+											<option value="Campian" class="age">Campian</option>
+											<option value="Santonian" class="age">Santonian</option>
+											<option value="Coniacian" class="age">Coniacian</option>
+											<option value="Turonian" class="age">Turonian</option>
+											<option value="Cenomanian" class="age">Cenomanian</option>
+										<option value="Early Cretaceous" class="epoch">Early Cretaceous</option>
+											<option value="Albian" class="age">Albian</option>
+											<option value="Aptian" class="age">Aptian</option>
+											<option value="Barremian" class="age">Barremian</option>
+											<option value="Hauterivian" class="age">Hauterivian</option>
+											<option value="Valanginian" class="age">Valanginian</option>
+											<option value="Berriasian" class="age">Berriasian</option>
+											
+									<option value="Jurassic" class="period">Jurassic</option>
+									<option value="Triassic" class="period">Triassic</option>
+									<option value="Permian" class="period">Permian</option>
+									<option value="Carboniferous" class="period">Carboniferous</option>
+									<option value="Devonian" class="period">Devonian</option>
+									<option value="Silurian" class="period">Silurian</option>
+									<option value="Ordovician" class="period">Ordovician</option>
+									<option value="Cambrian" class="period">Cambrian</option>
 								</select>
 								<p>
 							</div>
@@ -566,8 +603,6 @@
 			<button id="confirmAPWP">Add APWP</button>
 		</div>
 	</div>
-	
-	
 	<div id="input" class="dialog" title="Data Input">
 	<h1> Select Data Input Type:</h1>
 	<div style="display: inline-block;">
@@ -598,24 +633,61 @@
 				<p><b> Age </b><input type="text" id="siteAge" size="5" title="Enter site age in Myr">			
 				<b>	from </b><input type="text" size="5" id="siteBoundMin" title="Enter site minimum age in Myr"><b> to </b><input type="text" size="5" id="siteBoundMax" title="Enter site maximum age in Myr"><b> (Ma)</b>
 				<p>
-				<select multiple class="ageNames" id="ageNames" title="Select an age preset">
-					<option value="Blank"> Select an Age </option>
-					<option value="Holocene">Holocene</option>
-					<option value="Pleistocene">Pleistocene</option>
-					<option value="Pliocene">Pliocene</option>
-					<option value="Miocene">Miocene</option>
-					<option value="Oligocene">Oligocene</option>
-					<option value="Eocene">Eocene</option>
-					<option value="Paleocene">Paleocene</option>
-					<option value="Cretaceous">Cretaceous</option>
-					<option value="Jurassic">Jurassic</option>
-					<option value="Triassic">Triassic</option>
-					<option value="Permian">Permian</option>
-					<option value="Carboniferous">Carboniferous</option>
-					<option value="Devonian">Devonian</option>
-					<option value="Silurian">Silurian</option>
-					<option value="Ordovician">Ordovician</option>
-					<option value="Cambrian">Cambrian</option>
+				<select multiple class="ageNames" id="ageNames" title="Select an age preset">					
+					<option value="Quaternary" class="period">Quaternary</option>
+						<option value="Holocene" class="epoch">Holocene</option>	
+						<option value="Pleistocene" class="epoch">Pleistocene</option>
+					
+					<option value="Neogene" class="period">Neogene</option>
+						<option value="Pliocene" class="epoch">Pliocene</option>
+							<option value="Piacenzian" class="age">Piacenzian/Blancan</option>
+							<option value="Zanclean" class="age">Zanclean</option>
+						<option value="Miocene" class="epoch">Miocene</option>
+							<option value="Messinian" class="age">Messinian</option>
+							<option value="Tortonian" class="age">Tortonian</option>
+							<option value="Serravallian" class="age">Serravallian</option>
+							<option value="Langhian" class="age">Langhian</option>
+							<option value="Burdigalian" class="age">Burdigalian</option>
+							<option value="Aquitanian" class="age">Aquitanian</option>
+
+					<option value="Paleogene" class="period">Paleogene</option>
+						<option value="Oligocene" class="epoch">Oligocene</option>
+							<option value="Chattian" class="age">Chattian</option>
+							<option value="Rupelian" class="age">Rupelian</option>
+						<option value="Eocene" class="epoch">Eocene</option>
+							<option value="Priabonian" class="age">Priabonian</option>
+							<option value="Bartonian" class="age">Bartonian</option>
+							<option value="Lutetian" class="age">Lutetian</option>
+							<option value="Ypresian" class="age">Ypresian</option>
+						<option value="Paleocene" class="epoch">Paleocene</option>
+							<option value="Thanetian" class="age">Thanetian</option>
+							<option value="Selandian" class="age">Selandian</option>
+							<option value="Danian" class="age">Danian</option>
+							
+					<option value="Cretaceous" class="period">Cretaceous</option>
+						<option value="Late Cretaceous" class="epoch">Late Cretaceous</option>
+							<option value="Maastrichtian" class="age">Maastrichtian</option>
+							<option value="Campian" class="age">Campian</option>
+							<option value="Santonian" class="age">Santonian</option>
+							<option value="Coniacian" class="age">Coniacian</option>
+							<option value="Turonian" class="age">Turonian</option>
+							<option value="Cenomanian" class="age">Cenomanian</option>
+						<option value="Early Cretaceous" class="epoch">Early Cretaceous</option>
+							<option value="Albian" class="age">Albian</option>
+							<option value="Aptian" class="age">Aptian</option>
+							<option value="Barremian" class="age">Barremian</option>
+							<option value="Hauterivian" class="age">Hauterivian</option>
+							<option value="Valanginian" class="age">Valanginian</option>
+							<option value="Berriasian" class="age">Berriasian</option>
+							
+					<option value="Jurassic" class="period">Jurassic</option>
+					<option value="Triassic" class="period">Triassic</option>
+					<option value="Permian" class="period">Permian</option>
+					<option value="Carboniferous" class="period">Carboniferous</option>
+					<option value="Devonian" class="period">Devonian</option>
+					<option value="Silurian" class="period">Silurian</option>
+					<option value="Ordovician" class="period">Ordovician</option>
+					<option value="Cambrian" class="period">Cambrian</option>
 				</select>
 			</div>
 		</div>

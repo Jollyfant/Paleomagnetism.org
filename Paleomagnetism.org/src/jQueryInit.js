@@ -162,6 +162,7 @@ function jQueryInit () {
 		noneSelectedText: "Select an age",
 		multiple: false, 
 		selectedList: 1,
+		height: 300,
 	});
 	
 	//Site selector class
@@ -181,6 +182,9 @@ function jQueryInit () {
 			//module.options.update.mean = true;
 		}
 	});
+	
+	$('#ageFilter').attr('autocomplete', 'on');
+	$('#ageFilter').autocomplete({appendTo: "#input"})
 	
 	/* INITIALIZE DIALOG WIDGETS
      * ------------------------------

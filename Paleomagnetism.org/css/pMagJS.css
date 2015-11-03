@@ -9,6 +9,36 @@
     margin: 10px;
 }
 
+option: {
+	padding: 5px;
+}
+
+.period {
+	font-weight: bold;
+	margin-left: 10px;
+    border-left: 10px solid rgb(119, 152, 191);
+	color: #7798BF;
+	font-size: 18px;
+}
+.topsel {
+	margin-bottom: 10px;
+	border-bottom: 2px solid grey;
+}
+.epoch {
+	font-weight: bold;
+	margin-left: 30px;
+    border-left: 5px solid rgb(119, 152, 191);
+	font-size: 14px;
+	color: #7798BF;
+}
+.age {
+	font-weight: bold;
+	margin-left: 60px;
+    border-left: 2px solid rgb(119, 152, 191);
+		font-size: 12px;
+	color: #7798BF;
+}
+
 input {
 	text-align: center;
 }
