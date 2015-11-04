@@ -212,58 +212,90 @@ var changeAge = function (id) {
 	//Average, minimum, maximum
 	if(age == 'Blank') parseAgeName('', '', '', id);
 	else if(age == 'Quaternary') parseAgeName(1.3, 0, 2.6, id);
-	else if(age == 'Holocene') parseAgeName(0.005, 0, 0.01, id);
-	else if(age == 'Pleistocene') parseAgeName(1.3, 0.01, 2.6, id);
+		else if(age == 'Holocene') parseAgeName(0.005, 0, 0.01, id);
+		else if(age == 'Pleistocene') parseAgeName(1.3, 0.01, 2.6, id);
 	else if(age == 'Neogene') parseAgeName(12.8, 2.6, 23.0, id);
-	else if(age == 'Pliocene') parseAgeName(4.0, 2.6, 5.3, id);
-	
-	else if(age == 'Piacenzian') parseAgeName(3.1, 2.6, 3.6, id);
-	else if(age == 'Zanclean') parseAgeName(4.5, 3.6, 5.3, id);
+		else if(age == 'Pliocene') parseAgeName(4.0, 2.6, 5.3, id);
+			else if(age == 'Piacenzian') parseAgeName(3.1, 2.6, 3.6, id);
+			else if(age == 'Zanclean') parseAgeName(4.5, 3.6, 5.3, id);
 	else if(age == 'Miocene') parseAgeName(14.2, 5.3, 23.0, id);
-	else if(age == 'Messinian') parseAgeName(6.3, 5.3, 7.2, id);
-	else if(age == 'Tortonian') parseAgeName(9.5, 7.2, 11.7, id);
-	else if(age == 'Serravallian') parseAgeName(25.5, 11.7, 13.8, id);
-	else if(age == 'Langhian') parseAgeName(29.8, 13.8, 16.0, id);
-	else if(age == 'Burdigalian') parseAgeName(18.2, 16.0, 20.4, id);
-	else if(age == 'Aquitanian') parseAgeName(21.7, 20.4, 23.0, id);
+		else if(age == 'Late Miocene') parseAgeName(8.5, 5.3, 11.7, id);
+			else if(age == 'Messinian') parseAgeName(6.3, 5.3, 7.2, id);
+			else if(age == 'Tortonian') parseAgeName(9.5, 7.2, 11.7, id);
+		else if(age == 'Middle Miocene') parseAgeName(13.8, 11.7, 16.0, id);
+			else if(age == 'Serravallian') parseAgeName(25.5, 11.7, 13.8, id);
+			else if(age == 'Langhian') parseAgeName(29.8, 13.8, 16.0, id);
+		else if(age == 'Early Miocene') parseAgeName(19.5, 16.0, 23.0, id);
+			else if(age == 'Burdigalian') parseAgeName(18.2, 16.0, 20.4, id);
+			else if(age == 'Aquitanian') parseAgeName(21.7, 20.4, 23.0, id);
 	else if(age == 'Paleogene') parseAgeName(44.5, 23.0, 66, id);
-	else if(age == 'Oligocene') parseAgeName(28.5, 23.0, 33.9, id);
-	else if(age == 'Chattian') parseAgeName(25.6, 23.0, 28.1, id);
-	else if(age == 'Rupelian') parseAgeName(31, 28.1, 33.9, id);
-	else if(age == 'Eocene') parseAgeName(45.0, 33.9, 56.0, id);
-	
-	else if(age == 'Rupelian') parseAgeName(35.9, 33.9, 38.0, id);
-	else if(age == 'Bartonian') parseAgeName(39.7, 38.0, 41.3, id);
-	else if(age == 'Lutetian') parseAgeName(44.6, 41.3, 47.8, id);
-	else if(age == 'Ypresian') parseAgeName(51.9, 47.8, 56.0, id);
+		else if(age == 'Oligocene') parseAgeName(28.5, 23.0, 33.9, id);
+		else if(age == 'Late Oligocene') parseAgeName(25.6, 23.0, 28.1, id);
+			else if(age == 'Chattian') parseAgeName(25.6, 23.0, 28.1, id);
+		else if(age == 'Early Oligocene') parseAgeName(31, 28.1, 33.9, id);
+			else if(age == 'Rupelian') parseAgeName(31, 28.1, 33.9, id);
+		else if(age == 'Eocene') parseAgeName(45.0, 33.9, 56.0, id);
+		else if(age == 'Late Eocene') parseAgeName(35.9, 33.9, 38.0, id);
+			else if(age == 'Priabonian') parseAgeName(35.9, 33.9, 38.0, id);
+		else if(age == 'Middle Eocene') parseAgeName(42.9, 38.0, 47.8, id);
+			else if(age == 'Bartonian') parseAgeName(39.7, 38.0, 41.3, id);
+			else if(age == 'Lutetian') parseAgeName(44.6, 41.3, 47.8, id);
+		else if(age == 'Early Eocene') parseAgeName(51.9, 47.8, 56.0, id);
+			else if(age == 'Ypresian') parseAgeName(51.9, 47.8, 56.0, id);
 	
 	else if(age == 'Paleocene') parseAgeName(61.0, 56.0, 66.0, id);
-	
-	else if(age == 'Thanetian') parseAgeName(57.6, 56.0, 59.2, id);
-	else if(age == 'Selandian') parseAgeName(60.4, 59.2, 61.6, id);
-	else if(age == 'Danian') parseAgeName(63.8, 61.6, 66.0, id);
+		else if(age == 'Late Paleocene') parseAgeName(57.6, 56.0, 59.2, id);
+			else if(age == 'Thanetian') parseAgeName(57.6, 56.0, 59.2, id);
+		else if(age == 'Middle Paleocene') parseAgeName(60.4, 59.2, 61.6, id);
+			else if(age == 'Selandian') parseAgeName(60.4, 59.2, 61.6, id);
+		else if(age == 'Early Paleocene') parseAgeName(63.8, 61.6, 66.0, id);
+			else if(age == 'Danian') parseAgeName(63.8, 61.6, 66.0, id);
 		
 	else if(age == 'Cretaceous') parseAgeName(106, 66.0, 145, id);
+		else if(age == 'Late Cretaceous') parseAgeName(83, 66.0, 100, id);
+			else if(age == 'Maastrichtian') parseAgeName(69.0, 66.0, 72.1, id);
+			else if(age == 'Campanian') parseAgeName(77.9, 72.1, 83.6, id);
+			else if(age == 'Santonian') parseAgeName(85.0, 83.6, 86.3, id);
+			else if(age == 'Coniacian') parseAgeName(88.1, 86.3, 89.8, id);
+			else if(age == 'Turonian') parseAgeName(91.9, 89.8, 93.9, id);
+			else if(age == 'Cenomanian') parseAgeName(97.0, 93.9, 100, id);
 	
-	else if(age == 'Late Cretaceous') parseAgeName(83, 66.0, 100, id);
-	else if(age == 'Maastrichtian') parseAgeName(69.0, 66.0, 72.1, id);
-	else if(age == 'Campanian') parseAgeName(77.9, 72.1, 83.6, id);
-	else if(age == 'Santonian') parseAgeName(85.0, 83.6, 86.3, id);
-	else if(age == 'Coniacian') parseAgeName(88.1, 86.3, 89.8, id);
-	else if(age == 'Turonian') parseAgeName(91.9, 89.8, 93.9, id);
-	else if(age == 'Cenomanian') parseAgeName(97.0, 93.9, 100, id);
-	
-	else if(age == 'Early Cretaceous') parseAgeName(122.5, 100, 145, id);
-	else if(age == 'Albian') parseAgeName(112, 100, 113, id);
-	else if(age == 'Aptian') parseAgeName(119, 113, 125, id);
-	else if(age == 'Barremian') parseAgeName(127, 125, 129, id);
-	
-	else if(age == 'Hauterivian') parseAgeName(131, 129, 133, id);
-	else if(age == 'Valanginian') parseAgeName(136.5, 133, 140, id);
-	else if(age == 'Berriasian') parseAgeName(142.5, 140, 145, id);
+		else if(age == 'Early Cretaceous') parseAgeName(122.5, 100, 145, id);
+			else if(age == 'Albian') parseAgeName(112, 100, 113, id);
+			else if(age == 'Aptian') parseAgeName(119, 113, 125, id);
+			else if(age == 'Barremian') parseAgeName(127, 125, 129, id);
+			else if(age == 'Hauterivian') parseAgeName(131, 129, 133, id);
+			else if(age == 'Valanginian') parseAgeName(136.5, 133, 140, id);
+			else if(age == 'Berriasian') parseAgeName(142.5, 140, 145, id);
 	
 	else if(age == 'Jurassic') parseAgeName(173, 145, 201, id);
+		else if(age == 'Late Jurassic') parseAgeName(154, 145, 164, id);
+			else if(age == 'Tithonian') parseAgeName(149, 145, 152, id);
+			else if(age == 'Kimmeridgian') parseAgeName(154, 152, 157, id);
+			else if(age == 'Oxfordian') parseAgeName(160, 157, 164, id);
+		else if(age == 'Middle Jurassic') parseAgeName(169, 164, 174, id);
+			else if(age == 'Callovian') parseAgeName(165, 164, 166, id);
+			else if(age == 'Bathonian') parseAgeName(167, 166, 168, id);
+			else if(age == 'Bajocian') parseAgeName(169, 168, 170, id);
+			else if(age == 'Aalenian') parseAgeName(172, 170, 174, id);
+		else if(age == 'Early Jurassic') parseAgeName(188, 174, 201, id);
+			else if(age == 'Toarcian') parseAgeName(179, 174, 183, id);
+			else if(age == 'Pliensbachian') parseAgeName(187, 183, 191, id);
+			else if(age == 'Sinemurian') parseAgeName(195, 191, 199, id);
+			else if(age == 'Hettangian') parseAgeName(200, 199, 201, id);
+		
 	else if(age == 'Triassic') parseAgeName(226, 201, 252, id);
+		else if(age == 'Late Triassic') parseAgeName(218, 201, 235, id);
+			else if(age == 'Rhaetian') parseAgeName(205, 201, 209, id);
+			else if(age == 'Norian') parseAgeName(219, 209, 228, id);
+			else if(age == 'Carnian') parseAgeName(231, 228, 235, id);
+		else if(age == 'Late Triassic') parseAgeName(241, 235, 247, id);
+			else if(age == 'Ladinian') parseAgeName(240, 235, 242, id);
+			else if(age == 'Anisian') parseAgeName(245, 242, 247, id);
+		else if(age == 'Late Triassic') parseAgeName(250, 247, 252, id);
+			else if(age == 'Olenekian') parseAgeName(249, 247, 251, id);
+			else if(age == 'Induan') parseAgeName(251.5, 251, 252, id);
+		
 	else if(age == 'Permian') parseAgeName(276, 252, 299, id);
 	else if(age == 'Carboniferous') parseAgeName(318, 299, 359, id);
 	else if(age == 'Devonian') parseAgeName(389, 359, 419, id);

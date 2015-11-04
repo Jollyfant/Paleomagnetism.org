@@ -20,10 +20,15 @@ option: {
 	color: #7798BF;
 	font-size: 18px;
 }
-.topsel {
-	margin-bottom: 10px;
-	border-bottom: 2px solid grey;
+
+.subepoch {
+	font-weight: bold;
+	margin-left: 50px;
+    border-left: 3px solid rgb(119, 152, 191);
+	font-size: 13px;
+	color: #7798BF;
 }
+
 .epoch {
 	font-weight: bold;
 	margin-left: 30px;
@@ -35,7 +40,7 @@ option: {
 	font-weight: bold;
 	margin-left: 60px;
     border-left: 2px solid rgb(119, 152, 191);
-		font-size: 12px;
+	font-size: 12px;
 	color: #7798BF;
 }
 
