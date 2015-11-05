@@ -287,6 +287,59 @@ function jQueryInit () {
 		$( "#metaSel" ).click();
 	});
 	
+	$("#sortByAge").button().click( function () {
+		sortSiteSelector('age');
+	});
+	
+	$("#sortByName").button().click( function () {
+		sortSiteSelector('name');
+	});
+	
+	$("#sortByBogo").button().click( function () {
+		sortSiteSelector('bogo');
+	});	
+	
+	var sortSiteSelector = function (type) {
+		
+		var capture = $(".siteSelector");
+		capture.find('option').remove().end();
+		
+		var arr = new Array();
+		for(var siteName in sites) {
+			if(type === 'age') {
+				arr.push({'name': siteName, 'sort': Number(sites[siteName].userInput.metaData.age)});
+			} else if (type === 'name') {
+				arr.push({'name': siteName, 'sort': siteName});				
+			} else if (type === 'bogo') {
+				arr.push({'name': siteName, 'sort': Math.random()});								
+
+			}
+		}
+		
+		if(type === 'name') {
+			notify('success', 'Sites have been sorted alphabetically.')			
+		} else if (type === 'age') {
+			notify('success', 'Sites have been sorted by age.')			
+		} else {
+			notify('success', 'Sites have been sorted by something. Hopefully.')			
+		}
+		
+		arr.sort(function(a, b){
+			if(typeof a.sort === 'string' && typeof b.sort === 'string') {
+				a.sort = a.sort.toLowerCase();
+				b.sort = b.sort.toLowerCase();
+			}
+			return a.sort > b.sort ? 1 : (a.sort < b.sort ? -1 : 0);
+		})
+		
+		for(var i = 0; i < arr.length; i++) {
+			capture.append("<option value=\"" + arr[i].name + "\">" + arr[i].name + "</option>");
+
+		}
+		
+		capture.multiselect('refresh');
+	}
+	
 	// Call export all function
 	$("#exportHighlight").click( function () {
 		$("#exportData").click();

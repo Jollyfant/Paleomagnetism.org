@@ -255,7 +255,7 @@ var changeAge = function (id) {
 		else if(age == 'Late Cretaceous') parseAgeName(83, 66.0, 100, id);
 			else if(age == 'Maastrichtian') parseAgeName(69.0, 66.0, 72.1, id);
 			else if(age == 'Campanian') parseAgeName(77.9, 72.1, 83.6, id);
-			else if(age == 'Santonian') parseAgeName(85.0, 83.6, 86.3, id);
+			else if(age == 'Santonian') parseAgeName(83.6, 83.6, 86.3, id);
 			else if(age == 'Coniacian') parseAgeName(88.1, 86.3, 89.8, id);
 			else if(age == 'Turonian') parseAgeName(91.9, 89.8, 93.9, id);
 			else if(age == 'Cenomanian') parseAgeName(97.0, 93.9, 100, id);
