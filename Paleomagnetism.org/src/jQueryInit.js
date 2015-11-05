@@ -306,6 +306,9 @@ function jQueryInit () {
 		
 		var arr = new Array();
 		for(var siteName in sites) {
+			if(siteName === "TEMP") {
+				continue;
+			}
 			if(type === 'age') {
 				arr.push({'name': siteName, 'sort': Number(sites[siteName].userInput.metaData.age)});
 			} else if (type === 'name') {
