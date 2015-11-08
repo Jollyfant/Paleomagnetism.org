@@ -15,6 +15,7 @@ version = 'vALPHA.1509.3';
 module = new Object();
 
 module.options = {
+	editing: false,
 	update: {
 		dir: false,
 		mean: false,
@@ -343,10 +344,11 @@ var removeSite = function () {
 /*
  * FUNCTION addSite
  * Description: adds site to application
- * Input: NULL
+ * Input: edit (boolean), whether calling this function through editing or adding a new site
+ *      : editing will overwrite a site (normally throws an error when site exists)
  * Output: VOID (adds site; calls site constructor)
  */
-var addSite = function () {
+var addSite = function ( edit ) {
 
 	"use strict";
 	
@@ -361,11 +363,13 @@ var addSite = function () {
 		return;	
 	}
 	
-	//Site name error catching
-	if(!checkName(metaData.name)) {
-		return;
+	//Site name error catching (don't catch if editing, we wish to overwrite)
+	if(!edit) {
+		if(!checkName(metaData.name)) {
+			return;
+		}
 	}
-		
+	
 	//Get site data
 	var type = $('#siteType').val();
 	var siteDat = $('#dropZone').val();
@@ -377,6 +381,10 @@ var addSite = function () {
 	if(!inputData.sanitized) {
 		notify('failure', 'Site input did not pass sanitization. Breaking procedure; please check input at line ' + inputData.line + '.');
 	} else {
+		//If we are editing, first delete the site with the old name (if it exists)
+		if(edit) {
+			delete sites[metaData.name];
+		}
 		sites[metaData.name] = new site(metaData, inputData.data, true);
 		$('#input').dialog("close");
 	}
@@ -769,7 +777,7 @@ var applicationInit = function () {
 var site = function(metaData, inputData, notifyUser) {
 
 	"use strict";
-	
+
 	//Save original input data (use slice to create a copy)
 	this.userInput = {
 		data: JSON.parse(JSON.stringify(inputData)),
@@ -805,6 +813,17 @@ var site = function(metaData, inputData, notifyUser) {
 		$('.siteSelector').append("<option value=\"" + name + "\">" + name + "</option>");
 		$('.siteSelector').multiselect('refresh');
 	}
+}
+
+var updateSiteSelector = function () {
+	var capture = $(".siteSelector");
+	capture.find('option').remove().end();
+	for(name in sites) {
+		if(name !== "TEMP") {
+			$('.siteSelector').append("<option value=\"" + name + "\">" + name + "</option>");		
+		}
+	}
+	$('.siteSelector').multiselect('refresh');
 }
 
 /* 
@@ -1313,47 +1332,37 @@ var processUserInput = function ( data, type, name ) {
  * Input: NULL
  * Output: site meta data object
  */
-var constructMetaData = function( type ) {
+var constructMetaData = function( ) {
 
 	"use strict";
 	
 	//If editing data through the meta data dialog
-	if ( type == 'edit') {
-		var age 		= $("#siteAgeEdit").val();
-		var author 		= $("#editAuthorID").val();
-		var description = $("#siteDescEdit").val();
-		var latitude	= $("#siteLatEdit").val();
-		var longitude 	= $("#siteLngEdit").val();
-		var minAge 		= $("#siteMinAgeEdit").val();
-		var maxAge 		= $("#siteMaxAgeEdit").val();
-	} else {	//Add a new site
-		var siteName 	= $('#siteName').val();
-		var latitude 	= $('#siteLat').val();
-		var longitude 	= $('#siteLng').val();
-		var age 		= $('#siteAge').val();
-		var minAge 		= $('#siteBoundMin').val();
-		var maxAge 		= $('#siteBoundMax').val();
-		var author 		= $("#authorID").val();
-		var description = $("#siteDesc").val();
-		
-		//Escape illegal characters (backslash and double quotes)
-		this.name = siteName.replace(/[\\"]/g,''); 
-		this.dateAdded = $.datepicker.formatDate('yy-mm-dd', new Date());
-		this.version = version;
-		this.markerColor = 'orange';	
-		this.cutoff = $("#cutoffSelector").val()[0];
-		
-		//Get the type of data (sampled, input, or from interpretation portal)
-		var type = $('#siteType').val();
-		if(type == 'lit') {
-			this.type = 'Simulated';
-		} else if(type == 'dir') {
-			this.type = 'Input';
-		} else if (type == 'int') {
-			this.type = 'Interpretation';
-		}
-	}
+	var siteName 	= $('#siteName').val();
+	var latitude 	= $('#siteLat').val();
+	var longitude 	= $('#siteLng').val();
+	var age 		= $('#siteAge').val();
+	var minAge 		= $('#siteBoundMin').val();
+	var maxAge 		= $('#siteBoundMax').val();
+	var author 		= $("#authorID").val();
+	var description = $("#siteDesc").val();
 	
+	//Escape illegal characters (backslash and double quotes)
+	this.name = siteName.replace(/[\\"]/g,''); 
+	this.dateAdded = $.datepicker.formatDate('yy-mm-dd', new Date());
+	this.version = version;
+	this.markerColor = 'orange';	
+	this.cutoff = $("#cutoffSelector").val()[0];
+	
+	//Get the type of data (sampled, input, or from interpretation portal)
+	var type = $('#siteType').val();
+	if(type == 'lit') {
+		this.type = 'Simulated';
+	} else if(type == 'dir') {
+		this.type = 'Input';
+	} else if (type == 'int') {
+		this.type = 'Interpretation';
+	}
+
 	//Data specified in the advanced options tab (if unspecified fall back to default values)
 	this.description = description ? description : 'Unspecified';
 	this.author = author ? author : 'Unknown';

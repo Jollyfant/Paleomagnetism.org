@@ -466,126 +466,20 @@
 				Data can be imported and exported from and to the custom <b>.pmag</b> format. This save can be loaded and used in other instances. The exported file is a JSON encoded plain text object and can be opened with any text editor.
 				<p>
 				<!-- Update site meta-data -->
-				<h2> Edit site meta data </h2>
+				<h2> Edit Sites </h2>
 				<p>
-				<button id="editMeta" title="Edit site meta data.">Edit Site Meta-Data</button>
+				<button id="editMeta" title="Edit sites">Edit Sites</button>
 				<p>
-				Site meta-data (e.g. location, age, author, description) can be viewed and changed.
+				Sites can be viewed and changed. All changes applied here overwrite the original data for the selected site.
 				<p>
-	
 				<!-- Edit for site meta-data -->
 				<div id="editMetaDialog" class="dialog">
-					<h2> Edit site meta data <small> Select a site </small></h2> 
+					<h2> Edit Sites <small> Select a site </small></h2> 
 					<p>
 					<div style="display: inline-block">
 						<select multiple id="metaSel" class="siteSelector"></select>
 					</div>
-					<div id="editMetaContent" style="display: none">
-						<p>
-						<div style="padding: 5px; padding-left: 20px; border: 1px dotted rgb(119, 152, 191); overflow: hidden;">
-							<div style="padding: 0px; float: left; text-align: right;">	
-								<i> In decimal degrees </i>
-								<p><b> Latitude </b><input type="text" id="siteLatEdit" size="5" title="Please enter a value between [-90, 90]">
-								<p><b> Longitude </b><input type="text" id="siteLngEdit" size="5" title="Please enter a value between [-180, 180]">
-							</div>
-							<div style="padding: 10px; float: right; overflow:auto; text-align: right;">
-								<b> Author </b><input type="text" id="editAuthorID" size="20" title="Enter your name/publication">	
-								<p><b>Description </b><input type="text" size="40" id="siteDescEdit" title="Enter a site descrition/additional information">
-								<p><b>Age: <input type="text" size="5" id="siteAgeEdit">
-								from <input type="text" id="siteMinAgeEdit" size="5"> to: <input id="siteMaxAgeEdit" type="text" size="5"> (Ma) </b>
-								<p>
-								<b> Age presets </b> <select multiple class="ageNames" id="ageNamesEdit" title="Select an age preset">
-									<option value="Quaternary" class="period">Quaternary</option>
-										<option value="Holocene" class="epoch">Holocene</option>	
-										<option value="Pleistocene" class="epoch">Pleistocene</option>
-									
-									<option value="Neogene" class="period">Neogene</option>
-										<option value="Pliocene" class="epoch">Pliocene</option>
-											<option value="Piacenzian" class="age">Piacenzian/Blancan</option>
-											<option value="Zanclean" class="age">Zanclean</option>
-										<option value="Miocene" class="epoch">Miocene</option>
-											<option value="Messinian" class="age">Messinian</option>
-											<option value="Tortonian" class="age">Tortonian</option>
-											<option value="Serravallian" class="age">Serravallian</option>
-											<option value="Langhian" class="age">Langhian</option>
-											<option value="Burdigalian" class="age">Burdigalian</option>
-											<option value="Aquitanian" class="age">Aquitanian</option>
 				
-									<option value="Paleogene" class="period">Paleogene</option>
-										<option value="Oligocene" class="epoch">Oligocene</option>
-											<option value="Chattian" class="age">Chattian</option>
-											<option value="Rupelian" class="age">Rupelian</option>
-										<option value="Eocene" class="epoch">Eocene</option>
-											<option value="Priabonian" class="age">Priabonian</option>
-											<option value="Bartonian" class="age">Bartonian</option>
-											<option value="Lutetian" class="age">Lutetian</option>
-											<option value="Ypresian" class="age">Ypresian</option>
-										<option value="Paleocene" class="epoch">Paleocene</option>
-											<option value="Thanetian" class="age">Thanetian</option>
-											<option value="Selandian" class="age">Selandian</option>
-											<option value="Danian" class="age">Danian</option>
-											
-									<option value="Cretaceous" class="period">Cretaceous</option>
-										<option value="Late Cretaceous" class="epoch">Late Cretaceous</option>
-											<option value="Maastrichtian" class="age">Maastrichtian</option>
-											<option value="Campanian" class="age">Campanian</option>
-											<option value="Santonian" class="age">Santonian</option>
-											<option value="Coniacian" class="age">Coniacian</option>
-											<option value="Turonian" class="age">Turonian</option>
-											<option value="Cenomanian" class="age">Cenomanian</option>
-										<option value="Early Cretaceous" class="epoch">Early Cretaceous</option>
-											<option value="Albian" class="age">Albian</option>
-											<option value="Aptian" class="age">Aptian</option>
-											<option value="Barremian" class="age">Barremian</option>
-											<option value="Hauterivian" class="age">Hauterivian</option>
-											<option value="Valanginian" class="age">Valanginian</option>
-											<option value="Berriasian" class="age">Berriasian</option>
-											
-									<option value="Jurassic" class="period">Jurassic</option>
-										<option value="Late Jurassic" class="epoch">Late Jurassic</option>
-											<option value="Tithonian" class="age">Tithonian</option>
-											<option value="Kimmeridgian" class="age">Kimmeridgian</option>
-											<option value="Oxfordian" class="age">Oxfordian</option>
-											
-										<option value="Middle Jurassic" class="epoch">Middle Jurassic</option>
-											<option value="Callovian" class="age">Callovian</option>
-											<option value="Bathonian" class="age">Bathonian</option>
-											<option value="Bajocian" class="age">Bajocian</option>
-											<option value="Aalenian" class="age">Aalenian</option>
-										<option value="Early Jurassic" class="epoch">Early Jurassic</option>
-											<option value="Toarcian" class="age">Toarcian</option>
-											<option value="Pliensbachian" class="age">Pliensbachian</option>
-											<option value="Sinemurian" class="age">Sinemurian</option>
-											<option value="Hettangian" class="age">Hettangian</option>
-											
-									<option value="Triassic" class="period">Triassic</option>
-										<option value="Late Triassic" class="epoch">Late Triassic</option>
-											<option value="Rhaetian" class="age">Rhaetian</option>
-											<option value="Norian" class="age">Norian</option>
-											<option value="Carnian" class="age">Carnian</option>
-										<option value="Middle Triassic" class="epoch">Middle Triassic</option>
-											<option value="Ladinian" class="age">Ladinian</option>
-											<option value="Anisian" class="age">Anisian</option>
-										<option value="Early Triassic" class="epoch">Early Triassic</option>
-											<option value="Olenekian" class="age">Olenekian</option>
-											<option value="Induan" class="age">Induan</option>
-											
-									<option value="Permian" class="period">Permian</option>
-									<option value="Carboniferous" class="period">Carboniferous</option>
-									<option value="Devonian" class="period">Devonian</option>
-									<option value="Silurian" class="period">Silurian</option>
-									<option value="Ordovician" class="period">Ordovician</option>
-									<option value="Cambrian" class="period">Cambrian</option>
-								</select>
-								<p>
-							</div>
-						</div>
-						<div style="width: 100%; clear: both; overflow: auto;">
-							<p>
-						</div>
-						<button id="confirmEdit">Confirm Edit</button>
-						<div id="editInfo" style="display: inline-block"></div>
-					</div>
 				</div>
 				
 				<h2> Other Options </h2>
@@ -777,7 +671,7 @@
 	</div>
 	<div class="int box">
 		<h2> Interpreted Directions <small> Input Data </small> </h2>
-		<p> Directions interpreted in the interpretation portal can be found here. Currently, great circle fits are not included.
+		<p> Directions interpreted in the interpretation portal can be found here.
 		<p> <select multiple id="interpretedSites"> </select>
 		<button id="deleteInterpretation"> Delete </button>
 		<div id="interpretationInfo"></div>

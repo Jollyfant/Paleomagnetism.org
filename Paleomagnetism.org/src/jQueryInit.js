@@ -190,7 +190,21 @@ function jQueryInit () {
      * ------------------------------
 	 */	
 	
-	$('#editMetaDialog, #addAPWP, #input').dialog({
+	$("#editMetaDialog").dialog({
+		'width': 300,	
+		'min-height': 100,
+		'draggable': false,
+		'resizable': false,
+		'autoOpen': false,
+		'modal': true,
+		'buttons': {
+			'Cancel': function () {
+				$(this).dialog("close");
+			}
+		}
+	});
+	
+	$('#addAPWP, #input').dialog({
 		'width': 600,
 		'min-height': 100,
 		'draggable': false,
@@ -284,7 +298,7 @@ function jQueryInit () {
 	// Open edit metadata dialog
 	$("#editMeta").click( function () {
 		$( "#editMetaDialog" ).dialog( "open" );
-		$( "#metaSel" ).click();
+		//$( "#metaSel" ).click();
 	});
 	
 	$("#sortByAge").button().click( function () {
@@ -416,6 +430,7 @@ function jQueryInit () {
 
 	//Open the data input dialog box		
 	$('#add').click(function () {
+		module.options.editing = false;
 		$('#siteInfo').change();
 		$('div.box.'+$('#siteType').val()).show()
 		$( "#input" ).dialog( "open" );
@@ -423,7 +438,15 @@ function jQueryInit () {
 	
 	// Calls processing on site
 	$('#confirm').click( function () {
-		addSite();
+		if(module.options.editing) {
+			if(!confirm('This action will overwrite the original site data.')) {
+				return;
+			}
+			addSite(true);
+		} else {
+			addSite();
+		}
+		updateSiteSelector();
 	});
 
 	//BUTTON: "Delete Selected Sites"
@@ -512,6 +535,8 @@ function jQueryInit () {
 	//BUTTON: edit metaData
 	//Shows edit box and parses current metadata
 	$("#metaSel").click ( function () {
+				
+		// Open the input dialog
 		$("#editInfo").html("");
 		
 		//Get selected site
@@ -521,20 +546,41 @@ function jQueryInit () {
 			return;
 		}
 
-		//Parse the current metadata
-		//Capture to md 
-		var md = sites[siteName].userInput.metaData; 
+		module.options.editing = true;
+		$( "#input" ).dialog( "open" );
 		
-		$("#siteLatEdit").val(md.latitude);
-		$("#siteLngEdit").val(md.longitude);
-		$("#siteAgeEdit").val(md.age);
-		$("#siteMinAgeEdit").val(md.minAge);
-		$("#siteMaxAgeEdit").val(md.maxAge);
-		$("#editAuthorID").val(md.author);
-		$("#siteDescEdit").val(md.description);
-
-		$("#editMetaContent").show();
-		$("#showAuthorEdit").show().css('display', 'inline-block');
+		//Parse the current metadata to the input boxes
+		var metaData = sites[siteName].userInput.metaData; 
+				
+		$("#siteLat").val(metaData.latitude);
+		$("#siteLng").val(metaData.longitude);
+		$("#siteAge").val(metaData.age);
+		$("#siteBoundMin").val(metaData.minAge);
+		$("#siteBoundMax").val(metaData.maxAge);
+		$("#AuthorID").val(metaData.author);
+		$("#siteDesc").val(metaData.description);
+		$("#siteName").val(metaData.name);
+				
+		$("#cutoffSelector").val(metaData.cutoff);
+		$("#cutoffSelector").multiselect("refresh");
+		
+		$("#siteType").val('dir');
+		$('#siteType').selectmenu("refresh");
+		$('div.box').hide()
+		$('div.box.dir').show()
+			
+		var string = ''
+		for(var i = 0; i < sites[siteName].userInput.data.length; i++) {
+			for(var j = 0; j < sites[siteName].userInput.data[i].length; j++) {
+				if(j !== 0) {
+					string += ', ';
+				}
+				string += sites[siteName].userInput.data[i][j]
+			}
+			string += '\n'
+		}
+		
+		$("#dropZone").val(string);
 		
 	});
 	
@@ -546,7 +592,12 @@ function jQueryInit () {
 		var newMetaData = new constructMetaData('edit');
 		var siteName = $("#metaSel").val();
 		$.extend(sites[siteName].userInput.metaData, newMetaData);
-		
+
+		var md = sites[siteName].userInput.metaData;
+		var inputData = new processUserInput($("#editDataList").val(), 'dir', md.name).output;
+		console.log(md, inputData)
+		delete sites[md.name];
+		new site(md, inputData.data, true);
 		setStorage(); //Save application
 		
 		notify('success', 'Meta-data for site ' + siteName + ' was succesfully updated');
