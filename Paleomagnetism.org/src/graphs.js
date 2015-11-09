@@ -424,9 +424,8 @@ var plotMeans = function(siteData, container, title) {
 	
 		//Get the site name and some color parameters (color individually may be checked)
 		var siteName = siteData[i].name;
-		var lineColor = $('#colorFlag').prop('checked') ? Highcharts.getOptions().colors[(i)%8] : 'rgb(119, 152, 191)';
-		var fillColor = sites[siteName].userInput.metaData.markerColor;
-		//var fillColor = siteData[i].data.params.mInc < 0 ? 'white' : lineColor;
+		var lineColor = sites[siteName].userInput.metaData.markerColor;
+		var fillColor = siteData[i].data.params.mInc < 0 ? 'white' : lineColor;
 
 		meanSeries.push({
 			'name': siteName, 
@@ -473,7 +472,6 @@ var plotMeans = function(siteData, container, title) {
 					var contentString = '';
 					contentString += '<a onClick="module.map.changeColorFromName(\''+this.series.name+'\', \''+this.series.index+'\', \'red\')"><u>red</u></a>&nbsp'
 					contentString += '<a onClick="module.map.changeColorFromName(\''+this.series.name+'\', \''+this.series.index+'\', \'orange\')"><u>orange</u></a>&nbsp'
-					contentString += '<a onClick="module.map.changeColorFromName(\''+this.series.name+'\', \''+this.series.index+'\', \'white\')"><u>white</u></a>&nbsp'
 					contentString += '<a onClick="module.map.changeColorFromName(\''+this.series.name+'\', \''+this.series.index+'\', \'blue\')"><u>blue</u></a>&nbsp'
 					contentString += '<a onClick="module.map.changeColorFromName(\''+this.series.name+'\', \''+this.series.index+'\', \'green\')"><u>green</u></a>'
         		return '<b>Mean for Site : </b> ' + this.series.name + '<br><b>Mean Declination: </b>' + this.x.toFixed(1) + '<br><b>Mean Inclination: </b>' + this.point.inc.toFixed(1) + ' <br> '  + contentString //Tooltip on point hover. We convert the projected inclination back to the original inclination using eqAreaInv and display it to the user.

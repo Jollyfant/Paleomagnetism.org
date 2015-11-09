@@ -154,7 +154,6 @@ module.map.mapAddSites = function() {
 					contentString += '<b> Marker color: </b><br>';
 					contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'red\')"><u>red</u></a>&nbsp'
 					contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'orange\')"><u>orange</u></a>&nbsp'
-					contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'white\')"><u>white</u></a>&nbsp'
 					contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'blue\')"><u>blue</u></a>&nbsp'
 					contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'green\')"><u>green</u></a>'
 	
@@ -247,8 +246,12 @@ module.map.changeColorFromName = function( name, index, color) {
 	//Remember new color in userInput
 	sites[name].userInput.metaData.markerColor = color;
 	
-	$("#siteMean").highcharts().series[index].update({marker: {fillColor: color}})
-	$("#siteMeanTC").highcharts().series[index].update({marker: {fillColor: color}})
+	var fillColor = sites[name].data.params.mInc < 0 ? 'white' : color;
+	
+	$("#siteMean").highcharts().series[index].update({marker: {fillColor: fillColor, lineColor: color}})
+	
+	var fillColor = sites[name].dataTC.params.mInc < 0 ? 'white': color;
+	$("#siteMeanTC").highcharts().series[index].update({marker: {fillColor: fillColor, lineColor: color}})
 
 	//Save application
 	setStorage();	
