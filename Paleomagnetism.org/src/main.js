@@ -357,7 +357,7 @@ var addSite = function ( edit ) {
 	$(".linedtextarea").animate().stop();
 	
 	//Obtain site meta data (name, location, age)
-	var metaData = new constructMetaData;
+	var metaData = new constructMetaData();
 	if(!metaData.sanitized) {
 		notify('failure', 'An unexpected error while parsing site meta data. Please check location and age information.');
 		return;	
@@ -376,7 +376,7 @@ var addSite = function ( edit ) {
 
 	//Request sanitization on site input data
 	var inputData = new processUserInput(siteDat, type, metaData.name).output;	
-	
+
 	//If the input is cleared, add a new site and close the data input window
 	if(!inputData.sanitized) {
 		notify('failure', 'Site input did not pass sanitization. Breaking procedure; please check input at line ' + inputData.line + '.');

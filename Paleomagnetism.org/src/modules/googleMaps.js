@@ -242,6 +242,17 @@ module.map.changeColor = function( active, color ) {
 	//Save application
 	setStorage();	
 }
+module.map.changeColorFromName = function( name, index, color) {
+
+	//Remember new color in userInput
+	sites[name].userInput.metaData.markerColor = color;
+	
+	$("#siteMean").highcharts().series[index].update({marker: {fillColor: color}})
+	$("#siteMeanTC").highcharts().series[index].update({marker: {fillColor: color}})
+
+	//Save application
+	setStorage();	
+}
 
 /* FUNCTION 
  * module.map.expectedDeclination
