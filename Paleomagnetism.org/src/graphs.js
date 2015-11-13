@@ -473,7 +473,9 @@ var plotMeans = function(siteData, container, title) {
 					contentString += '<a onClick="module.map.changeColorFromName(\''+this.series.name+'\', \''+this.series.index+'\', \'red\')"><u>red</u></a>&nbsp'
 					contentString += '<a onClick="module.map.changeColorFromName(\''+this.series.name+'\', \''+this.series.index+'\', \'orange\')"><u>orange</u></a>&nbsp'
 					contentString += '<a onClick="module.map.changeColorFromName(\''+this.series.name+'\', \''+this.series.index+'\', \'blue\')"><u>blue</u></a>&nbsp'
-					contentString += '<a onClick="module.map.changeColorFromName(\''+this.series.name+'\', \''+this.series.index+'\', \'green\')"><u>green</u></a>'
+					contentString += '<a onClick="module.map.changeColorFromName(\''+this.series.name+'\', \''+this.series.index+'\', \'green\')"><u>green</u></a>&nbsp'
+					contentString += '<a onClick="module.map.changeColorFromName(\''+this.series.name+'\', \''+this.series.index+'\', \'purple\')"><u>purple</u></a>'
+
         		return '<b>Mean for Site : </b> ' + this.series.name + '<br><b>Mean Declination: </b>' + this.x.toFixed(1) + '<br><b>Mean Inclination: </b>' + this.point.inc.toFixed(1) + ' <br> '  + contentString //Tooltip on point hover. We convert the projected inclination back to the original inclination using eqAreaInv and display it to the user.
     		}
 		},

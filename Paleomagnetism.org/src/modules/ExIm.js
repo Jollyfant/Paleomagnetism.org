@@ -52,7 +52,7 @@ module.IO.importing = function(event) {
 	//Single input
     reader.readAsText(input.files[0]);
 	
-	reader.onload = function(){
+	reader.onload = function() {
 		
 		var text = reader.result;
 
@@ -64,46 +64,47 @@ module.IO.importing = function(event) {
 		}
 		
 		//Loop over all sites in the .pmag file and append site names that do not presently exist in the instance
-		var nSites = 0;	
-		for(var i = 0; i<importData.data.length; i++) {
-			if(importData.data[i].metaData.name != "TEMP") {
-				if(!sites.hasOwnProperty(importData.data[i].metaData.name)) {
+		var i = 0;
+		$("#loading").show();
+		(addSitesTimed = function () {
+			if(i < importData.data.length) {
+				if(importData.data[i].metaData.name != "TEMP") {
 					sites[importData.data[i].metaData.name] = new site(importData.data[i].metaData, importData.data[i].data, false);
-					nSites++;
-				}
-				else {
+					i++;
+					setTimeout( function() { addSitesTimed(); }, 1);
+				} else {
 					notify('failure', 'Skipping site ' + importData.data[i].metaData.name + '; a site with this name already exists in this instance.');
 				}
-			}
-		}
-		
-		//Also add APWPs if present
-		var numAPWPs = 0;
-		for(var i in importData.apwp) {
-			if(!APWPs.hasOwnProperty(i)) {
-				APWPs[i] = importData.apwp[i];
-				$('#plateNames').append("<option custom=\"true\" value=\"" + i + "\">" + i + "</option>");
-				numAPWPs++;
 			} else {
-				notify('failure', 'APWP with name ' + i + ' already exists in this instance.');
+				notify('success', 'Application has been initialized succesfully; found ' + i + ' site(s) and ' + Object.keys(APWPs).length + ' APWP(s)');
+				$("#loading").hide();
+				finishedLoading();
+				setStorage();
 			}
+		})();
+		
+		function finishedLoading () {
+			//Also add APWPs if present
+			var numAPWPs = 0;
+			for(var i in importData.apwp) {
+				if(!APWPs.hasOwnProperty(i)) {
+					APWPs[i] = importData.apwp[i];
+					$('#plateNames').append("<option custom=\"true\" value=\"" + i + "\">" + i + "</option>");
+					numAPWPs++;
+				} else {
+					notify('failure', 'APWP with name ' + i + ' already exists in this instance.');
+				}
+			}
+			
+			//Force a refresh
+			$('#plateNames').multiselect('refresh');	
+			
+			//No errors, then save the instance and notify user
+			if(numAPWPs > 0) {
+				notify('success', 'Importing was succesful; added ' + numAPWPs + ' custom APWP(s)');
+			}
+			$('#update').click();
 		}
-		
-		//Force a refresh
-		$('#plateNames').multiselect('refresh');	
-		
-		//No errors, then save the instance and notify user
-		if(numAPWPs > 0) {
-			notify('success', 'Importing was succesful; added ' + numAPWPs + ' custom APWP(s)');
-		}
-		if(nSites > 0) {
-			notify('success', 'Importing was successful; added ' + nSites + ' new site(s).');
-		}
-		
-		setStorage();
-		
-		$('#update').click();
-		
 	};
 };
  
@@ -121,13 +122,9 @@ module.IO.table = function(siteNames) {
     var itemDelimiter = '","';
     var lineDelimiter = '\n';
 	
-	//First do geographic coordinates
-	csv += 'Geographic Coordinates';
-	csv += lineDelimiter;
-	
 	//if siteNames is not specified, assume user wants everything so get all sites to a new siteNames array
 	if(siteNames == undefined) {
-		var siteNames = [];
+		var siteNames = new Array();
 		for(key in sites) {
 			siteNames.push(key);
 		}
@@ -138,50 +135,51 @@ module.IO.table = function(siteNames) {
 		return;
 	}
 	
-	//Get the entire list of parameters
-	var row = ['Site Name'];
-	for(parameter in sites[siteNames[0]].data.params) {
-		row.push(parameter);
-	}
+	var coordinates = [["data", "Geographic Coordinates"], ["dataTC", "Tectonic Coordinates"]];
 	
-	csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
+	for(var j = 0; j < coordinates.length; j++) {
 
-	for(var i = 0; i < siteNames.length; i++) {
-		if(sites[siteNames[i]].userInput.metaData.name != "TEMP") {
-			
-			var key = siteNames[i];
-			
-			row = [];
-			row.push(key);
-			for(parameter in sites[key].data.params) {
-				row.push(sites[key].data.params[parameter]);
-			}
-			csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
-		}
-	}
-
-	csv += lineDelimiter;
-	
-	//Parse Same for tectonic coordinates
-	csv += 'Tectonic Coordinates';
-	csv += lineDelimiter;
-	
-	var row = ['Site Name'];
-	for(parameter in sites[key].dataTC.params) {
-		row.push(parameter);
-	}
-	
-	csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
-	
-	for(var i = 0; i < siteNames.length; i++) {
-		var key = siteNames[i];
+		csv += coordinates[j][1];
+		csv += lineDelimiter;
 		
-		row = [];
-		row.push(key);
-		for(parameter in sites[key].dataTC.params) {
-			row.push(sites[key].dataTC.params[parameter]);
+		//Get the entire list of parameters
+		var row = ['Site Name'];
+		for(parameter in sites[siteNames[0]][coordinates[j][0]].params) {
+			if(parameter !== 'kentParameters') {
+				row.push(parameter);
+			}
 		}
-		csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
+		
+		row.push("latitude", "longitude", "author", "age", "min age", "max age");
+		csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
+	
+		for(var i = 0; i < siteNames.length; i++) {
+			if(sites[siteNames[i]].userInput.metaData.name != "TEMP") {
+				
+				var key = siteNames[i];
+				
+				row = [];
+				row.push(key);
+				for(parameter in sites[key][coordinates[j][0]].params) {
+					if(parameter !== 'kentParameters') {
+						row.push(sites[key][coordinates[j][0]].params[parameter]);
+					}
+				}
+				
+				row.push(sites[key].userInput.metaData['latitude'])
+				row.push(sites[key].userInput.metaData['longitude'])
+				row.push(sites[key].userInput.metaData['author'])
+				row.push(sites[key].userInput.metaData['age'])
+				row.push(sites[key].userInput.metaData['minAge'])
+				row.push(sites[key].userInput.metaData['maxAge'])
+				
+				csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
+			}
+		}
+	
+		csv += lineDelimiter;
+		csv += lineDelimiter;
+		
 	}
 	
 	//Call downloading function

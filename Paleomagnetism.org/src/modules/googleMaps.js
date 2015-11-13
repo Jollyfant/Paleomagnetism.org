@@ -155,7 +155,8 @@ module.map.mapAddSites = function() {
 					contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'red\')"><u>red</u></a>&nbsp'
 					contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'orange\')"><u>orange</u></a>&nbsp'
 					contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'blue\')"><u>blue</u></a>&nbsp'
-					contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'green\')"><u>green</u></a>'
+					contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'green\')"><u>green</u></a>&nbsp'
+					contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'purple\')"><u>purple</u></a>'
 	
 				//Add sites to map
 				//We use a custom SVG marker (path) to create the confidence envelope.

@@ -757,6 +757,7 @@ var applicationInit = function () {
 	//Usually processing time is not a problem, but the page may freeze if the user has many sites with many directions
 	//Asynchronous function is called automatically
 	var i = 0;
+	$("#loading").show();
 	(addSitesTimed = function () {
 		if(i < loadedSites.length) {
 			sites[loadedSites[i].metaData.name] = new site(loadedSites[i].metaData, loadedSites[i].data, false);
@@ -764,6 +765,7 @@ var applicationInit = function () {
 			setTimeout( function() { addSitesTimed(); }, 1);
 		} else {
 			notify('success', 'Application has been initialized succesfully; found ' + i + ' site(s) and ' + Object.keys(APWPs).length + ' APWP(s)');
+			$("#loading").hide();
 			setStorage();
 		}
 	})();
