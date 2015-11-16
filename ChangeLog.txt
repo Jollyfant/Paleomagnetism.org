@@ -1,2 +1,4 @@
 # ChangeLog tests
 10/29/2015 - Fixed problem with fitting module always reducing to one iteration
+
+11/16/2015 - Updated Iberia wander path [vALPHA.1509.4]
