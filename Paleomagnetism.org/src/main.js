@@ -224,8 +224,8 @@ var changeAge = function (id) {
 			else if(age == 'Messinian') parseAgeName(6.3, 5.3, 7.2, id);
 			else if(age == 'Tortonian') parseAgeName(9.5, 7.2, 11.7, id);
 		else if(age == 'Middle Miocene') parseAgeName(13.8, 11.7, 16.0, id);
-			else if(age == 'Serravallian') parseAgeName(25.5, 11.7, 13.8, id);
-			else if(age == 'Langhian') parseAgeName(29.8, 13.8, 16.0, id);
+			else if(age == 'Serravallian') parseAgeName(12.8, 11.7, 13.8, id);
+			else if(age == 'Langhian') parseAgeName(14.9, 13.8, 16.0, id);
 		else if(age == 'Early Miocene') parseAgeName(19.5, 16.0, 23.0, id);
 			else if(age == 'Burdigalian') parseAgeName(18.2, 16.0, 20.4, id);
 			else if(age == 'Aquitanian') parseAgeName(21.7, 20.4, 23.0, id);
