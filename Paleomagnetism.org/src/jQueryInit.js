@@ -557,7 +557,7 @@ function jQueryInit () {
 		$("#siteAge").val(metaData.age);
 		$("#siteBoundMin").val(metaData.minAge);
 		$("#siteBoundMax").val(metaData.maxAge);
-		$("#AuthorID").val(metaData.author);
+		$("#authorID").val(metaData.author);
 		$("#siteDesc").val(metaData.description);
 		$("#siteName").val(metaData.name);
 				
