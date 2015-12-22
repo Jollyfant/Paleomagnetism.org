@@ -14,7 +14,31 @@
  * Input: NULL 
  * Output: VOID (initializes all DOM elements)
  */
-function jQueryInit () {
+function jQueryInit (page) {
+
+	//Site selector class
+	$(".siteSelector").multiselect({
+		selectedText: "# sites selected",
+		minWidth: 250,
+		selectedList: 1,
+		noneSelectedText: "Select a site",
+		close: function() {
+			
+			//Trigger the click for particular selector ID (e.g. dirSel, meanSel)
+			$('#' + this.id).click(); 
+		}
+	});
+
+	if(page === 'magstrat') {
+
+		$("#tabs").tabs();
+		$("#addStratigraphy").button();
+
+		$("#stratSel").click( function () {
+			plotStrat();
+		});
+		return;
+	}
 
 	/* INITIALIZE LINED TEXT AREAS
      * ---------------------------
@@ -164,24 +188,7 @@ function jQueryInit () {
 		selectedList: 1,
 		height: 300,
 	});
-	
-	//Site selector class
-	$(".siteSelector").multiselect({
-		selectedText: "# sites selected",
-		minWidth: 250,
-		selectedList: 1,
-		noneSelectedText: "Select a site",
-		close: function() {
-			
-			//Trigger the click for particular selector ID (e.g. dirSel, meanSel)
-			$('#' + this.id).click(); 
-			
-			//[DISABLED]
-			//$(".siteSelector").val($('#' + this.id).val()).multiselect("refresh");
-			//module.options.update.dir = true;
-			//module.options.update.mean = true;
-		}
-	});
+
 	
 	$('#ageFilter').attr('autocomplete', 'on');
 	$('#ageFilter').autocomplete({appendTo: "#input"})
@@ -421,9 +428,14 @@ function jQueryInit () {
 	
 	//Match the visible div element to the site input type		 	
 	$('#siteType').selectmenu({
-		change: function() {
+		change: function(ui, event) {
 			$('div.box').hide()
 			$('div.box.'+$(this).val()).show()
+			if(event.item.value === 'dir' || event.item.value === 'int') {
+				$("#inputOptions").show();
+			} else {
+				$("#inputOptions").hide();
+			}
 		},
 		width: 250
 	});
@@ -433,6 +445,11 @@ function jQueryInit () {
 		module.options.editing = false;
 		$('#siteInfo').change();
 		$('div.box.'+$('#siteType').val()).show()
+		if($('#siteType').val() === 'dir' || $('#siteType').val() === 'int') {
+			$("#inputOptions").show();
+		} else {
+			$("#inputOptions").hide();
+		}
 		$( "#input" ).dialog( "open" );
 	});
 	

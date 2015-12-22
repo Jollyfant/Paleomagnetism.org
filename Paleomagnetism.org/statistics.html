@@ -29,7 +29,10 @@
 	<script src="./src/libs/jQuery/jquery-linedtextarea.js"></script> <!-- jQuery plugin for lined text-area -->
 	<script src="./src/libs/notiny-master/src/notiny.js"></script> <!-- (notiny) notification plugin -->
 	<script src="./src/libs/upload.js"></script> <!-- Drag and Drop plugin -->
-	
+
+	<!-- Databases -->
+	<script src="./src/db/ages.js"></script> <!-- Drag and Drop plugin -->
+
 	<!-- Google Maps v3 API -->
 	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCvJEx8MlU2o1YwBkDMx-xzZzsw9-8ssDc"></script>
 	
@@ -60,8 +63,13 @@
 	ga('send', 'pageview');
 	</script>
 
-</HEAD>
+<script>
+$(function () {
+	applicationInit('statistics');
+});
+</script>
 
+</HEAD>
 <BODY>
 
 <!-- ENTIRE BODY -->
@@ -644,11 +652,88 @@
 							<option value="Induan" class="age">Induan</option>
 					
 					<option value="Permian" class="period">Permian</option>
+						<option value="Lopingian" class="epoch">Lopingian</option>
+							<option value="Changhsingian" class="age">Changhsingian</option>
+							<option value="Wuchiapingian" class="age">Wuchiapingian</option>
+						<option value="Guadalupian" class="epoch">Guadalupian</option>
+							<option value="Capitanian" class="age">Capitanian</option>
+							<option value="Wordian" class="age">Wordian</option>
+							<option value="Roadian" class="age">Roadian</option>
+						<option value="Cisuralian" class="epoch">Cisuralian</option>
+							<option value="Kungurian" class="age">Kungurian</option>
+							<option value="Artinskian" class="age">Artinskian</option>
+							<option value="Sakmarian" class="age">Sakmarian</option>
+							<option value="Asselian" class="age">Asselian</option>
+
 					<option value="Carboniferous" class="period">Carboniferous</option>
+						<option value="Pennsylvanian" class="epoch">Pennsylvanian</option>
+							<option value="Upper Pennsylvanian" class="subepoch">Upper Pennsylvanian</option>
+								<option value="Gzhelian" class="age">Gzhelian</option>
+								<option value="Kasimovian" class="age">Kasimovian</option>
+							<option value="Middle Pennsylvanian" class="subepoch">Middle Pennsylvanian</option>
+								<option value="Moscovian" class="age">Moscovian</option>
+							<option value="Lower Pennsylvanian" class="subepoch">Lower Pennsylvanian</option>
+								<option value="Bashkirian" class="age">Bashkirian</option>
+						<option value="Mississippian" class="epoch">Mississippian</option>
+							<option value="Upper Mississippian" class="subepoch">Upper Mississippian</option>
+								<option value="Serpukhobian" class="age">Serpukhobian</option>
+							<option value="Middle Mississippian" class="subepoch">Middle Mississippian</option>
+								<option value="Visean" class="age">Visean</option>
+							<option value="Lower Mississippian" class="subepoch">Lower Mississippian</option>
+								<option value="Tournaisian" class="age">Tournaisian</option>
+
 					<option value="Devonian" class="period">Devonian</option>
+						<option value="Upper Devonian" class="epoch">Upper Devonian</option>
+							<option value="Famennian" class="age">Famennian</option>
+							<option value="Frasnian" class="age">Frasnian</option>
+						<option value="Middle Devonian" class="epoch">Middle Devonian</option>
+							<option value="Givetian" class="age">Givetian</option>
+							<option value="Eifelian" class="age">Eifelian</option>
+						<option value="Lower Devonian" class="epoch">Lower Devonian</option>
+							<option value="Emsian" class="age">Emsian</option>
+							<option value="Pragian" class="age">Pragian</option>
+							<option value="Lochkovian" class="age">Lochkovian</option>
+
 					<option value="Silurian" class="period">Silurian</option>
+						<option value="Pridoli" class="epoch">Pridoli</option>
+						<option value="Ludlow" class="epoch">Ludlow</option>
+							<option value="Ludfordian" class="age">Ludfordian</option>
+							<option value="Gorstian" class="age">Gorstian</option>
+						<option value="Wenlock" class="epoch">Wenlock</option>
+							<option value="Homerian" class="age">Homerian</option>
+							<option value="Sheinwoodian" class="age">Sheinwoodian</option>
+						<option value="Llandovery" class="epoch">Llandovery</option>
+							<option value="Telychian" class="age">Telychian</option>
+							<option value="Aeronian" class="age">Aeronian</option>
+							<option value="Rhuddanian" class="age">Rhuddanian</option>
+
 					<option value="Ordovician" class="period">Ordovician</option>
+						<option value="Upper Ordovician" class="epoch">Upper Ordovician</option>
+							<option value="Hirnantian" class="age">Hirnantian</option>
+							<option value="Katian" class="age">Katian</option>
+							<option value="Sandbian" class="age">Sandbian</option>
+						<option value="Middle Ordovician" class="epoch">Middle Ordovician</option>
+							<option value="Darriwilian" class="age">Darriwilian</option>
+							<option value="Dapingian" class="age">Dapingian</option>
+						<option value="Lower Ordovician" class="epoch">Lower Ordovician</option>
+							<option value="Floian" class="age">Floian</option>
+							<option value="Tremadocian" class="age">Tremadocian</option>
+
 					<option value="Cambrian" class="period">Cambrian</option>
+						<option value="Furongian" class="epoch">Furongian</option>
+							<option value="Stage 10" class="age">Stage 10</option>
+							<option value="Jiangshanian" class="age">Jiangshanian</option>
+							<option value="Paibian" class="age">Paibian</option>
+						<option value="Series 3" class="epoch">Series 3</option>
+							<option value="Guzhangian" class="age">Guzhangian</option>
+							<option value="Drumian" class="age">Drumian</option>
+							<option value="Stage 5" class="age">Stage 5</option>
+						<option value="Series 2" class="epoch">Series 2</option>
+							<option value="Stage 4" class="age">Stage 4</option>
+							<option value="Stage 3" class="age">Stage 3</option>
+						<option value="Terreneuvian" class="epoch">Terreneuvian</option>
+							<option value="Stage 2" class="age">Stage 2</option>
+							<option value="Fortunian" class="age">Fortunian</option>
 				</select>
 			</div>
 		</div>
@@ -657,7 +742,8 @@
 	<div class="dir box">
 		<h2> Magnetic Directions <small> Input Data </small></h2>
 		<p><b> Input parameters: </b>
-		<br> Declination, Inclination, <u title="dip direction - 90°">Bedding Strike</u><sup><b>T</b></sup>, Bedding Dip, Sample Name
+		<br> Declination, Inclination (<u title="dip direction - 90°">Bedding Strike</u><sup><b>T</b></sup>, Bedding Dip, Sample Name, Stratigraphic Level)
+		<p>
 	</div>
 	<div class="lit box">
 		<h2> Literature Directions <small> Input Data </small> </h2>
@@ -675,12 +761,21 @@
 		<p> Directions interpreted in the interpretation portal can be found here.
 		<p> <select multiple id="interpretedSites"> </select>
 		<button id="deleteInterpretation"> Delete </button>
+		<p>
 		<div id="interpretationInfo"></div>
 	</div>
 	<p>
+		<div id="inputOptions" style="display: none">
+		<b>Besides dec/inc, please select your additional sequential input</b>
+		<p>
+		<input id="includeBedding" type="checkbox"> <label for="includeBedding"> Bedding </label>
+		<input id="includeName" type="checkbox"> <label for="includeName"> Sample Name </label>
+		<input id="includeStrat" type="checkbox"> <label for="includeStrat"> Stratigraphic Level </label>
+		</div>
+	<p>
 	<input type="checkbox" hidden='true' id="append" >
 	<textarea id="dropZone" rows="5" style="width: 570px;"></textarea>
-	<small>Input parameters must be delimited by a comma or single white space. Drag and drop data from file or enter manually. </small>
+	<small>Input parameters must be delimited by a comma or tab character. Drag and drop data from file or enter manually. </small>
 	<p>
 	<div id="nameDiv" style="padding: 10px; border: 1px dotted rgb(119, 152, 191); display: inline-block;">
 		<b>Site name </b><input type="text" id="siteName" title="Enter a site name">

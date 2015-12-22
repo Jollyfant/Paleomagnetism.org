@@ -285,7 +285,11 @@ var rotat = function(str, he, data){
 	//Keep declination within bounds (0 - 360).
 	temp.dec = (temp.dec + str)%360;
 	
-	return [temp.dec, temp.inc, data[2], data[3], data[4]];
+
+	var newData = JSON.parse(JSON.stringify(data));
+	newData[0] = temp.dec;
+	newData[1] = temp.inc;
+	return newData;
 }
 
 /* FUNCTION butler
@@ -510,8 +514,11 @@ function invPoles(siteLat, siteLong, data) {
 	
 	//Right quadrant
 	var inc = Math.atan2(2 * cosp, sinp)/rad;
-	
-	return [dec, inc, data[2], data[3], data[4]];
+
+	var newData = JSON.parse(JSON.stringify(data));
+	newData[0] = dec;
+	newData[1] = inc;
+	return newData;
 
 }
 
@@ -551,8 +558,11 @@ function poles(slat, slong, data) {
 	if(plong < 0){
 		plong = plong + 360;
 	}
-	
-	return [plong, plat, data[2], data[3], data[4]];
+
+	var newData = JSON.parse(JSON.stringify(data));
+	newData[0] = plong;
+	newData[1] = plat;
+	return newData;
 
 }
 

@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<HTML>
+<HEAD>
+<meta charset="utf-8"/>
+<meta name="description" content="Paleomagnetism.org: An open source tool for paleomagnetic analysis">
+<meta name="keywords" content="Paleomagnetism, Palaeomagnetism, Statistics, Analysis, Javascript, Magnetic, Magnetostratigraphy">
+<meta name="author" content="Paleomagnetism.org">
+
+<!-- Supporting Libraries -->
+<link href="./src/libs/jQuery/jquery-ui.css" rel="stylesheet"> <!-- jQuery UI stylesheet -->
+
+
+<link href="./css/pMagJS.css" type="text/css" rel="stylesheet" /> <!-- paleomagnetism.org stylesheet -->
+
+<link href="./src/libs/notiny-master/src/notiny.css" rel="stylesheet"> <!-- Notification style sheet (Notiny) -->
+<script src="./src/libs/jQuery/jquery-1.11.1.js"></script> <!-- jQuery -->
+<script src="./src/libs/jQuery/jquery-ui.js"></script> <!-- jQuery UI -->
+<script src="./src/libs/notiny-master/src/notiny.js"></script> <!-- (notiny) notification plugin -->
+<script src="./src/libs/Highcharts/highcharts.src.js"></script> <!-- Highcharts Main -->
+<script src="./src/libs/Highcharts/highcharts-more.src.js"></script> <!-- Highcharts plugin for extra graphs -->
+<script src="./src/libs/Highcharts/heatmap.src.js"></script> <!-- HighCharts HeatMap Plugin -->
+<script src="./src/libs/Highcharts/exporting.src.js"></script> <!-- Highcharts figure exporting -->
+<script src="./src/libs/numeric-1.2.6.js"></script> <!-- Numeric JS to calculate principle components -->
+<script src="./src/libs/jQuery/jquery.multiselect.js"></script> <!-- jQuery plugin for multiselect -->
+
+<script src="./src/core.js"></script> <!-- jQuery plugin for multiselect -->
+<script src="./src/main.js"></script> <!-- jQuery plugin for multiselect -->
+<script src="./src/jQueryInit.js"></script> <!-- jQuery UI DOM Element Definitions -->
+<script src="./src/modules/magstrat.js"></script> <!-- jQuery plugin for multiselect -->
+
+<link rel="shortcut icon" type="image/x-icon" href="icon.ico" />
+<title> Paleomagnetism.org - Team </title>
+
+<!-- Google Analytics -->
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-68024347-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+<script>
+$(function () {
+	applicationInit('magstrat');
+});
+</script>
+	
+</HEAD>
+
+<BODY>
+<div id="body_container" style="text-align: justify;">
+
+	<!-- HEADER -->
+	<div id="title" style="margin: 0 auto; padding: 5px; background-color: #fff">
+		<div style="display: inline-block; padding-right: 10px;">
+			<img style="margin: 0px; height: 60px;" src="./images/icon.png">
+		</div>
+	</div>
+	
+	<!-- MENU CONTACT -->
+	<div style="background-color: #7798BF; color: white; padding: 10px;">
+		<li class="menuLink"><a class="link" href="./index.html"> Home </a>
+		<li class="menuLink"><a class="link" href="./interpretation.html"> Interpretation Portal </a>
+		<li class="menuLink"><a class="link" href="./statistics.html"> Statistics Portal </a> 
+		<li class="menuLink"><a class="link" href="./miscellaneous.html">Miscellaneous Portal </a>
+		<li class="menuLink"><a class="link" style="background: #DED;"><img src="./images/icon.ico" height="16" width="16" style="vertical-align: middle;">&nbsp Magnetostratigraphy Portal </a> 
+		<li class="menuLink"><a class="link" href="./cite.html"> References </a>
+		<li class="menuLink"><a class="link" href="./team.html">Team and Code </a>
+		<!-- <li class="menuLink"><a class="link" href="mailto:fort@paleomagnetism.org"> Contact </a> -->
+		<li class="menuLink"><a class="link" href="mailto:paleomagnetism.org@gmail.com" title="temporary address"> Contact </a>
+	</div>
+	
+	<div id="tabs">
+		<ul>
+			<li><a href="#introductionTab" title="General information"> Home </a></li>
+			<li><a href="#directionStrat" title="General information"> Directions vs Stratigraphic Level </a></li>
+		</ul>
+
+	<div id="introductionTab">
+		<div class="information" style="margin: 10px; font-size: 12px; font-family: Helvetica,Arial,sans-serif;">
+		<h1> Introduction </h1>
+			<p> Welcomos hos grande magnetostratigraphicos modulos.
+		<p>
+		</div>	
+	</div>
+	<div id="directionStrat">
+		<div class="information" style="margin: 10px; font-size: 12px; font-family: Helvetica,Arial,sans-serif;">
+		<h1> Directions vs Stratigraphic Level </h1>
+			<p> This modules shows inclination/declination against stratigraphic level. A user-specified stratigraphic polarity scale can be added by clicking the <i> Add Binary Stratigraphy </i>
+			<p> The input format for this file is (lower, upper) level for filled blocks specified on each line.
+		<p>
+		<select multiple id="stratSel" title="" class="siteSelector"></select>
+		<button id="addStratigraphy" type="button" onClick="$('#stratInput').click();" title="Import a stratigraphic file">Import Stratigraphy</button>
+		</div>
+	<div id="stratPlots" style="display: none;">
+	<div style="display: inline-block; width: 100%; margin: 0 auto; text-align: center;">
+		<div id="magstratDeclination" style="width: 250px; height: 800px; display: inline-block;"></div>
+		<div id="magstratSet" style="width: 150px; height: 800px; display: inline-block;"></div>
+		<div id="magstratInclination" style="width: 250px; height: 800px; display: inline-block;"></div>
+	</div>
+	<p>
+
+	<input style="display: none" id="stratInput" type="file" size="4" name="file" onChange="importing(event)"/>
+	<div class="caption" id="poleTabCaption">
+		<p style="margin-top: 10px; margin-bottom: 10px; font-size: 15px;"><b> Figure 1 </b>- Graph showing inclination and declination against stratigraphic level. A user specified binary chart can be added by clicking 'Add Binary Stratigraphy'.
+	</div>
+	</div>
+	</div>
+	</div>
+	
+	<!-- FOOTER -->
+	<div id="footer" class="textplot" style="margin: 10px;">
+		<small> © 2015 Paleomagnetism.org. Please <a href="./cite.html">cite</a> all contributors if you use this application for your research.
+		<p><b>Disclaimer:</b> Paleomagnetism.org is an open-source initiative licensed under the <a href="https://www.gnu.org/licenses/gpl.html">GNU General Public License v3.0</a>. All data processing is handled on the client-side within your browser. Graph exporting is delivered via the Highcharts content delivery network under the Highcharts <a href="http://www.highcharts.com/docs/export-module/privacy-disclaimer/">exporting privacy policy</a>.
+		<hr>
+		<div style="text-align: right; display: inline-block;">
+			<a href="http://www.geo.uu.nl/~forth/"><img style="margin: 0px; height: 60px;" src="./images/UU.png"></a>
+			<a href="http://erc.europa.eu/"><img style="margin: 0px; height: 60px;" src="./images/ERC.png"></a>
+			<a href="http://www.nwo.nl/"><img style="margin: 0px; height: 60px;" src="./images/logo NWO_plain.png"></a>
+		</div>
+	</div>
+</div>
+
+
+</BODY>
+
+</HTML>

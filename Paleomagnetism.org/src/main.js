@@ -26,19 +26,6 @@ module.options = {
 //Define globals
 var sites, APWPs, addSitesTimed;
 
-//DOM ready for manipulation
-$(function() {
-	
-	"use strict";
-	
-	//First initialize jQuery UI Elements
-	jQueryInit();
-	
-	//Initialize Paleomagnetims.org application.
-	applicationInit();
-
-});
-
 /*
  * FUNCTION getCDF
  * Description: calculates a cumulative distribution function for an array of (unsorted) parameters
@@ -203,107 +190,12 @@ var showGeomagneticDirections = function () {
  * Input: id@string of the box that changes (edit or add)
  * Output: VOID (calls parseAgeName to put data in the appropriate boxes)
  */
-var changeAge = function (id) {
+var changeAge = function () {
 
 	"use strict";
 	
-	var age = $("#" + id).val(); //Get select box input for the edit or original ID
-		
-	//Check age and parse the appropriate ages
-	//Average, minimum, maximum
-	if(age == 'Blank') parseAgeName('', '', '', id);
-	else if(age == 'Quaternary') parseAgeName(1.3, 0, 2.6, id);
-		else if(age == 'Holocene') parseAgeName(0.005, 0, 0.01, id);
-		else if(age == 'Pleistocene') parseAgeName(1.3, 0.01, 2.6, id);
-	else if(age == 'Neogene') parseAgeName(12.8, 2.6, 23.0, id);
-		else if(age == 'Pliocene') parseAgeName(4.0, 2.6, 5.3, id);
-			else if(age == 'Piacenzian') parseAgeName(3.1, 2.6, 3.6, id);
-			else if(age == 'Zanclean') parseAgeName(4.5, 3.6, 5.3, id);
-	else if(age == 'Miocene') parseAgeName(14.2, 5.3, 23.0, id);
-		else if(age == 'Late Miocene') parseAgeName(8.5, 5.3, 11.7, id);
-			else if(age == 'Messinian') parseAgeName(6.3, 5.3, 7.2, id);
-			else if(age == 'Tortonian') parseAgeName(9.5, 7.2, 11.7, id);
-		else if(age == 'Middle Miocene') parseAgeName(13.8, 11.7, 16.0, id);
-			else if(age == 'Serravallian') parseAgeName(12.8, 11.7, 13.8, id);
-			else if(age == 'Langhian') parseAgeName(14.9, 13.8, 16.0, id);
-		else if(age == 'Early Miocene') parseAgeName(19.5, 16.0, 23.0, id);
-			else if(age == 'Burdigalian') parseAgeName(18.2, 16.0, 20.4, id);
-			else if(age == 'Aquitanian') parseAgeName(21.7, 20.4, 23.0, id);
-	else if(age == 'Paleogene') parseAgeName(44.5, 23.0, 66, id);
-		else if(age == 'Oligocene') parseAgeName(28.5, 23.0, 33.9, id);
-		else if(age == 'Late Oligocene') parseAgeName(25.6, 23.0, 28.1, id);
-			else if(age == 'Chattian') parseAgeName(25.6, 23.0, 28.1, id);
-		else if(age == 'Early Oligocene') parseAgeName(31, 28.1, 33.9, id);
-			else if(age == 'Rupelian') parseAgeName(31, 28.1, 33.9, id);
-		else if(age == 'Eocene') parseAgeName(45.0, 33.9, 56.0, id);
-		else if(age == 'Late Eocene') parseAgeName(35.9, 33.9, 38.0, id);
-			else if(age == 'Priabonian') parseAgeName(35.9, 33.9, 38.0, id);
-		else if(age == 'Middle Eocene') parseAgeName(42.9, 38.0, 47.8, id);
-			else if(age == 'Bartonian') parseAgeName(39.7, 38.0, 41.3, id);
-			else if(age == 'Lutetian') parseAgeName(44.6, 41.3, 47.8, id);
-		else if(age == 'Early Eocene') parseAgeName(51.9, 47.8, 56.0, id);
-			else if(age == 'Ypresian') parseAgeName(51.9, 47.8, 56.0, id);
-	
-	else if(age == 'Paleocene') parseAgeName(61.0, 56.0, 66.0, id);
-		else if(age == 'Late Paleocene') parseAgeName(57.6, 56.0, 59.2, id);
-			else if(age == 'Thanetian') parseAgeName(57.6, 56.0, 59.2, id);
-		else if(age == 'Middle Paleocene') parseAgeName(60.4, 59.2, 61.6, id);
-			else if(age == 'Selandian') parseAgeName(60.4, 59.2, 61.6, id);
-		else if(age == 'Early Paleocene') parseAgeName(63.8, 61.6, 66.0, id);
-			else if(age == 'Danian') parseAgeName(63.8, 61.6, 66.0, id);
-		
-	else if(age == 'Cretaceous') parseAgeName(106, 66.0, 145, id);
-		else if(age == 'Late Cretaceous') parseAgeName(83, 66.0, 100, id);
-			else if(age == 'Maastrichtian') parseAgeName(69.0, 66.0, 72.1, id);
-			else if(age == 'Campanian') parseAgeName(77.9, 72.1, 83.6, id);
-			else if(age == 'Santonian') parseAgeName(83.6, 83.6, 86.3, id);
-			else if(age == 'Coniacian') parseAgeName(88.1, 86.3, 89.8, id);
-			else if(age == 'Turonian') parseAgeName(91.9, 89.8, 93.9, id);
-			else if(age == 'Cenomanian') parseAgeName(97.0, 93.9, 100, id);
-	
-		else if(age == 'Early Cretaceous') parseAgeName(122.5, 100, 145, id);
-			else if(age == 'Albian') parseAgeName(112, 100, 113, id);
-			else if(age == 'Aptian') parseAgeName(119, 113, 125, id);
-			else if(age == 'Barremian') parseAgeName(127, 125, 129, id);
-			else if(age == 'Hauterivian') parseAgeName(131, 129, 133, id);
-			else if(age == 'Valanginian') parseAgeName(136.5, 133, 140, id);
-			else if(age == 'Berriasian') parseAgeName(142.5, 140, 145, id);
-	
-	else if(age == 'Jurassic') parseAgeName(173, 145, 201, id);
-		else if(age == 'Late Jurassic') parseAgeName(154, 145, 164, id);
-			else if(age == 'Tithonian') parseAgeName(149, 145, 152, id);
-			else if(age == 'Kimmeridgian') parseAgeName(154, 152, 157, id);
-			else if(age == 'Oxfordian') parseAgeName(160, 157, 164, id);
-		else if(age == 'Middle Jurassic') parseAgeName(169, 164, 174, id);
-			else if(age == 'Callovian') parseAgeName(165, 164, 166, id);
-			else if(age == 'Bathonian') parseAgeName(167, 166, 168, id);
-			else if(age == 'Bajocian') parseAgeName(169, 168, 170, id);
-			else if(age == 'Aalenian') parseAgeName(172, 170, 174, id);
-		else if(age == 'Early Jurassic') parseAgeName(188, 174, 201, id);
-			else if(age == 'Toarcian') parseAgeName(179, 174, 183, id);
-			else if(age == 'Pliensbachian') parseAgeName(187, 183, 191, id);
-			else if(age == 'Sinemurian') parseAgeName(195, 191, 199, id);
-			else if(age == 'Hettangian') parseAgeName(200, 199, 201, id);
-		
-	else if(age == 'Triassic') parseAgeName(226, 201, 252, id);
-		else if(age == 'Late Triassic') parseAgeName(218, 201, 235, id);
-			else if(age == 'Rhaetian') parseAgeName(205, 201, 209, id);
-			else if(age == 'Norian') parseAgeName(219, 209, 228, id);
-			else if(age == 'Carnian') parseAgeName(231, 228, 235, id);
-		else if(age == 'Late Triassic') parseAgeName(241, 235, 247, id);
-			else if(age == 'Ladinian') parseAgeName(240, 235, 242, id);
-			else if(age == 'Anisian') parseAgeName(245, 242, 247, id);
-		else if(age == 'Late Triassic') parseAgeName(250, 247, 252, id);
-			else if(age == 'Olenekian') parseAgeName(249, 247, 251, id);
-			else if(age == 'Induan') parseAgeName(251.5, 251, 252, id);
-		
-	else if(age == 'Permian') parseAgeName(276, 252, 299, id);
-	else if(age == 'Carboniferous') parseAgeName(318, 299, 359, id);
-	else if(age == 'Devonian') parseAgeName(389, 359, 419, id);
-	else if(age == 'Silurian') parseAgeName(432, 419, 444, id);
-	else if(age == 'Ordovician') parseAgeName(465, 444, 485, id);
-	else if(age == 'Cambrian') parseAgeName(513, 485, 541, id);
-		
+	var values = ageDatabase[$("#ageNames").val()];
+	parseAgeName(values.min, values.max)
 }
 
 /*
@@ -559,11 +451,19 @@ var addInterpretations = function () {
 		//Otherwise, just put directions without beddings
 		if(interpretations[index].type == 'directions' && coordType == 'GEO') {
 			for(var i = 0; i < capture.length; i++) {
-				input += capture[i].dec + ', ' + capture[i].inc + ', ' + capture[i].bedStrike + ', ' + capture[i].bedDip + ', ' + capture[i].sample + '\n';
+				input += capture[i].dec + ', ' + capture[i].inc + ', ' + capture[i].bedStrike + ', ' + capture[i].bedDip + ', ' + capture[i].sample;
+				if(capture[i].strat) {
+					input += ', ' + capture[i].strat;
+				}
+				input += '\n';
 			}
 		} else {
 			for(var i = 0; i < capture.length; i++) {
-				input += capture[i].dec + ', ' + capture[i].inc + ', ' + capture[i].sample + '\n';
+				input += capture[i].dec + ', ' + capture[i].inc + ', ' + capture[i].sample;
+				if(capture[i].strat) {
+					input += ', ' + capture[i].strat;
+				}
+				input += '\n';
 			}				
 		}
 		
@@ -693,10 +593,12 @@ var addSiteCombination = function () {
  * Input: NULL
  * Output: VOID
  */ 
-var applicationInit = function () { 
+var applicationInit = function (page) { 
 
 	"use strict";
-	
+
+	jQueryInit(page);
+
 	//Paleomagnetism.org can also run offline; some features (e.g. Google Maps will be disabled)
 	if(!navigator.onLine){
 		notify('failure', 'You are now using Paleomagnetism.org in offline mode - features that require an internet connection are disabled.');
@@ -1194,42 +1096,58 @@ var processUserInput = function ( data, type, name ) {
 		//Start sanity check for all lines
 		for(var i = 0; i < lines.length; i++) {
 		
-			var c3name = false;	//Flag to check if user input sample name on column 3
+			var includeBedding = $('#includeBedding').prop('checked');
+			var includeName = $('#includeName').prop('checked');
+			var includeStrat = $('#includeStrat').prop('checked');
+			var expected = 2;
 			
 			//Regex for splitting on spaces, tabs, and commas; p becomes an array p[c0, c1, c2, c3, c4] where c represents column
 			//Also remove double spaces
-			var p = lines[i].split(/[,\s\t]+/); 	
+			var p = lines[i].split(/[,\s\t]+/);
+			var numberInput = p.length;
 			p = $.grep(p, function(n) { 
 				return(n) 
 			});
-			
+
 			//Default bedding parameters and sample name
 			var bedOrient = 0, bedDip = 0;
 			var sampleName = name + '.' + (i+1);
-			
-			//Three (five) columns in the input, overwrite sample name from column three (five)
-			if(p.length === 3) {
-				var sampleName = p[2];
-			} else if (p.length === 5) {
-				var sampleName = p[4];
-			}	
-			
-			//Four or more columns, take bedding parameters
-			if(p.length > 3) {
-				var bedOrient = p[2];
-				var bedDip = p[3];
+			var stratLevel = 0;
+
+			var declination = Number(p.shift());
+			var inclination = Number(p.shift());
+
+			if(includeBedding) {
+				var bedOrient = Number(p.shift());
+				var bedDip = Number(p.shift());
+				expected += 2;
 			}
-	
+
+			if(includeName) {
+				var sampleName = p.shift();
+				expected++;
+			}
+
+			if(includeStrat) {
+				var stratLevel = Number(p.shift());
+				expected++;
+			}
+
+			if(expected !== numberInput) {
+				notify('failure', 'Expected number of parameter does not match the input');
+				sanitized = false;
+				break;
+			};
+
 			//Check declination/inclination bounds (0, 360) and (-90, 90)
 			//If we find a problem, break the procedure
-			if( Number(p[0]) >= 0 && Number(p[0]) <= 360 && Number(p[1]) >= -90 && Number(p[1]) <= 90 && Number(bedOrient) >= 0 && Number(bedOrient) <= 360)  {
-				output.push([Number(p[0]), Number(p[1]), Number(bedOrient), Number(bedDip), sampleName]);
+			if( declination >= 0 && declination <= 360 && inclination >= -90 && inclination <= 90 && bedOrient >= 0 && bedOrient <= 360)  {
+				output.push([declination, inclination, bedOrient, bedDip, sampleName, stratLevel]);
 			} else {
 				sanitized = false;
 				break;								
 			}
 		}
-
 		//Different sanitization for literature data
 		} else if (type == 'lit') {
 	
@@ -1342,10 +1260,10 @@ var constructMetaData = function( ) {
 	var siteName 	= $('#siteName').val();
 	var latitude 	= $('#siteLat').val();
 	var longitude 	= $('#siteLng').val();
-	var age 		= $('#siteAge').val();
-	var minAge 		= $('#siteBoundMin').val();
-	var maxAge 		= $('#siteBoundMax').val();
-	var author 		= $("#authorID").val();
+	var age 	= $('#siteAge').val();
+	var minAge 	= $('#siteBoundMin').val();
+	var maxAge 	= $('#siteBoundMax').val();
+	var author 	= $("#authorID").val();
 	var description = $("#siteDesc").val();
 	
 	//Escape illegal characters (backslash and double quotes)
@@ -1399,18 +1317,12 @@ function checkNumeric ( data )  {
  * Input: age and age bounds
  * Output: VOID
  */
- function parseAgeName ( age, min, max, id ) {
+ function parseAgeName (min, max) {
 
  	"use strict";
 	
 	//Update the input box or update the edit box
-	if(id == "ageNamesEdit") {
-		$("#siteAgeEdit").val( age );
-		$("#siteMinAgeEdit").val( min );
-		$("#siteMaxAgeEdit").val( max );
-	} else {
-		$("#siteAge").val( age );
-		$("#siteBoundMin").val( min );
-		$("#siteBoundMax").val( max );
-	}
+	$("#siteAge").val(((min + max)/2).toFixed(1));
+	$("#siteBoundMin").val( min );
+	$("#siteBoundMax").val( max );
 }	

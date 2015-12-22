@@ -65,18 +65,22 @@ module.IO.importing = function(event) {
 		
 		//Loop over all sites in the .pmag file and append site names that do not presently exist in the instance
 		var i = 0;
+		var j = 0;
 		$("#loading").show();
 		(addSitesTimed = function () {
 			if(i < importData.data.length) {
-				if(importData.data[i].metaData.name != "TEMP") {
-					sites[importData.data[i].metaData.name] = new site(importData.data[i].metaData, importData.data[i].data, false);
+				if(importData.data[i].metaData.name !== "TEMP") {
+					if(!sites.hasOwnProperty(importData.data[i].metaData.name)) {
+						j++
+						sites[importData.data[i].metaData.name] = new site(importData.data[i].metaData, importData.data[i].data, false);
+					} else {
+						notify('failure', 'Skipping site ' + importData.data[i].metaData.name + '; a site with this name already exists in this instance.');
+					}
 					i++;
 					setTimeout( function() { addSitesTimed(); }, 1);
-				} else {
-					notify('failure', 'Skipping site ' + importData.data[i].metaData.name + '; a site with this name already exists in this instance.');
 				}
 			} else {
-				notify('success', 'Application has been initialized succesfully; found ' + i + ' site(s) and ' + Object.keys(APWPs).length + ' APWP(s)');
+				notify('success', 'Loading succesful; added ' + j + ' new site(s)');
 				$("#loading").hide();
 				finishedLoading();
 				setStorage();

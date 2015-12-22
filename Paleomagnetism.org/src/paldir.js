@@ -493,7 +493,8 @@ $(function() {
 								'inc': data[i][coordType][j].inc,
 								'bedStrike': data[i].bedStrike,
 								'bedDip': data[i].bedDip,
-								'sample': data[i].name
+								'sample': data[i].name,
+								'strat': data[i].strat || ""
 							});
 						}
 					}
@@ -726,7 +727,7 @@ $(function() {
 			
 			//if tc is selected, rotate to tectonic coordinates
 			if(tcFlag) {
-				var rotated = rotateTectonic(bedStrike+90, bedDip+90, [rotatedGeographic.dec, rotatedGeographic.inc, 0, 0, 0]);
+				var rotated = rotateTectonic(bedStrike+90, bedDip+90, [rotatedGeographic.dec, rotatedGeographic.inc]);
 				var dataD = [rotated[0], rotated[1], rotatedGeographic.R];
 			} else {
 				var dataD = [rotatedGeographic.dec, rotatedGeographic.inc, rotatedGeographic.R];
@@ -990,7 +991,8 @@ function initialize() {
 function fitCirclesToDirections() {
 
 	"use strict";
-	
+
+	// Reset the exporting data to newly fitted circles and directions
 	exportData = new Array();
 	
 	//Get coordinate reference frame; fitting great circles must be done in tectonic coordinates and geographic coordinates separated
@@ -1007,25 +1009,34 @@ function fitCirclesToDirections() {
 		
 			//Get declination/inclination and sample name
 			for(var j = 0; j < data[i][coordType].length; j++) {
+
 				var dec = data[i][coordType][j].dec;
 				var inc = data[i][coordType][j].inc;
 				var sample = data[i].name;
-				
+				var strat = data[i].strat || ""
+
+				var row = {
+					'name': sample,
+					'strat': strat,
+					'dec': dec,
+					'inc': inc
+				}
+
 				//Now check if it is a direction or a great circle and sort them to respective arrays
 				//@pointsSet for directions and @fitData for great circles
 				if(data[i][coordType][j].type == 'dir') {
+
+					isSet = true;
+
 					exportData.push({
 						'dec': dec, 
 						'inc': inc,
-						'sample': sample
+						'sample': sample,
+						'strat': strat
 					});
-					
-					var row = [sample, data[i].info, dec, inc, 'dir'];
-					isSet = true;
-					
+
 					//Highcharts data array for plotting the set points, these can be used directly
 					pointsSet.push({
-						'info': data[i].info ? data[i].info : "",
 						'x': dec,
 						'y': eqArea(inc),
 						'inc': inc,
@@ -1036,9 +1047,10 @@ function fitCirclesToDirections() {
 							'lineWidth' : 1,
 						}
 					});
-				} else if(data[i][coordType][j].type === 'GC') {
-					row = [sample, data[i].info, dec, inc, 'gc'];
+
 				}
+
+				row.type = data[i][coordType][j].type;
 				fitData.push(row);
 			}
 		}
@@ -1048,7 +1060,8 @@ function fitCirclesToDirections() {
 	//This helps the procedure to know which intersection of great circles to use (180 degrees apart)
 	if(!isSet) {
 		var getSuggestion = prompt('No set points, give a suggestion for directional fit (dec, inc).');
-		if(getSuggestion != null) {
+		if(getSuggestion !== null) {
+
 			var getSuggestion = getSuggestion.split(/[,\s\t]+/); //Split by commas
 			if(getSuggestion.length != 2) {
 				notify('failure', 'Unexpected input, please give declination and inclination seperated by a comma');
@@ -1059,43 +1072,60 @@ function fitCirclesToDirections() {
 			var declination = Number(getSuggestion[0]);
 			var inclination = Number(getSuggestion[1]);
 			
-			fitData.push(['FORCED', 0, declination, inclination, 'fake']);
+			fitData.push({
+				'name': 'FORCED',
+				'strat': "",
+				'dec': declination,
+				'inc': inclination,
+				'type': 'fake'
+			});
+		} else {
+			notify('failure', 'Adding your suggestion has failed. Breaking fitting procedure.');
+			return;
 		}
-		notify('failure', 'Adding your suggestion has failed. Breaking fitting procedure.');
-		return;
 	}
 
 	//@Circle is an array containing Cartesian coordinates of pole to great circle
 	var xCircle = new Array(), yCircle = new Array(), zCircle = new Array();
-	var sampleCircle = new Array(), infoCircle = new Array();
+	var circleInfo = new Array();
 	
 	//Number of set points and great circles
 	var nPoints = 0, nCircles = 0;
 	var xSum = 0, ySum = 0, zSum = 0;
-	
+
 	//Loop over data and sort great circles from set points
 	for(var i = 0; i < fitData.length; i++) {
 	
-		//Fake anchoring point to start fitting of circles
-		//If there are no set-points use the fake anchor as the mean vector
-		if(fitData[i][4] === 'fake') { 
-			var anchorCoordinates = cart(fitData[i][2], fitData[i][3]);
-			var newMeanVector = {'x': anchorCoordinates.x, 'y': anchorCoordinates.y, 'z': anchorCoordinates.z};	
-		} else if(fitData[i][4] === 'dir') {
+		// Set initial anchoring to fake point as mean vector
+		if(fitData[i].type === 'fake') { 
+
+			var anchorCoordinates = cart(fitData[i].dec, fitData[i].inc);
+			var unitMeanVector = {
+				'x': anchorCoordinates.x, 
+				'y': anchorCoordinates.y, 
+				'z': anchorCoordinates.z
+			};	
+
+		} else if(fitData[i].type === 'dir') {
+
 			nPoints++
 			
-			//Add Cartesian coordinates for mean vector			
-			var coordinates = cart(fitData[i][2], fitData[i][3]);
-			xSum += coordinates.x, ySum += coordinates.y, zSum += coordinates.z;
+			//Sum Cartesian coordinates for mean vector from directional set points			
+			var coordinates = cart(fitData[i].dec, fitData[i].inc);
+			xSum += coordinates.x;
+			ySum += coordinates.y;
+			zSum += coordinates.z;
 			
-		} else if(fitData[i][4] === 'gc') {
+		} else if(fitData[i].type === 'GC') {
+
 			nCircles++;
 			
 			//Dec and inc pair to Cartesian coordinates
-			var circleCoordinates = cart(fitData[i][2], fitData[i][3]);
-			xCircle.push(circleCoordinates.x), yCircle.push(circleCoordinates.y), zCircle.push(circleCoordinates.z);
-			sampleCircle.push(fitData[i][0]);
-			infoCircle.push(fitData[i][1]);
+			var circleCoordinates = cart(fitData[i].dec, fitData[i].inc);
+			xCircle.push(circleCoordinates.x)
+			yCircle.push(circleCoordinates.y)
+			zCircle.push(circleCoordinates.z);
+			circleInfo.push(fitData[i]);
 			
 		} else {
 			notify('failure', 'Unfamiliar fitting type; expected "fake", "dir", or "gc"');
@@ -1107,10 +1137,18 @@ function fitCirclesToDirections() {
 	//If no set points are specified we take the anchor that is specified above under 'fake' as the mean vector
 	if(nPoints > 0) {
 		var R = Math.sqrt(xSum*xSum + ySum*ySum + zSum*zSum);
-		var unitMeanVector = {'x': xSum/R, 'y': ySum/R, 'z': zSum/R};
+		var unitMeanVector = {
+			'x': xSum/R, 
+			'y': ySum/R, 
+			'z': zSum/R
+		};
 	}
 	
-	var meanVector = {'x': xSum, 'y': ySum, 'z': zSum};
+	var meanVector = {
+		'x': xSum,
+		'y': ySum,
+		'z': zSum
+	};
 	
 	//Bucket to contain x, y, z coordinates of the fitted points respectively
 	var fittedCircleCoordinates = new Array();
@@ -1118,8 +1156,16 @@ function fitCirclesToDirections() {
 	//Initially, for all circles, find the closest point on the great circle (through vClose routine) to the mean vector
 	for(var i = 0; i < nCircles; i++) {
 		var fittedCoordinates = vClose(xCircle[i], yCircle[i], zCircle[i], unitMeanVector);
-		meanVector.x += fittedCoordinates.x, meanVector.y += fittedCoordinates.y, meanVector.z += fittedCoordinates.z;
-		fittedCircleCoordinates.push({'x': fittedCoordinates.x, 'y': fittedCoordinates.y, 'z': fittedCoordinates.z});
+
+		meanVector.x += fittedCoordinates.x;
+		meanVector.y += fittedCoordinates.y;
+		meanVector.z += fittedCoordinates.z;
+
+		fittedCircleCoordinates.push({
+			'x': fittedCoordinates.x,
+			'y': fittedCoordinates.y,
+			'z': fittedCoordinates.z
+		});
 	}
 
 	var nIterations = 0;
@@ -1133,11 +1179,17 @@ function fitCirclesToDirections() {
 		for( var i = 0; i < nCircles; i++) {
 			
 			//Subtract the fitted point from the mean
-			meanVector.x -= fittedCircleCoordinates[i].x, meanVector.y -= fittedCircleCoordinates[i].y, meanVector.z -= fittedCircleCoordinates[i].z;
+			meanVector.x -= fittedCircleCoordinates[i].x;
+			meanVector.y -= fittedCircleCoordinates[i].y;
+			meanVector.z -= fittedCircleCoordinates[i].z;
 
 			//Recalculate the the new mean vector (unit length)
 			var R = Math.sqrt(meanVector.x*meanVector.x + meanVector.y*meanVector.y + meanVector.z*meanVector.z);
-			var unitMeanVector = {'x': meanVector.x/R, 'y': meanVector.y/R, 'z': meanVector.z/R};
+			var unitMeanVector = {
+				'x': meanVector.x/R,
+				'y': meanVector.y/R,
+				'z': meanVector.z/R
+			};
 			
 			//Calculate the new closest point for the great circle Gi to new mean vector
 			var newClose = vClose(xCircle[i], yCircle[i], zCircle[i], unitMeanVector);
@@ -1172,30 +1224,37 @@ function fitCirclesToDirections() {
 
 	//Start with the sum of all set points and add all the iteratively fitted directions to the mean vector
 	//Calculate the mean direction for all fitted directions and set points together
-	meanVector = {'x': xSum, 'y': ySum, 'z': zSum};
+	meanVector = {
+		'x': xSum,
+		'y': ySum,
+		'z': zSum
+	};
+
 	for(var i = 0; i < nCircles; i++) {
-		meanVector.x += fittedCircleCoordinates[i].x, meanVector.y += fittedCircleCoordinates[i].y, meanVector.z += fittedCircleCoordinates[i].z;
+		meanVector.x += fittedCircleCoordinates[i].x
+		meanVector.y += fittedCircleCoordinates[i].y
+		meanVector.z += fittedCircleCoordinates[i].z;
 	}
+
 	var newMean = new dir(meanVector.x, meanVector.y, meanVector.z);
-	
+
 	var pointsCircle = new Array();
 
 	//Loop over all great circles and get fitted directions in Highcharts data array
 	for(var i = 0; i < nCircles; i++) {
 	
 		var direction = new dir(fittedCircleCoordinates[i].x, fittedCircleCoordinates[i].y, fittedCircleCoordinates[i].z);
-		var sample = sampleCircle[i];
 		exportData.push({
 			'dec': direction.dec, 
 			'inc': direction.inc,
-			'sample': sample
+			'sample': circleInfo[i].sample,
+			'strat': circleInfo[i].strat
 		});
 
 		//Data array for points fitted on great circle
 		pointsCircle.push({
-			'info': infoCircle[i] ? infoCircle[i] : "",
 			'x': direction.dec, 
-			'sample': sample,
+			'sample': circleInfo[i].sample,
 			'y': eqArea(direction.inc), 
 			'inc': direction.inc,
 			'marker': {
@@ -1289,7 +1348,13 @@ function fitCirclesToDirections() {
 	},  {
 		name: 'Mean',
 		type: 'scatter',
-		data: [{sample: 'Direction Mean', x: newMean.dec, y: eqArea(newMean.inc), inc: newMean.inc, 'info': 'Direction Mean'}],
+		data: [{
+			'sample': 'Direction Mean',
+			'x': newMean.dec,
+			'y': eqArea(newMean.inc),
+			'inc': newMean.inc,
+			'info': 'Direction Mean'
+		}],
 		color: 'rgb(119, 191, 152)',
 		marker: {
 			symbol: 'circle',
@@ -1673,7 +1738,7 @@ var drawInterpretations = function ( sample ) {
 					'enabled' : false
 				}
 			});
-			
+
 			//Add line for inclination (x, z)
 			var lineFit = [{
 				'x': centerMass[0] + v1.x*scaling, 
@@ -1998,8 +2063,8 @@ var rotateTectonic = function(str, he, data){
 
 	//Similarly to the first step, as the final step we rotate the directions back to their initial declinations. Keep declination within bounds.
 	temp.dec = (temp.dec + str)%360;
-	
-	return [temp.dec, temp.inc, data[2], data[3], data[4]];
+
+	return [temp.dec, temp.inc];
 }
 
 /*
@@ -2051,7 +2116,7 @@ function zijderveld ( samples ) {
 			//Rotate to tectonic coordinates if requested and not viewing in specimen coordinates
 			if(tcFlag && !specFlag) {
 				var coordinateInformation = '(Tectonic)';
-				var directionTectonic = rotateTectonic(beddingStrike+90, beddingDip+90, [direction.dec, direction.inc, 0, 0, 0]);
+				var directionTectonic = rotateTectonic(beddingStrike+90, beddingDip+90, [direction.dec, direction.inc]);
 				direction.dec = directionTectonic[0];
 				direction.inc = directionTectonic[1];
 			}
@@ -2407,7 +2472,7 @@ function eqAreaProjection ( sample ) {
 			//If a tilt correction is requested, rotate again
 			//Only do this if NOT viewing in specimen coordinates
 			if(tcFlag && !specFlag) {
-				var directionTectonic = rotateTectonic(beddingStrike + 90, beddingDip + 90, [direction.dec, direction.inc, 0, 0, 0]);
+				var directionTectonic = rotateTectonic(beddingStrike + 90, beddingDip + 90, [direction.dec, direction.inc]);
 				direction.dec = directionTectonic[0];
 				direction.inc = directionTectonic[1];
 				var information = '(Tectonic)';
@@ -2994,9 +3059,9 @@ function importMunich(applicationData, text) {
 					'visible'	: true, 
 					'include'	: false,
 					'step'		: parameters[0],
-					'x'			: cartesianCoordinates.x,
-					'y'			: cartesianCoordinates.y,
-					'z'			: cartesianCoordinates.z,
+					'x'		: cartesianCoordinates.x,
+					'y'		: cartesianCoordinates.y,
+					'z'		: cartesianCoordinates.z,
 					'a95'		: parameters[4],
 					'info'		: info
 				});			
@@ -3011,10 +3076,11 @@ function importMunich(applicationData, text) {
 	
 		//Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
 		applicationData.push({
-			'info'			: info,
+			'info'			: "Munich",
+			'strat'			: "",
 			'GEO'			: new Array(),
 			'TECT'			: new Array(),
-			'interpreted'	: false,
+			'interpreted'		: false,
 			'name'			: name,
 			'coreAzi'		: Number(coreAzi),
 			'coreDip'		: Number(coreDip),
@@ -3081,7 +3147,7 @@ function importUtrecht(applicationData, text) {
 					}
 				}						
 				
-				var information = parameterPoints[1].replace(/['"]+/g, '');
+				var stratLevel = parameterPoints[1].replace(/['"]+/g, '');
 				
 				var coreAzi = Number(parameterPoints[2]);	
 				if(isNaN(coreAzi)) {
@@ -3119,9 +3185,9 @@ function importUtrecht(applicationData, text) {
 					'visible'	: true, 
 					'include'	: false,
 					'step'		: parameterPoints[0],
-					'x'			: Number(-parameterPoints[2]),
-					'y'			: Number(parameterPoints[3]),
-					'z'			: Number(-parameterPoints[1]),
+					'x'		: Number(-parameterPoints[2]),
+					'y'		: Number(parameterPoints[3]),
+					'z'		: Number(-parameterPoints[1]),
 					'a95'		: parameterPoints[4],
 					'info'		: parameterPoints[5] + ' at ' + parameterPoints[6]
 				});
@@ -3136,10 +3202,11 @@ function importUtrecht(applicationData, text) {
 		
 		//Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
 		applicationData.push({
-			'info'			: information,
+			'info'			: "Utrecht",
+			'strat'			: stratLevel,
 			'GEO'			: new Array(),
 			'TECT'			: new Array(),
-			'interpreted'	: false,
+			'interpreted'		: false,
 			'name'			: name,
 			'coreAzi'		: Number(coreAzi),
 			'coreDip'		: Number(coreDip),
