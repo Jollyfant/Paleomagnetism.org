@@ -637,7 +637,7 @@ function getExpectedLocation () {
 					incErrors.push([APWP.age[i], (paleoIncs[i-skip].y - paleoIncs[i-skip].error), (paleoIncs[i-skip].y + paleoIncs[i-skip].error)]);	//Inclination
 					palatErrors.push([APWP.age[i], (paleoLats[i-skip].y - paleoLats[i-skip].error[0]), (paleoLats[i-skip].y + paleoLats[i-skip].error[1])]);	//Paleolatitude			
 				} else {
-					skip++; //Increment skip
+					skip++;
 				}
 			}
 		
@@ -747,9 +747,13 @@ function getExpectedLocation () {
 	plotExpectedLocation(palatData, 'palatContainer', 'Paleolatitude', latitude, longitude);
 	plotExpectedLocation(decData, 'decContainer', 'Declination', latitude, longitude);
 	plotExpectedLocation(incData, 'incContainer', 'Inclination', latitude, longitude);
-	
+
 	//Polar plot for pole positions (also add selected data)
 	plotPole(polePos);
 	plotSiteDataExpected( 'poles' );
 		
 }
+
+
+
+

@@ -14412,7 +14412,8 @@
                 i = points.length;
                 while (i--) {
                     point = points[i];
-                    plotX = mathFloor(point.plotX); // #1843
+                    //plotX = mathFloor(point.plotX); // #1843
+                    plotX = point.plotX; // #1843
                     plotY = point.plotY;
                     graphic = point.graphic;
                     pointMarkerOptions = point.marker || {};
@@ -18884,7 +18885,8 @@
          */
         setState: function (state, move) {
             var point = this,
-                plotX = mathFloor(point.plotX), // #4586
+                //plotX = mathFloor(point.plotX), // #4586
+                plotX = point.plotX, // #4586
                 plotY = point.plotY,
                 series = point.series,
                 stateOptions = series.options.states,

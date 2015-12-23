@@ -1537,6 +1537,8 @@ function plotSiteDataExpected ( type ) {
 	var parameterData = new Array();
 	var parameterConfidence = new Array();
 
+	var saveData = new Array();
+
 	//Loop all sites
 	for(var i = 0; i < siteNames.length; i++) {
 	
@@ -1641,7 +1643,7 @@ function plotSiteDataExpected ( type ) {
 		
 		parameterConfidence.push(null);
 	}
-		
+	
 	//Return the data in a data format for Highcharts
 	return [{
 		'zIndex': 300,
