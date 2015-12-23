@@ -30,7 +30,7 @@
 <script src="./src/modules/magstrat.js"></script> <!-- jQuery plugin for multiselect -->
 
 <link rel="shortcut icon" type="image/x-icon" href="icon.ico" />
-<title> Paleomagnetism.org - Team </title>
+<title> Paleomagnetism.org - Magnetostratigraphy Portal </title>
 
 <!-- Google Analytics -->
 <script>
@@ -93,7 +93,8 @@ $(function () {
 			<p> The input format for this file is (lower, upper) level for filled blocks specified on each line.
 		<p>
 		<select multiple id="stratSel" title="" class="siteSelector"></select>
-		<button id="addStratigraphy" type="button" onClick="$('#stratInput').click();" title="Import a stratigraphic file">Import Stratigraphy</button>
+		<button id="addStratigraphy" type="button" onClick="if(getSiteName()) $('#stratInput').click();" title="Import a stratigraphic file">Import Stratigraphy</button>
+		<button id="removeStratigraphy" type="button" onClick="removeStrat()" title="Clear stratigraphic interpretation"> Clear </button>
 		</div>
 	<div id="stratPlots" style="display: none;">
 	<div style="display: inline-block; width: 100%; margin: 0 auto; text-align: center;">

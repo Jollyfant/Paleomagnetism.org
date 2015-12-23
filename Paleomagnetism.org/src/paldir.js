@@ -29,6 +29,7 @@ var li, liSelected;
 var data = new Array();
 var globalSticky = new Array();
 var exportData = new Array();
+var version = 'vALPHA.1512.1';
 
 /* FUNCTION getSampleIndex
  * Description: gets sample name from specimen scroller and returns it
@@ -3452,6 +3453,10 @@ function importing (event, format)  {
 			data = importMunich(data, text);
 		}
 		
+		for(var i = 0; i < data.length; i++) {
+			data[i].version = version;
+		}
+
 		//Refresh the specimen scroller with the new data
 		refreshSpecimenScroller();
 	

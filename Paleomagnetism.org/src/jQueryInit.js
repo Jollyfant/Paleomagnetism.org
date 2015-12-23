@@ -31,6 +31,12 @@ function jQueryInit (page) {
 
 	if(page === 'magstrat') {
 
+		$("#removeStratigraphy").button();
+
+		$('#stratSel').multiselect({
+			multiple: false,
+		});
+
 		$("#tabs").tabs();
 		$("#addStratigraphy").button();
 

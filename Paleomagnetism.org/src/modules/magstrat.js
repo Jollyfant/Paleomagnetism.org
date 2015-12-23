@@ -1,14 +1,12 @@
 /* PALEOMAGNETISM.ORG MAGSTRAT PORTAL
  * 
  * VERSION: ALPHA.1512
- * LAST UPDATED: 12/22/2015
+ * LAST UPDATED: 12/23/2015
  *
  * JavaScript file containing functions for the magnetostratigraphy portal
  *
  * This open-source application is licensed under the GNU General Public License v3.0 and may be used, modified, and shared freely
  */
-
-var loadedStratigraphy;
 
 /*
  * FUNCTION importing
@@ -16,15 +14,17 @@ var loadedStratigraphy;
  * Input: DOM event
  * Output: VOID (calls plotting functions) and fills loadedStratigraphy
  */
-function importing (event) {
+function importing (event) {		
 
 	var input = event.target;
 	var reader = new FileReader();
-	
+	var siteName = getSiteName();
+
 	//Single input
     	reader.readAsText(input.files[0]);
 	reader.onload = function() {
 
+		var savingArray = new Array();
 		var text = reader.result;
 		var lines = text.split("\n");
 
@@ -35,22 +35,76 @@ function importing (event) {
 		// Get the stratigraphy from the requested format e.g.
 		// Areas between those levels will be colored BLACK
 		var strat = new Array()
+
 		for(var i = 0; i < lines.length; i++) {
 			var parameters = lines[i].split(/[,\s\t]+/)
 			parameters = $.grep(parameters, function(n) { 
 				return n;
 			});
-    	 		strat.push([0, Number(parameters[0]), Number(parameters[1])])
-        		strat.push([1, Number(parameters[0]), Number(parameters[1])])
-        		strat.push([null])
+
+			var bottom = Number(parameters[0]);
+			var top = Number(parameters[1]);
+			savingArray.push([bottom, top]);
 		}
 
-		// Fill global for memory
-		loadedStratigraphy = strat;
-
-		showBW(strat)
+		sites[siteName].userInput.metaData.strat = savingArray;
+		showBW(formatBinaryColumn(savingArray))
+		setStorage();
+		notify('success', 'Stratigraphy has been added.');
 	}
 
+}
+
+/* 
+ * FUNCTION removeStrat
+ * Description: removes interpreted stratigraphy from site
+ * Input: NULL
+ * Output: VOID
+ */
+function removeStrat () {
+	var siteName = getSiteName();
+	if(!siteName) {
+		notify('failure', 'Please select a site to be cleared.');
+		return;
+	}
+	sites[siteName].userInput.metaData.strat = new Array();	
+	setStorage();
+	showBW(new Array())
+	notify('success', 'Stratigraphy has been cleared succesfully.');
+}
+
+/* 
+ * FUNCTION formatBinaryData
+ * Description: parses array of [top, bottom] to Highcharts arearange
+ * Input: Array of [top, bottom] for black blocks in magnetostrat
+ * Output: Formatted array that can be ingested by Highcharts
+ */
+function formatBinaryColumn (input) {
+	var strat = new Array();
+	for(var i = 0; i < input.length; i++) {
+    		strat.push([0, input[i][0], input[i][1]])
+        	strat.push([1, input[i][0], input[i][1]])
+        	strat.push([null]) //Null to prevent unwanted connection
+	}
+	return strat;
+}
+
+/* 
+ * FUNCTION getSiteName
+ * Description: gets selected site name from box
+ * Input: NULL
+ * Output: siteName or false if error getting name
+ */
+function getSiteName() {
+	var siteName = $("#stratSel").val();
+	if(siteName === null) {
+		$("#stratPlots").hide();
+		return false;
+	} else if(siteName.length > 1) {
+		notify('failure', 'Please select a single site.');
+		return false;
+	}
+	return siteName;
 }
 
 /*
@@ -60,20 +114,10 @@ function importing (event) {
  * Output VOID (calls plotting functions)
  */
 function plotStrat() {
-
-	//Get selected site name
-	var siteName = $("#stratSel").val();
-	if(siteName == null) {
-		notify('failure', 'Please select a site.');
-		$("#stratPlots").hide();
-		return;
-	}
-
-	if(siteName.length > 1) {
-		notify('failure', 'Please select a single site.');
-		return;
-	}
 	
+	var siteName = getSiteName();
+
+	if(!siteName) return;
 
 	// Get all accepted/rejected directions and sort by strat. level
 	var parsingData = new Array();
@@ -123,7 +167,11 @@ function plotStrat() {
 	showStratigraphy('magstratInclination', 'Inclination', {'min': -90, 'max': 90}, dataInc);
 
 	// Plot binary
-	showBW(loadedStratigraphy);
+	if(sites[siteName].userInput.metaData.strat) {
+		showBW(formatBinaryColumn(sites[siteName].userInput.metaData.strat));
+	} else {
+		showBW(new Array());
+	}
 
 	$("#stratPlots").show();
 
