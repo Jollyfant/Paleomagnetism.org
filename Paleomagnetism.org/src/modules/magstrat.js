@@ -100,7 +100,7 @@ function getSiteName() {
 	if(siteName === null) {
 		$("#stratPlots").hide();
 		return false;
-	} else if(siteName.length > 1) {
+	} else if(typeof(siteName) === 'object') {
 		notify('failure', 'Please select a single site.');
 		return false;
 	}
@@ -141,8 +141,10 @@ function plotStrat() {
 	for(var i = 0; i < parsingData.length; i++) {
 		var declination = parsingData[i][0] > 180 ? parsingData[i][0] - 360 : parsingData[i][0];
 		var inclination = parsingData[i][1];
+		var sample = parsingData[i][4];
 		var stratLevel = parsingData[i][5] || 0;
      		dataDec.push({
+			'sample': sample,
 			'x': declination, 
 			'y': stratLevel,
 			'marker': {
@@ -152,6 +154,7 @@ function plotStrat() {
 			}
 		});
 		dataInc.push({
+			'sample': sample,
 			'x': inclination,
 			'y': stratLevel,
 			'marker': {
@@ -210,6 +213,61 @@ function updateStratigraphicLevel () {
 	return;
 }
 
+function arraySum(array) {
+	return array.reduce(function(a, b){return a+b;})
+}
+
+
+function dlStrat(type) {
+
+	console.log(type);
+	//Get the different graphs
+	var charts = [
+		$('#magstratDeclination').highcharts(), 
+		$('#magstratSet').highcharts(),
+		$('#magstratInclination').highcharts()
+	];
+
+	var widths = [50, 260, 420];
+	var svgArr = new Array();
+
+	//Loop over charts
+	for(var i = 0; i < charts.length; i++) {
+		var svg = charts[i].getSVG();
+		svg = svg.replace('<svg', '<g transform="translate('+widths[i]+',0)" ');
+		svg = svg.replace('</svg>', '</g>');
+		svgArr.push(svg);
+	}
+
+    	var svg = '<svg height="800" width="' + 670 + '" version="1.1" xmlns="http://www.w3.org/2000/svg">' + svgArr.join('') + '</svg>';
+	var form
+    
+    	// merge the options
+    	var options = Highcharts.merge(Highcharts.getOptions().exporting, options);
+    	var form = Highcharts.createElement('form', {
+        	method: 'post',
+        	action: options.url
+    	}, {
+        	display: 'none'
+    	}, document.body);
+
+    	// Add the values
+    	Highcharts.each(['filename', 'type', 'width', 'svg'], function(name) {
+        	Highcharts.createElement('input', {
+            	type: 'hidden',
+            	name: name,
+            	value: {
+                	filename: 'Magnetostratigraphy',
+                	type: type,
+                	width: options.width,
+                	svg: svg
+            	}[name]
+        	}, null, form);
+	});
+    	form.submit();
+    	form.parentNode.removeChild(form);
+}
+
 function showBW (strat) {
 
 	// Only if charts exist
@@ -229,12 +287,15 @@ function showBW (strat) {
         	'title': {
             		'text': 'Polarity'
         	},
+
        		'xAxis': {
                		'min': 0,
                 	'max': 1,
         	},
-        	'yAxis': {
+        	'yAxis': [{
 			'tickPositions': ticks,
+			'lineWidth': 1,
+			'lineColor': 'black',
 			'title': {
 				'text': '',			
 			},
@@ -243,7 +304,20 @@ function showBW (strat) {
 			},
 			'min': 0,
 			'gridLineWidth': 0,
-        	},
+        	}, {
+			'opposite': true,
+			'tickPositions': ticks,
+			'lineWidth': 1,
+			'lineColor': 'black',
+			'title': {
+				'text': '',			
+			},
+			'labels': {
+				'enabled': false
+			},
+			'min': 0,
+			'gridLineWidth': 0,
+		}],
 		'credits': {
 			'enabled': false,
 		},
@@ -283,7 +357,17 @@ function showStratigraphy(container, title, xRange, plotData) {
                 	'max': xRange.max,
 			'tickInterval': title === 'Declination' ? 90 : 45
         	},
+		'tooltip': {
+			'formatter': function () {
+				var tooltip = 
+					'<b>Sample: </b>' + this.point.sample + '<br>' +
+					'<b>' + title + ': </b>' + this.x.toFixed(2) + '<br>' +
+					'<b>Stratigraphic Level: </b>' + this.y;
+				return tooltip;			
+			}
+		},
         	'yAxis': {
+			'gridLineDashStyle': 'Dot',
 			'min': 0,
 			'title': {
 				'text': title === 'Declination' ? "Arbitrary Stratigraphic Level" : ""
@@ -293,8 +377,10 @@ function showStratigraphy(container, title, xRange, plotData) {
             		'type': 'line',
 			'linkedTo': 'data',
 			'showInLegend': false,
+			'dashStyle': 'Dot',
             		'name': title,
                 	'lineWidth': 1,
+			'color': 'grey',
 			'enableMouseTracking': false,
             		'data': plotData,
         	}, {

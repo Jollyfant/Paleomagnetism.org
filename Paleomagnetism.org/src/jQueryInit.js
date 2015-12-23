@@ -23,14 +23,15 @@ function jQueryInit (page) {
 		selectedList: 1,
 		noneSelectedText: "Select a site",
 		close: function() {
-			
 			//Trigger the click for particular selector ID (e.g. dirSel, meanSel)
 			$('#' + this.id).click(); 
 		}
 	});
 
+	// Small initialization for magnetostratigraphy portal
 	if(page === 'magstrat') {
 
+		$(".downloadStratigraphy").button();
 		$("#removeStratigraphy").button();
 
 		$('#stratSel').multiselect({
@@ -605,6 +606,11 @@ function jQueryInit (page) {
 		
 		$("#dropZone").val(string);
 		
+		if($('#siteType').val() === 'dir' || $('#siteType').val() === 'int') {
+			$("#inputOptions").show();
+		} else {
+			$("#inputOptions").hide();
+		}
 	});
 	
 	//BUTTON: Confirm Edit

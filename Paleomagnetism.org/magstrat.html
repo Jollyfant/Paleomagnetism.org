@@ -17,10 +17,12 @@
 <script src="./src/libs/jQuery/jquery-1.11.1.js"></script> <!-- jQuery -->
 <script src="./src/libs/jQuery/jquery-ui.js"></script> <!-- jQuery UI -->
 <script src="./src/libs/notiny-master/src/notiny.js"></script> <!-- (notiny) notification plugin -->
+
 <script src="./src/libs/Highcharts/highcharts.src.js"></script> <!-- Highcharts Main -->
 <script src="./src/libs/Highcharts/highcharts-more.src.js"></script> <!-- Highcharts plugin for extra graphs -->
 <script src="./src/libs/Highcharts/heatmap.src.js"></script> <!-- HighCharts HeatMap Plugin -->
-<script src="./src/libs/Highcharts/exporting.src.js"></script> <!-- Highcharts figure exporting -->
+<script src="./src/libs/Highcharts/exporting.src.js"></script> <!-- HighCharts HeatMap Plugin -->
+
 <script src="./src/libs/numeric-1.2.6.js"></script> <!-- Numeric JS to calculate principle components -->
 <script src="./src/libs/jQuery/jquery.multiselect.js"></script> <!-- jQuery plugin for multiselect -->
 
@@ -89,8 +91,8 @@ $(function () {
 	<div id="directionStrat">
 		<div class="information" style="margin: 10px; font-size: 12px; font-family: Helvetica,Arial,sans-serif;">
 		<h1> Directions vs Stratigraphic Level </h1>
-			<p> This modules shows inclination/declination against stratigraphic level. A user-specified stratigraphic polarity scale can be added by clicking the <i> Add Binary Stratigraphy </i>
-			<p> The input format for this file is (lower, upper) level for filled blocks specified on each line.
+			<p> This modules illustrates inclination and declination against an arbitrary stratigraphic level. A user-specified stratigraphic polarity scale can be added by clicking the <i> Add Binary Stratigraphy </i>
+			<p> The <a href="./examples/strat.txt" download>input format</a> for this file is (lower, upper) level for filled blocks specified on each line.
 		<p>
 		<select multiple id="stratSel" title="" class="siteSelector"></select>
 		<button id="addStratigraphy" type="button" onClick="if(getSiteName()) $('#stratInput').click();" title="Import a stratigraphic file">Import Stratigraphy</button>
@@ -98,13 +100,21 @@ $(function () {
 		</div>
 	<div id="stratPlots" style="display: none;">
 	<div style="display: inline-block; width: 100%; margin: 0 auto; text-align: center;">
-		<div id="magstratDeclination" style="width: 250px; height: 800px; display: inline-block;"></div>
+		<div id="magstratDeclination" style="width: 200px; height: 800px; display: inline-block;"></div>
 		<div id="magstratSet" style="width: 150px; height: 800px; display: inline-block;"></div>
-		<div id="magstratInclination" style="width: 250px; height: 800px; display: inline-block;"></div>
+		<div id="magstratInclination" style="width: 200px; height: 800px; display: inline-block;"></div>
 	</div>
 	<p>
 
 	<input style="display: none" id="stratInput" type="file" size="4" name="file" onChange="importing(event)"/>
+	<div style="text-align: center;">
+		<button class="downloadStratigraphy" type="button" onClick="dlStrat('image/png')" title="Download full stratigraphy figure">  .png </button>
+		<button class="downloadStratigraphy" type="button" onClick="dlStrat('image/jpeg')" title="Download full stratigraphy figure">  .jpeg </button>
+		<button class="downloadStratigraphy" type="button" onClick="dlStrat('application/svg')" title="Download full stratigraphy figure">  .svg </button>
+		<button class="downloadStratigraphy" type="button" onClick="dlStrat('application/pdf')" title="Download full stratigraphy figure">  .pdf </button>
+
+	</div>
+
 	<div class="caption" id="poleTabCaption">
 		<p style="margin-top: 10px; margin-bottom: 10px; font-size: 15px;"><b> Figure 1 </b>- Graph showing inclination and declination against stratigraphic level. A user specified binary chart can be added by clicking 'Add Binary Stratigraphy'.
 	</div>

@@ -91,7 +91,7 @@ function lastIndex( array ) {
 	
 	//Get selected site name
 	var siteNames = $("#EISel").val();
-	if(siteNames == null) {
+	if(siteNames === null) {
 		notify('failure', 'Please select a site.');
 		$("#EIInfo").hide();
 		return;
@@ -101,7 +101,7 @@ function lastIndex( array ) {
 	var coordRef = coordinates === "TECT" ? 'dataTC' : 'data';
 	
 	//Get the accepted directions from the data block
-	var data = sites[siteNames[0]][coordRef].dir.accepted;
+	var data = sites[siteNames][coordRef].dir.accepted;
 	
 	//Get the absolute original inclination from the data set
 	var originalInclination = Math.abs(new fisher(data, 'dir', 'simple').mInc);

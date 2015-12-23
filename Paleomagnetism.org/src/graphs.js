@@ -1094,6 +1094,8 @@ function eqAreaFoldLeft ( data, container, subtitle, type ) {
 			'backgroundColor': 'rgb(255, 255, 255)',
 			'id': 'containerFoldLeft',
 			'polar': true,
+			'borderColor': 'rgb(119, 152, 191)',
+			'borderWidth': type === 'tiny' ? 1 : 0, 
 			'animation': true,
         	'renderTo': container, 
 			'events': {

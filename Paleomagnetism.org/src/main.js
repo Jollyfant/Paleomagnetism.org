@@ -587,6 +587,14 @@ var addSiteCombination = function () {
 	}
  }
  
+function include(filename) {
+   var head = document.getElementsByTagName('head')[0];
+   var script = document.createElement('script');
+   script.src = filename;
+   script.type = 'text/javascript';
+   head.appendChild(script)
+}   
+
 /*
  * FUNCTION applicationInit
  * Description: Initializes the Paleomagnetism.org application and loads sites/APWPs saved in localStorage to application
@@ -601,7 +609,9 @@ var applicationInit = function (page) {
 
 	//Paleomagnetism.org can also run offline; some features (e.g. Google Maps will be disabled)
 	if(!navigator.onLine){
-		notify('failure', 'You are now using Paleomagnetism.org in offline mode - features that require an internet connection are disabled.');
+		include("./src/libs/Highcharts/offline-exporting.src.js");
+		notify('note', 'Graph exporting has defaulted to local (.png/.svg).');
+		notify('note', 'You are now using Paleomagnetism.org in offline mode - features that require an internet connection are disabled.');
 	} 
 
 	//Create new global objects; these objects will contain all application data

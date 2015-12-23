@@ -1,7 +1,7 @@
 /* PALEOMAGNETISM.ORG INTERPRETATION PORTAL
  * 
- * VERSION: ALPHA.1509
- * LAST UPDATED: 9/10/2015
+ * VERSION: ALPHA.1512
+ * LAST UPDATED: 12/23/2015
  *
  * Description: Application that allows for the interpretation of laboratory obtained demagnetization data
  * Components (great circles and directions) can be interpreted following the principle component analysis of Kirschvink, 1981
@@ -2162,7 +2162,7 @@ function zijderveld ( samples ) {
 	//The Zijderveld diagram will always be a square
 	var maximumX = Math.max.apply(Math, valuesX);
 	var maximumY = Math.max.apply(Math, valuesY);
-	
+
     var chartOptions = {
 		'chart': {
 			'animation': false,
@@ -2422,7 +2422,7 @@ function intensity ( sample ) {
             'name': sample.name,
             'data': dataSeries
         }, {
-			'name': 'Sum of Difference Vector',
+			'name': 'Vector Difference Sum (VDS)',
 			'data': dataSeriesDecay,
 			'marker': {
 				'symbol': 'circle'
@@ -2756,6 +2756,11 @@ function exporting() {
 	if(data === null) {
 		notify('failure', 'There are no data for exporting.');
 		return;
+	}
+
+	//Update version to active version of app
+	for(var i = 0; i < data.length; i++) {
+		data[i].version = version;
 	}
 	
 	//Try to parse our data JSON object to a string and download it to a custom .dir file
@@ -3451,10 +3456,6 @@ function importing (event, format)  {
 			data = importDefault(data, text);
 		} else if(format === 'MUNICH') {
 			data = importMunich(data, text);
-		}
-		
-		for(var i = 0; i < data.length; i++) {
-			data[i].version = version;
 		}
 
 		//Refresh the specimen scroller with the new data
