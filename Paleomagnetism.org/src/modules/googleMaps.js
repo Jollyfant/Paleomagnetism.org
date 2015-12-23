@@ -207,7 +207,6 @@ module.map.getMarkers = function () {
 	var markers = new Array();
 	for(var i = 0; i < module.map.markers.length; i++) {
 		var marker = module.map.markers[i];
-		console.log(marker);
 		var object = {
 			'latitude': marker.getPosition().lat(),
 			'longitude': marker.getPosition().lng(),
@@ -217,7 +216,6 @@ module.map.getMarkers = function () {
 		}
 		markers.push(object)
 	}
-	console.log(markers);
 }
 
 /* 

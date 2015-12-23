@@ -291,6 +291,13 @@ function showBW (strat) {
        		'xAxis': {
                		'min': 0,
                 	'max': 1,
+			'labels': {
+				'style': {
+					'color': 'white'
+				}
+			},
+			'lineColor': 'white',
+			'tickColor': 'white'
         	},
         	'yAxis': [{
 			'tickPositions': ticks,
@@ -318,6 +325,20 @@ function showBW (strat) {
 			'min': 0,
 			'gridLineWidth': 0,
 		}],
+		'plotOptions': {
+			'series': {
+				'events': {
+					'legendItemClick': function () {
+						var color = this.yAxis.axisLine.stroke === 'black' ? 'white' : 'black'
+						for(var i = 0; i < 2; i++) {
+							this.chart.yAxis[i].update({
+								lineColor: color
+							});
+						}
+					}
+				}
+			}
+		},
 		'credits': {
 			'enabled': false,
 		},
@@ -328,7 +349,12 @@ function showBW (strat) {
                 	'data': strat,
                 	'lineWidth': 0,
                 	'color': 'rgb(0, 0, 0)',
-			'zIndex': 0
+			'zIndex': 0,
+        states: {
+            hover: {
+                enabled: false
+            }
+        }
         	}]
     	});
 
