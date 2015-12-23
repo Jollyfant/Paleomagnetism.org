@@ -9,7 +9,7 @@
  */
  
  //Current application version
-version = 'vALPHA.1511.1';
+version = 'vALPHA.1512.1';
 
 //Create the modules object that will carry all functional modules
 module = new Object();
@@ -261,7 +261,15 @@ var addSite = function ( edit ) {
 			return;
 		}
 	}
+
+	console.log(metaData, sites[metaData.name].userInput.metaData);
+
+	if(edit) {
+		$.extend(metaData, sites[metaData.name].userInput.metaData);
+	}
 	
+	console.log(metaData);
+
 	//Get site data
 	var type = $('#siteType').val();
 	var siteDat = $('#dropZone').val();

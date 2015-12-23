@@ -92,7 +92,7 @@ $(function () {
 		<div class="information" style="margin: 10px; font-size: 12px; font-family: Helvetica,Arial,sans-serif;">
 		<h1> Directions vs Stratigraphic Level </h1>
 			<p> This modules illustrates inclination and declination against an arbitrary stratigraphic level. A user-specified stratigraphic polarity scale can be added by clicking the <i> Add Binary Stratigraphy </i>
-			<p> The <a href="./examples/strat.txt" download>input format</a> for this file is (lower, upper) level for filled blocks specified on each line.
+			<p> The input format for this file is (lower, upper) level for filled blocks specified on each line. An example format of this file can be downloaded <a href="./examples/strat.txt" download>here</a>
 		<p>
 		<select multiple id="stratSel" title="" class="siteSelector"></select>
 		<button id="addStratigraphy" type="button" onClick="if(getSiteName()) $('#stratInput').click();" title="Import a stratigraphic file">Import Stratigraphy</button>
@@ -100,9 +100,9 @@ $(function () {
 		</div>
 	<div id="stratPlots" style="display: none;">
 	<div style="display: inline-block; width: 100%; margin: 0 auto; text-align: center;">
-		<div id="magstratDeclination" style="width: 200px; height: 800px; display: inline-block;"></div>
-		<div id="magstratSet" style="width: 150px; height: 800px; display: inline-block;"></div>
-		<div id="magstratInclination" style="width: 200px; height: 800px; display: inline-block;"></div>
+		<div id="magstratDeclination" style="width: 275px; height: 800px; display: inline-block;"></div>
+		<div id="magstratSet" style="width: 125px; height: 800px; display: inline-block;"></div>
+		<div id="magstratInclination" style="width: 275px; height: 800px; display: inline-block;"></div>
 	</div>
 	<p>
 
@@ -116,7 +116,7 @@ $(function () {
 	</div>
 
 	<div class="caption" id="poleTabCaption">
-		<p style="margin-top: 10px; margin-bottom: 10px; font-size: 15px;"><b> Figure 1 </b>- Graph showing inclination and declination against stratigraphic level. A user specified binary chart can be added by clicking 'Add Binary Stratigraphy'.
+		<p style="margin-top: 10px; margin-bottom: 10px; font-size: 15px;"><b> Figure 1 </b>- Graph showing inclination and declination against arbitrary stratigraphic level. A user specified binary chart can be added by clicking 'Add Binary Stratigraphy'.
 	</div>
 	</div>
 	</div>

@@ -608,21 +608,27 @@ function getExpectedLocation () {
 				paleoLats.push({
 					'x': APWP.age[i], 
 					'y': palat, 
-					'error': [min, max]
+					'error': [min, max],
+					'min': palat - min,
+					'max': palat + max
 				});
 				
 				//Paleo-declinations
 				paleoDecs.push({
 					'x': APWP.age[i], 
 					'y': dec, 
-					'error': dDx/rad
+					'error': dDx/rad,
+					'min': dec - dDx/rad,
+					'max': dec + dDx/rad
 				});
 				
 				//Paleo-inclinations
 				paleoIncs.push({
 					'x': APWP.age[i], 
 					'y': (inc)/rad, 
-					'error': dDi/rad
+					'error': dDi/rad,
+					'min': inc - dDi/rad,
+					'max': inc + dDi/rad
 				});				
 				
 				}

@@ -150,6 +150,9 @@ module.map.mapAddSites = function() {
 					contentString += '<b> Declination: </b>' + declination.toFixed(2) +'<br>';
 					contentString += '<b> Inclination: </b>' + inclination.toFixed(2) +'<br>';
 					contentString += '<b> ΔDx: </b>' + dDx.toFixed(2) +'<br>';
+
+				var textContent = contentString;
+
 					contentString += '<hr>';
 					contentString += '<b> Marker color: </b><br>';
 					contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'red\')"><u>red</u></a>&nbsp'
@@ -174,7 +177,7 @@ module.map.mapAddSites = function() {
 					},
 					map: module.map.map,
 					title: 'Site: ' + key,
-	
+					contentString: textContent
 				}));
 			
 				//Add the info window event listener (substract number of missing from iteration count)
@@ -196,6 +199,25 @@ module.map.mapAddSites = function() {
 			nMissing++;
 		}
 	}
+	module.map.getMarkers();
+
+}
+
+module.map.getMarkers = function () {
+	var markers = new Array();
+	for(var i = 0; i < module.map.markers.length; i++) {
+		var marker = module.map.markers[i];
+		console.log(marker);
+		var object = {
+			'latitude': marker.getPosition().lat(),
+			'longitude': marker.getPosition().lng(),
+			'icon': marker.getIcon(),
+			'title': marker.getTitle(),
+			'content': marker.contentString
+		}
+		markers.push(object)
+	}
+	console.log(markers);
 }
 
 /* 

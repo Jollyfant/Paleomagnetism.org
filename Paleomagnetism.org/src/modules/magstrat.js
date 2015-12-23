@@ -228,7 +228,7 @@ function dlStrat(type) {
 		$('#magstratInclination').highcharts()
 	];
 
-	var widths = [50, 260, 420];
+	var widths = [50, 335, 470];
 	var svgArr = new Array();
 
 	//Loop over charts
@@ -239,7 +239,7 @@ function dlStrat(type) {
 		svgArr.push(svg);
 	}
 
-    	var svg = '<svg height="800" width="' + 670 + '" version="1.1" xmlns="http://www.w3.org/2000/svg">' + svgArr.join('') + '</svg>';
+    	var svg = '<svg height="800" width="' + 795 + '" version="1.1" xmlns="http://www.w3.org/2000/svg">' + svgArr.join('') + '</svg>';
 	var form
     
     	// merge the options
@@ -285,7 +285,7 @@ function showBW (strat) {
 
 	$('#magstratSet').highcharts({
         	'title': {
-            		'text': 'Polarity'
+            		'text': '⊶',
         	},
 
        		'xAxis': {
@@ -355,7 +355,10 @@ function showStratigraphy(container, title, xRange, plotData) {
        		'xAxis': {
                		'min': xRange.min,
                 	'max': xRange.max,
-			'tickInterval': title === 'Declination' ? 90 : 45
+			'tickInterval': title === 'Declination' ? 90 : 45,
+			'labels': {
+				'format': '{value}°'
+			}
         	},
 		'tooltip': {
 			'formatter': function () {
@@ -367,6 +370,7 @@ function showStratigraphy(container, title, xRange, plotData) {
 			}
 		},
         	'yAxis': {
+			'opposite': title === 'Declination' ? false : true,
 			'gridLineDashStyle': 'Dot',
 			'min': 0,
 			'title': {

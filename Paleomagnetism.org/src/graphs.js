@@ -1537,8 +1537,6 @@ function plotSiteDataExpected ( type ) {
 	var parameterData = new Array();
 	var parameterConfidence = new Array();
 
-	var saveData = new Array();
-
 	//Loop all sites
 	for(var i = 0; i < siteNames.length; i++) {
 	
@@ -1601,12 +1599,14 @@ function plotSiteDataExpected ( type ) {
 			var parameterMax = parameter + Number(siteParameters.dDx);
 		
 		}
-		
+
 		//Put the actual recorded point (mean inclination, declination, or paleolatitude) in a Highcharts data object
 		//Keep the marker color for that particular site
 		parameterData.push({
-			'x': age, 
+			'x': Number(age), 
 			'y': parameter,
+			'min': parameterMin,
+			'max': parameterMax,
 			'name': name,
 			'marker': {
 				'fillColor': markerColor, 
@@ -1643,7 +1643,7 @@ function plotSiteDataExpected ( type ) {
 		
 		parameterConfidence.push(null);
 	}
-	
+
 	//Return the data in a data format for Highcharts
 	return [{
 		'zIndex': 300,
@@ -1768,6 +1768,86 @@ function plotPole ( plotData ) {
 }
 
 /*
+ * FUNCTION plotExpectedTable
+ * Description: calculates rotation/flattening and uncertainties (Demarest, 1983) - Paleolatitude is skipped
+ * Input: title (either Paleolatitude, Inclination, Declination)
+ * Output: VOID (fills table div using .html())
+ */
+function plotExpectedTable(title, data) {
+	
+	// Skip paleolatitude for now, errors are non-symmetrical
+	if(title === 'Paleolatitude') {
+		return;
+	}
+
+	var text = title === 'Declination' ? 'Rotation (deg)' : 'Flattening (deg)'
+	var string = '<table class="sample"><thead><th>Site</th><th>Reference Frame and Plate</th><th>' + text + '</th><th>Error (deg)</th></thead><tbody>';
+
+	// Loop over all series, these are formatted as a HighCharts data series, a new plate/frame combination is every 2nd in the array.
+	// The second last is the actual site data
+	var number = data.length;
+
+	// Go over all plate/frame data (in steps of 2 series), ignore last two series
+	for(var k = 0; k <= (number-4); k+=2) {
+		var errors = new Array();
+		// Go over all selected sites
+		for(var i = 0; i < data[number-2].data.length; i++) {
+			var val = data[number-2].data[i].x;
+			var obj = false
+			for(var j = 0; j < data[k].data.length; j++) {
+				if(data[k].data[j].x > data[number-2].data[i].x || j === data[k].data.length - 1) {
+					errors.push({
+						'type': 'rangeError',
+						'name': data[number-2].data[i].name + '<b> (out of interpolation range)</b>',
+						'value': '---',
+						'error': '---'
+					});
+					break;
+				}
+				if(val <= data[k].data[j+1].x && val >= data[k].data[j].x) {
+
+					// Do a linear interpolation on values/errors
+					var ratio = (val-data[k].data[j].x) * (data[k].data[j+1].y - data[k].data[j].y)/10 + data[k].data[j].y
+					var errorHigh = (val - data[k].data[j].x) * (data[k].data[j+1].max - data[k].data[j].max)/10 + data[k].data[j].max;
+					var errorLow = (val - data[k].data[j].x) * (data[k].data[j+1].min - data[k].data[j].min)/10 + data[k].data[j].min;
+					// New error is half of the upper and lower interpolation
+					var error = 0.5 * (errorHigh - errorLow);
+					var obj = {'interpolation': ratio, 'error': error}
+
+					break;
+				}
+			}
+			if(obj) {
+				var errorVal = obj.interpolation - data[number-2].data[i].y;
+				var errorBar = Math.sqrt(Math.pow(obj.error, 2) + Math.pow(data[number-2].data[i].y - data[number-2].data[i].max, 2));
+				errors.push({
+					'type': 'OK',
+					'name': data[number-2].data[i].name,
+					'value': errorVal,
+					'error': errorBar
+				});
+			} else {
+				console.log('Site ' + data[number-2].data[i].name + ' not in interpolation range: ' + data[k].name);
+			}
+		}
+
+
+		// Gotta do 2 otherwise .toFixed throws an error for strings '---'
+		for(var i = 0; i < errors.length; i++) {
+			if(errors[i].type === 'OK') {
+				string += '<tr><td>' + errors[i].name + '</td><td>' + data[k].name + '</td><td>'+ errors[i].value.toFixed(2) +'°</td><td>'+ errors[i].error.toFixed(2) + '°</td></tr>'
+			} else {
+				string += '<tr><td>' + errors[i].name + '</td><td>' + data[k].name + '</td><td>'+ errors[i].value +'</td><td>'+ errors[i].error + '</td></tr>'
+			}
+		}
+
+	}
+	string += '</tbody></table>';
+	$("#table" + title).html(string)
+
+}
+
+/*
  * FUNCTION plotExpectedLocation
  * Descriptions: plots the expected location for APWPs 
  * Input:
@@ -1779,6 +1859,8 @@ function plotExpectedLocation( data, container, title, lat, lon ) {
 	
 	//Merge the new site data with the pole path data
 	var plotData = data.concat(plotSiteDataExpected( title ));
+
+	plotExpectedTable(title, plotData);
 
 	var chartOptions = {
 		'chart': {
