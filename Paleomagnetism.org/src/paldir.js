@@ -63,7 +63,10 @@ var MagIC = function () {
 		for(var j = 0; j < data[i].data.length; j++) {
 
 			var name = data[i].name.split(/[.,-]+/);
-
+			var methodCode = 'LP-DIR';
+			if(data[i].type === 'AF' || data[i].type === 'TH') {
+				methodCode += '-' + data[i].type;
+			}
 			var direction = dir(data[i].data[j].x, data[i].data[j].y, data[i].data[j].z);
 			var magicObject = [
 				'...', 					//'Location Name': 
@@ -75,14 +78,14 @@ var MagIC = function () {
 				data[i].data[j].visible ? 'g' : 'b', 	//'Measurement Flag': 
 				's', 					//'Measurement Standard Flag': 
 				data[i].info, 				//'Measurement Number': 
-				'LP-DIR', 				//'Method Codes': '?',
+				methodCode, 				//'Method Codes': '?',
 				'...', 					//'Instrument Code': '?',
 				'...', 					//'Citation Names': 
 				'...', 					//'Measurement Number of Positions': '?',
 				0, 					//Measurement Elevation
 				data[i].strat || '...', 		//Measurement Stratigraphic Height
-				Number(data[i].data[j].step) + 273, 	//Lab Treatment Temperature
-				Number(data[i].data[j].step) / 1000, 	//Lab Treatment DC Field
+				data[i].type === 'TH' ? Number(data[i].data[j].step) + 273 : '...', 	//Lab Treatment Temperature
+				data[i].type === 'AF' ? Number(data[i].data[j].step) / 1000 : '...', 	//Lab Treatment DC Field
 				20 + 273, 				//Measurement Temperature
 				direction.inc.toFixed(2), 		//Measurement Inclination
 				direction.dec.toFixed(2), 		//Measurement Declination
