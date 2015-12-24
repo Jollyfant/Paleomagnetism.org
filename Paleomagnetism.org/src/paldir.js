@@ -48,6 +48,13 @@ function getSampleIndex() {
 	
 }
 
+var magicShit = function (event) {
+	var pmag = JSON.parse(localStorage.getItem('pMag'));
+	var dir = JSON.parse(localStorage.getItem('InterPortal'));
+	
+	console.log(pmag, dir);
+
+}
 
 var MagIC = function () {
 	
@@ -63,16 +70,26 @@ var MagIC = function () {
 		for(var j = 0; j < data[i].data.length; j++) {
 
 			var name = data[i].name.split(/[.,-]+/);
+			
 			var methodCode = 'LP-DIR';
 			if(data[i].type === 'AF' || data[i].type === 'TH') {
 				methodCode += '-' + data[i].type;
 			}
 			var direction = dir(data[i].data[j].x, data[i].data[j].y, data[i].data[j].z);
 			var magicObject = [
-				'...', 					//'Location Name': 
 				name[0], 				//'Site Name': 
-				name[1] || '...', 				//'Sample Name': 
-				name[2] || '...', 		//'Specimen Name': 
+				'...', 					//'Location Name': 
+				'...', 				//Measurement Temperature
+				'...', 				//Measurement Temperature
+				data[i].name, 				//'Sample Name': 
+				data[i].coreAzi, 				//Measurement Temperature
+				data[i].coreDip, 				//Measurement Temperature
+				data[i].bedStrike + 90, 				//Measurement Temperature
+				data[i].bedDip, 				//Measurement Temperature
+				'...', 				//Measurement Temperature
+				'...', 				//Measurement Temperature
+				'...', 				//Measurement Temperature
+				data[i].name, 		//'Specimen Name': 
 				'...', 					//'Synthetic Material Name': 
 				'Demagnetization', 			//'Experiment Name': 
 				data[i].data[j].visible ? 'g' : 'b', 	//'Measurement Flag': 
@@ -125,7 +142,7 @@ var MagIC = function () {
 			table.cell(this).data(input);
 		}
 	} );
-
+		
 	$("#magicDiv").show();
 	table.draw();
 
@@ -203,6 +220,9 @@ function moveDemagnetizationStep ( direction ) {
 //Fire on DOM ready
 $(function() {
 	
+	$(".additionalOptions").selectmenu({
+		'width': 200
+	});
 	
 	$("#demagType").selectmenu({
 		'select': function () {

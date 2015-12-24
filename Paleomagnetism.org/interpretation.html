@@ -139,8 +139,12 @@
 				
 					<!-- MAIN BODY FOR INTERPRETATION -->
 					<div id="appBody" style="display: none; text-align: center; margin: 0 auto;">
-						<div id="stepWalk" style="height: 550px; width: 100px; display: inline-block; padding: 2px; vertical-align: top; margin-left: 10px; border: 1px dotted rgb(119, 152, 191);"><p><h2>Steps</h2><select id='demagType' style="margin: 0 auto;">
-						<option value='UNKNOWN'> --- </option><option value='TH'>TH</option><option value='AF'>AF</option></select><p>
+						<div id="stepWalk" style="height: 550px; width: 100px; display: inline-block; padding: 2px; vertical-align: top; margin-left: 10px; border: 1px dotted rgb(119, 152, 191);"><p><h2>Steps</h2>
+						<select id='demagType' style="height: 20px; width: 60px; padding: 0px; margin: 0 auto;">
+							<option value='UNKNOWN'> --- </option>
+							<option value='TH'>TH</option>
+							<option value='AF'>AF</option>
+						</select><p>
 						<p class="steps"></p>
 						</div>
 							<div style="border: 1px dotted rgb(119, 152, 191); display: inline-block; float: center; padding: 2px;">
@@ -160,7 +164,33 @@
 						</div>
 						<div id="intensityPlot" style="display: none; width: auto; height: 500px; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
 						<small> <b> Note: </b> intensity is divided by default specimen volume (10.5 cc). </small>
-
+						<p>
+						<!--
+						<table style="border: 1px dotted rgb(119, 152, 191); width: 800px; margin: 0 auto; text-align: center;">
+						<thead>
+							<th><b> Sample Class </b></th>
+							<th><b> Sample Lithology </b></th>
+							<th><b> Sample Type </b></th>
+						</thead>
+						<tbody>
+						<td>
+						<select class="additionalOptions" id="sampleClass">
+							<option value="Sedimentary">Sedimentary</option>
+						</select>
+						</td>
+						<td>
+						<select class="additionalOptions" id="sampleLithology">
+							<option value="Winonaite Primitive Achondrite">Winonaite Primitive Achondrite</option>
+						</select>
+						</td>
+						<td>
+						<select class="additionalOptions" id="sampleType">
+							<option value="Sediment Layer">Sediment Layer</option>
+						</select>
+							</td>
+						</tbody>
+						</table>
+						-->
 			</div>
 	
 			<!-- DIRECTION FITTING TAB -->
@@ -226,10 +256,27 @@
 
 					<table class="display compact" style="text-align: center; display: none;" id="magicTable">
 					<thead>
+						<tr> 
+							<th colspan="4"> Site Information </th>
+							<th colspan="8"> Sample Information </th>
+						</tr>
 						<tr>
-							<th title="Site location (text)"><u>Location</u></th>
+							<!-- Site Info -->
 							<th title="Site initials (text)"><u>Site Name</u></th>
+							<th title="Site location (text)"><u>Location</u></th>
+							<th><u>Latitude</u></th>
+							<th><u>Longitude</u></th>
+							
+							<!-- Sample Info -->
 							<th title="Sample initials (text)"><u>Sample</u></th>
+							<th>Sample Azimuth</th>
+							<th>Sample Dip</th>
+							<th>Bedding Dip Direction</th>
+							<th>Bedding Dip</th>
+							<th><u>Class</u></th>
+							<th><u>Lithology</u></th>
+							<th><u>Type</u></th>
+							
 							<th title="Specimen indicator (text)"><u>Specimen</u></th>
 							<th title="No clue what this is"><u>Synthetic Material Name</u></th>
 							<th title="Type of experiment"><u>Experiment Name</u></th>
@@ -245,6 +292,11 @@
 							<th>Demag Temperature</th>
 							<th>Demag Field </th>
 							<th>Ambient Temperature</th>
+							
+
+						
+
+							<!-- Measurement Info -->
 							<th>Inclination</th>
 							<th>Declination</th>
 							<th>Magnetization Moment</th>
@@ -253,7 +305,7 @@
 							<th>Analyst Names</th>
 						</tr>
 					</thead>
-					<tfoot>
+					<tfoot id="fillMe">
 						<td class="magicFoot" name="0"> Edit All </td>
 						<td class="magicFoot" name="1"> Edit All </td>
 						<td class="magicFoot" name="2"> Edit All </td>
@@ -278,13 +330,21 @@
 						<td class="magicFoot" name="21"> Edit All </td>
 						<td class="magicFoot" name="22"> Edit All </td>
 						<td class="magicFoot" name="23"> Edit All </td>
+						<td class="magicFoot" name="24"> Edit All </td>
+						<td class="magicFoot" name="25"> Edit All </td>
+						<td class="magicFoot" name="26"> Edit All </td>
+						<td class="magicFoot" name="27"> Edit All </td>
+						<td class="magicFoot" name="28"> Edit All </td>
+						<td class="magicFoot" name="29"> Edit All </td>
+						<td class="magicFoot" name="30"> Edit All </td>
+						<td class="magicFoot" name="31"> Edit All </td>
+						<td class="magicFoot" name="32"> Edit All </td>
 					</tfoot>
 
 				</table>
 			<p><button id="tableExport" type="button" onClick="exportTable()" title="Export to Excel Sheet"> Download table to Excel Sheet </button>
 
 		<p><b> Underlined columns are REQUIRED by MagIC </b>
-		<p> Method codes: give <b>LP-DIR-AF</b> or <b>LP-DIR-TH</b> for alternating field and thermal demagnetization respectively.
 		<p> Sample name is split by special characters e.g. <b>Site.Sample.Specimen</b> or <b>Site-Sample-Specimen</b>. 
 			</div>
 			</div>
