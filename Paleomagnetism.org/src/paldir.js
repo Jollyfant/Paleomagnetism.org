@@ -30,6 +30,7 @@ var data = new Array();
 var globalSticky = new Array();
 var exportData = new Array();
 var version = 'vALPHA.1512.1';
+var table;
 
 /* FUNCTION getSampleIndex
  * Description: gets sample name from specimen scroller and returns it
@@ -46,6 +47,84 @@ function getSampleIndex() {
 	}
 	
 }
+
+
+var MagIC = function () {
+	
+	if(table) {
+		table.destroy();
+		$( ".magicFoot").unbind( "click" );
+		$( "#magicTable tbody").unbind( "click" );
+	}
+
+	var magicArray = new Array();
+	for(var i = 0; i < data.length; i++) {
+
+		for(var j = 0; j < data[i].data.length; j++) {
+
+			var name = data[i].name.split(/[.,-]+/);
+
+			var direction = dir(data[i].data[j].x, data[i].data[j].y, data[i].data[j].z);
+			var magicObject = [
+				'...', 					//'Location Name': 
+				name[0], 				//'Site Name': 
+				name[1] || '...', 				//'Sample Name': 
+				name[2] || '...', 		//'Specimen Name': 
+				'...', 					//'Synthetic Material Name': 
+				'Demagnetization', 			//'Experiment Name': 
+				data[i].data[j].visible ? 'g' : 'b', 	//'Measurement Flag': 
+				's', 					//'Measurement Standard Flag': 
+				data[i].info, 				//'Measurement Number': 
+				'LP-DIR', 				//'Method Codes': '?',
+				'...', 					//'Instrument Code': '?',
+				'...', 					//'Citation Names': 
+				'...', 					//'Measurement Number of Positions': '?',
+				0, 					//Measurement Elevation
+				data[i].strat || '...', 		//Measurement Stratigraphic Height
+				Number(data[i].data[j].step) + 273, 	//Lab Treatment Temperature
+				Number(data[i].data[j].step) / 1000, 	//Lab Treatment DC Field
+				20 + 273, 				//Measurement Temperature
+				direction.inc.toFixed(2), 		//Measurement Inclination
+				direction.dec.toFixed(2), 		//Measurement Declination
+				direction.R.toFixed(2), 		//Measurement Magnetization Moment
+				(direction.R/10.5).toFixed(2), 		//Measurement Magnetization Volume
+				'Paleomagnetism.org', 			//MagIC Software Packages:
+				'...'
+			]
+
+		magicArray.push(magicObject);
+	}	}
+
+	$("#magicTable").show();
+
+    table = $('#magicTable').DataTable( {
+        data: magicArray,
+	"scrollX": true,
+    } );
+
+
+	$(".magicFoot").click( function () {
+		var columnIndex = $(this).attr('name');
+		var table = $('#magicTable').DataTable();
+		var numRows = table.rows().count();
+		var input = prompt('Change input for all columns.');
+		if(input) {
+			for(var i = 0; i < numRows; i++) {
+				table.cell(i, columnIndex).data(input);
+			}
+		}
+	});
+
+	$('#magicTable tbody').on( 'click', 'td', function () {
+		var rowIndex = table.cell(this).index().row
+		var input = prompt('Change input text');
+		if(input) {
+			table.cell(this).data(input);
+		}
+	} );
+
+}
+
 
 /* 
  * FUNCTION getSelectedStep
@@ -98,6 +177,7 @@ function moveDemagnetizationStep ( direction ) {
 //Fire on DOM ready
 $(function() {
 	
+
 	$("#hideControls").button({
 		icons: { primary: "ui-icon-close"},
 		text: false
@@ -270,6 +350,12 @@ $(function() {
 	 */
 	$(document).keydown(function(e) {
 		
+		// Return if not in interpretation tab
+		var tabID = $("#tabs").tabs('option', 'active');
+		if(tabID !== 1) {
+			return;
+		}
+	
 		//Allow left and right to be moved
 		//Delegate to the clicking the < (left) and > (right) button
 		switch(e.which) {
@@ -1033,7 +1119,8 @@ function fitCirclesToDirections() {
 						'dec': dec, 
 						'inc': inc,
 						'sample': sample,
-						'strat': strat
+						'strat': strat,
+						'type': 'dir'
 					});
 
 					//Highcharts data array for plotting the set points, these can be used directly
@@ -1248,14 +1335,15 @@ function fitCirclesToDirections() {
 		exportData.push({
 			'dec': direction.dec, 
 			'inc': direction.inc,
-			'sample': circleInfo[i].sample,
-			'strat': circleInfo[i].strat
+			'sample': circleInfo[i].name,
+			'strat': circleInfo[i].strat,
+			'type': 'gc'
 		});
 
 		//Data array for points fitted on great circle
 		pointsCircle.push({
 			'x': direction.dec, 
-			'sample': circleInfo[i].sample,
+			'sample': circleInfo[i].name,
 			'y': eqArea(direction.inc), 
 			'inc': direction.inc,
 			'marker': {

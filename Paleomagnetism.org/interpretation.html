@@ -29,7 +29,13 @@
 	<!-- Paleomagnetism.org functions -->
 	<script src="./src/core.js"></script> <!-- Paleomagnetism.org Core Functions -->
 	<script src="./src/paldir.js"></script> <!-- Main Script for Interpretation Portal -->
-	
+
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/ju/dt-1.10.10/datatables.min.css"/>
+ 
+<script type="text/javascript" src="https://cdn.datatables.net/s/ju/dt-1.10.10/datatables.min.js"></script>
+	<script src="./src/libs/edit.js"></script> <!-- Main Script for Interpretation Portal -->
+
 	<link rel="shortcut icon" type="image/x-icon" href="images/icon.ico" />
 	<title> Paleomagnetism.org - Interpretation Portal </title>
 	
@@ -93,6 +99,7 @@
 				<li><a href="#interpretationTab" title="General information"> Interpretation </a></li>
 				<li><a href="#fittingTab" title="General information"> Direction Fitting </a></li>
 				<li><a href="#advancedTab" title="General information"> Advanced Options </a></li>
+				<li><a href="#magicTab" title="General information"> Raw Magic Exporting </a></li>
 			</ul>
 	
 			<div id="homeTab">
@@ -200,12 +207,77 @@
 					<p> <input type="checkbox" id="labelFlag"><label for="labelFlag"><b> Show data labels for demagnetization steps</b> </label>
 					<p> <input type="checkbox" id="originFlag"><label for="originFlag"><b> Include origin as point</b> </label>
 					<p> <button id="showControls"> Show Controls </button>
-					
+
 					<h2> Reset Application </h2>
 					<p><button id="clearStorage" type="button" onClick="clearStorage()" title="Clear local storage">Clear local storage</button>
 					<p>	Clearing location storage will remove all saved sites and reload the application. Please remember to export your instance before resetting the application if you wish to save your data.
 				</div>
 			</div>
+
+			<!-- DIRECTION FITTING TAB -->
+			<div id="magicTab">
+					<p><button id="magICexport" type="button" onClick="MagIC()" title="Export to MagIC format"> Format Raw Demagnetization Data to MagIC Table </button>
+					<table class="display compact" style="text-align: center; display: none;" id="magicTable">
+					<thead>
+						<tr>
+							<th title="Site location (text)"><u>Location</u></th>
+							<th title="Site initials (text)"><u>Site Name</u></th>
+							<th title="Sample initials (text)"><u>Sample</u></th>
+							<th title="Specimen indicator (text)"><u>Specimen</u></th>
+							<th title="No clue what this is"><u>Synthetic Material Name</u></th>
+							<th title="Type of experiment"><u>Experiment Name</u></th>
+							<th title="Good (g) or bad (b) measurement"><u>Measurement Flag</u></th>
+							<th title="Standard (s) or unknown (u) measurement"><u>Measurement Standard Flag</u></th>
+							<th title="Measurement identifier or lab number"><u>Measurement Number</u></th>
+							<th title="list of method codes"><u>Method Codes</u></th>
+							<th><u>Instrument Code</u></th>
+							<th><u>Reference</u></th>
+							<th>Number of Positions</th>
+							<th>Elevation</th>
+							<th>Stratigraphic Height</th>
+							<th>Demag Temperature</th>
+							<th>Demag Field </th>
+							<th>Ambient Temperature</th>
+							<th>Inclination</th>
+							<th>Declination</th>
+							<th>Magnetization Moment</th>
+							<th>Magnetization Volume</th>
+							<th>Software</th>
+							<th>Analyst Names</th>
+						</tr>
+					</thead>
+					<tfoot>
+						<td class="magicFoot" name="0"> Edit All </td>
+						<td class="magicFoot" name="1"> Edit All </td>
+						<td class="magicFoot" name="2"> Edit All </td>
+						<td class="magicFoot" name="3"> Edit All </td>
+						<td class="magicFoot" name="4"> Edit All </td>
+						<td class="magicFoot" name="5"> Edit All </td>
+						<td class="magicFoot" name="6"> Edit All </td>
+						<td class="magicFoot" name="7"> Edit All </td>
+						<td class="magicFoot" name="8"> Edit All </td>
+						<td class="magicFoot" name="9"> Edit All </td>
+						<td class="magicFoot" name="10"> Edit All </td>
+						<td class="magicFoot" name="11"> Edit All </td>
+						<td class="magicFoot" name="12"> Edit All </td>
+						<td class="magicFoot" name="13"> Edit All </td>
+						<td class="magicFoot" name="14"> Edit All </td>
+						<td class="magicFoot" name="15"> Edit All </td>
+						<td class="magicFoot" name="16"> Edit All </td>
+						<td class="magicFoot" name="17"> Edit All </td>
+						<td class="magicFoot" name="18"> Edit All </td>
+						<td class="magicFoot" name="19"> Edit All </td>
+						<td class="magicFoot" name="20"> Edit All </td>
+						<td class="magicFoot" name="21"> Edit All </td>
+						<td class="magicFoot" name="22"> Edit All </td>
+						<td class="magicFoot" name="23"> Edit All </td>
+					</tfoot>
+				</table>
+		<p><b> Underlined columns are REQUIRED by MagIC </b>
+		<p> Method codes: give <b>LP-DIR-AF</b> or <b>LP-DIR-TH</b> for alternating field and thermal demagnetization respectively.
+		<p> Sample name is split by special characters e.g. <b>Site.Sample.Specimen</b> or <b>Site-Sample-Specimen</b>. 
+			</div>
+
 		</div>
 		
 		<hr>
