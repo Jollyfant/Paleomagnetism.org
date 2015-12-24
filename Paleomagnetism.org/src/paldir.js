@@ -123,8 +123,31 @@ var MagIC = function () {
 		}
 	} );
 
+	$("#magicDiv").show();
+	table.draw();
+
 }
 
+
+var exportTable = function () {
+
+	var table = $('#magicTable').DataTable();
+	var csv = '';
+	var data = table.rows().data();
+	var k = table.columns().header().to$();
+	var headers = new Array();
+	for(var i = 0; i < k.length; i++) {
+		headers.push(k[i].textContent);
+	}
+	csv += headers.join(', ');
+	csv += '\n';
+	for(var i = 0; i < data.length; i++) {
+		csv += data[i].join(', ');
+		csv += '\n';
+	}
+
+	dlItem(csv, 'xls');
+}
 
 /* 
  * FUNCTION getSelectedStep

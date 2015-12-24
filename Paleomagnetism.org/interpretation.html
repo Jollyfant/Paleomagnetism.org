@@ -14,7 +14,9 @@
 	<link href="./css/paldir.css" type="text/css" rel="stylesheet" /> <!-- paleomagnetism.org Interpretation Portal Stylesheet -->
 	<link href="./css/pMagJS.css" type="text/css" rel="stylesheet" /> <!-- paleomagnetism.org Stylesheet -->
 	<link href="./src/libs/notiny-master/src/notiny.css" rel="stylesheet"> <!-- Notification style sheet (Notiny) -->
-	
+
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/ju/dt-1.10.10/datatables.min.css"/>
+
 	<!-- Supporting Libraries -->
 	<script src="./src/libs/jQuery/jquery-1.11.1.js"></script> <!-- jQuery -->
 	<script src="./src/libs/jQuery/jquery-ui.js"></script> <!-- jQuery UI -->
@@ -31,10 +33,7 @@
 	<script src="./src/paldir.js"></script> <!-- Main Script for Interpretation Portal -->
 
 
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/ju/dt-1.10.10/datatables.min.css"/>
- 
-<script type="text/javascript" src="https://cdn.datatables.net/s/ju/dt-1.10.10/datatables.min.js"></script>
-	<script src="./src/libs/edit.js"></script> <!-- Main Script for Interpretation Portal -->
+	<script type="text/javascript" src="https://cdn.datatables.net/s/ju/dt-1.10.10/datatables.min.js"></script>
 
 	<link rel="shortcut icon" type="image/x-icon" href="images/icon.ico" />
 	<title> Paleomagnetism.org - Interpretation Portal </title>
@@ -216,7 +215,13 @@
 
 			<!-- DIRECTION FITTING TAB -->
 			<div id="magicTab">
+					<div class="information">
+					<h1>Interpretation Portal: MagIC exporting </h1>
+					<p> This module allows users to export a table that can be ingested to the MagIC database. Currently, we only provide functionality for parsing <b>raw demagnetization data</b> to the expect MagIC format. Interpretations can be shared through the Paleomagnetism.org application .dir files. Additional fields are required to be filled out by the user. It is the users responsibility the data is entered correctly.
+					</div>
 					<p><button id="magICexport" type="button" onClick="MagIC()" title="Export to MagIC format"> Format Raw Demagnetization Data to MagIC Table </button>
+					<div id="magicDiv" style="display: none;">
+
 					<table class="display compact" style="text-align: center; display: none;" id="magicTable">
 					<thead>
 						<tr>
@@ -272,12 +277,15 @@
 						<td class="magicFoot" name="22"> Edit All </td>
 						<td class="magicFoot" name="23"> Edit All </td>
 					</tfoot>
+
 				</table>
+			<p><button id="tableExport" type="button" onClick="exportTable()" title="Export to Excel Sheet"> Download table to Excel Sheet </button>
+
 		<p><b> Underlined columns are REQUIRED by MagIC </b>
 		<p> Method codes: give <b>LP-DIR-AF</b> or <b>LP-DIR-TH</b> for alternating field and thermal demagnetization respectively.
 		<p> Sample name is split by special characters e.g. <b>Site.Sample.Specimen</b> or <b>Site-Sample-Specimen</b>. 
 			</div>
-
+			</div>
 		</div>
 		
 		<hr>
