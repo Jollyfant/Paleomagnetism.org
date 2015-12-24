@@ -159,7 +159,7 @@ var exportTable = function () {
  * Output: integer of selected step (from 0 to N steps)
  */
 var getSelectedStep = function () {
-	return parseInt($(liSelected).index() - 1);
+	return parseInt($(liSelected).index());
 }
 
 /*
@@ -173,7 +173,7 @@ function moveDemagnetizationStep ( direction ) {
 	"use strict";
 	
 	var index = getSelectedStep();
-	
+	console.log(index);
 	//Remove selected class from this point
 	//Get previous or next point
 	//Check if we are at the top (or bottom for up) of the list, if so go to the end (begin)
