@@ -200,7 +200,15 @@ function moveDemagnetizationStep ( direction ) {
 //Fire on DOM ready
 $(function() {
 	
-
+	
+	$("#demagType").selectmenu({
+		'select': function () {
+			var sample = getSampleIndex();
+			data[sample].type = $(this).val();
+			setStorage();
+		}
+	});
+	
 	$("#hideControls").button({
 		icons: { primary: "ui-icon-close"},
 		text: false
@@ -1709,16 +1717,19 @@ function showData( sample ) {
 		return;
 	}
 	
+	$("#demagType").val(data[sample].type || 'UNKNOWN');
+	$("#demagType").selectmenu("refresh");
+
 	//Add steps to list
-	$('#stepWalk').html('<h2>Steps</h2>');
+	$('.steps').html(''); 
 	for(var i = 0; i < data[sample].data.length; i++) {
 		var step = data[sample].data[i].step;
-		$('#stepWalk').append('<li value="' + step + '">' + step + '</li>');
+		$('.steps').append('<li value="' + step + '">' + step + '</li>');
 	}
-	$('#stepWalk').append('<br>'); 
+	$('.steps').append('<br>'); 
 	
 	//Define li for one step (global)
-	li = $("#stepWalk li") 
+	li = $(".steps li") 
 	
 	//Loop over all steps and check for visible/include methods
 	//Having class "show" means hidden -- hopefully fix this someday (sorry)
