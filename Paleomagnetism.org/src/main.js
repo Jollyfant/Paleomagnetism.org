@@ -262,8 +262,6 @@ var addSite = function ( edit ) {
 		}
 	}
 
-	console.log(metaData, sites[metaData.name].userInput.metaData);
-
 	if(edit) {
 		$.extend(metaData, sites[metaData.name].userInput.metaData);
 	}
