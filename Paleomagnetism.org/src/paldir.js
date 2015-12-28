@@ -173,7 +173,6 @@ function moveDemagnetizationStep ( direction ) {
 	"use strict";
 	
 	var index = getSelectedStep();
-	console.log(index);
 	//Remove selected class from this point
 	//Get previous or next point
 	//Check if we are at the top (or bottom for up) of the list, if so go to the end (begin)
