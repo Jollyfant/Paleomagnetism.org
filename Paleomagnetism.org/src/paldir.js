@@ -2814,6 +2814,8 @@ function getEqualAreaFittedCSV(self) {
 	
 	csv += self.userOptions.chart.coordinates;
 	
+	console.log(self.series);
+
 	csv += lineDelimiter + lineDelimiter;	
 	
 	var row = ['Specimen', 'Declination', 'Inclination', 'Type', 'Information'];
@@ -2825,7 +2827,7 @@ function getEqualAreaFittedCSV(self) {
 	}	
 	
 	for(var i = 0; i < self.series[1].data.length; i++) {
-		row = [self.series[0].data[i].options.sample, self.series[1].data[i].x, self.series[1].data[i].inc, 'Fitted Direction', self.series[1].data[i].info];
+		row = [self.series[1].data[i].options.sample, self.series[1].data[i].x, self.series[1].data[i].inc, 'Fitted Direction', self.series[1].data[i].info];
 		csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;		
 	}	
 	
