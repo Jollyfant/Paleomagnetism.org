@@ -2813,9 +2813,6 @@ function getEqualAreaFittedCSV(self) {
 	var csv = "";
 	
 	csv += self.userOptions.chart.coordinates;
-	
-	console.log(self.series);
-
 	csv += lineDelimiter + lineDelimiter;	
 	
 	var row = ['Specimen', 'Declination', 'Inclination', 'Type', 'Information'];
