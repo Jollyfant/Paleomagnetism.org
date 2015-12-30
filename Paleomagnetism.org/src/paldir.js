@@ -2132,7 +2132,7 @@ function zijderveld ( samples ) {
 		'tooltip': {
 			'useHTML': true,
 			'formatter': function () {
-				return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>Declination: </b>' + this.point.dec.toFixed(1) + '<br> <b>Inclination: </b>' + this.point.inc.toFixed(1) + '<br> <b>Intensity: </b>' + this.point.intensity.toFixed(1) + 'µA/m';
+				return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>Declination: </b>' + this.point.dec.toFixed(1) + '<br> <b>Inclination: </b>' + this.point.inc.toFixed(1) + '<br> <b>Intensity: </b>' + this.point.intensity.toFixed(3) + 'µA/m';
 			}
 		},
 		'subtitle': {
@@ -2328,7 +2328,7 @@ function intensity ( sample ) {
         },
 		'tooltip': {
 			'formatter': function () {
-				return '<b>Demagnetization Step: </b>' + this.x + '<br> <b>Intensity </b>' + this.y.toFixed(1)
+				return '<b>Demagnetization Step: </b>' + this.x + '<br> <b>Intensity </b>' + this.y.toFixed(3)
 			}
 		},
         'xAxis': {
