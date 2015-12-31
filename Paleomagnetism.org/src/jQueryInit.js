@@ -473,6 +473,10 @@ function jQueryInit (page) {
 		updateSiteSelector();
 	});
 
+	$('#saveUnflat').click( function () {
+		module.EI.saveUnflattened();
+	});
+
 	//BUTTON: "Delete Selected Sites"
 	$('#delete').click( function() {
 		removeSite();

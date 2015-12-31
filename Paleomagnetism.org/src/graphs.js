@@ -1227,7 +1227,7 @@ function eqAreaFoldLeft ( data, container, subtitle, type ) {
  *
  *
  */
-function EIbootstraps (data, time, nb, input) {
+function EIbootstraps (data, time, nb, input, name) {
 	
 	//Data bucket for TK03.GAD polynomial [x, y] data
 	//Get the expected elongation from inclination 0 to 90
@@ -1278,9 +1278,12 @@ function EIbootstraps (data, time, nb, input) {
 			}
 		})
 	}
-	
+
 	var chartOptions = {
 		'chart': {
+			'input': input,
+			'site': name,
+			'flattening': data[0].length === 0 ? 0 : data[0][data[0].length - 1].f,
 			'id': 'EIboot',
 			'renderTo': 'EIbootstraps',
 			'marginRight': 200,
@@ -1397,9 +1400,19 @@ function EIbootstraps (data, time, nb, input) {
         'series': mySeries
     }
 	
-	//Initialize chart with specified options.
-	new Highcharts.Chart(chartOptions); 
 
+
+	//Initialize chart with specified options.
+	var chart = new Highcharts.Chart(chartOptions); 
+
+	if(chart) {
+		var value = chart.userOptions.chart.flattening;
+		if(value) {
+			$("#saveUnflat").show();
+		} else {
+			$("#saveUnflat").hide();
+		}
+	}
 }
 
 /*

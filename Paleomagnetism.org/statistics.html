@@ -322,12 +322,12 @@ $(function () {
 					</div>
 					<div id="decTab">
 						<div id="decContainer" style="height: 600px;"></div>
-						<b> Calculated rotation and confidence </b>
+						<b> Calculated rotation and confidence excluding age error </b>
 						<p><div id="tableDeclination" class="tableBorder"></div>
 					</div>
 					<div id="incTab">
 						<div id="incContainer" style="height: 600px;"></div>
-						<b> Calculated flattening and confidence </b>
+						<b> Calculated flattening and confidence excluding age error </b>
 						<p><div id="tableInclination" class="tableBorder"></div>
 					</div>
 					<div id="mapTab">
@@ -451,6 +451,7 @@ $(function () {
 			
 			<p>
 			<div id="EIbootstraps"></div>
+			<div style="text-align: center;"><button id="saveUnflat" style="display: none;">Save Unflattened Inclination</button></div>
 			<div id="EICDF"></div>
 			<div id="EIInfo" style="margin: 10px; font-size: 15px; display: none;">
 				<div class="caption">

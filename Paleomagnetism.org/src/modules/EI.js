@@ -232,7 +232,7 @@ function lastIndex( array ) {
 			$("#EIPerc").html("Done!");
 			
 			//Call plotting functions (bootstrap and CDF figure)
-			EIbootstraps(bootstraps, time, intersectionNum, data);
+			EIbootstraps(bootstraps, time, intersectionNum, data, siteNames);
 			EICDF(cdfData, originalInclination, unflattenedInclination, averageInclination, lower, upper);
 			
 			//Free running lock
@@ -334,3 +334,48 @@ module.EI.unflattenDirections = function ( data ) {
 		'len': 0
 	};
 }
+
+/*
+ * FUNCTION module.EI.saveUnflattened
+ * Description: Saves unflattened directions at f to a new site
+ * Input: NULL
+ * Output: VOID (Calls site constructor)
+ */
+module.EI.saveUnflattened = function () {
+
+	var chart = $("#EIbootstraps").highcharts();
+	if(!chart) return;
+
+	// We saved the unflattening @ intersection with some other site info
+	var input = chart.userOptions.chart.input;
+	var flattening = chart.userOptions.chart.flattening;
+	var name = chart.userOptions.chart.site;
+
+	// Unflatten
+	var newDatArray = new Array();
+	for(var i = 0; i < input.length; i++) {
+		newDatArray.push([input[i][0],  (Math.atan(Math.tan(input[i][1]*rad) / flattening))/rad, input[i][2], input[i][3], input[i][4]]);
+	}
+
+	var meta = JSON.parse(JSON.stringify(sites[name].userInput.metaData));
+	var name = prompt('Enter a site name');
+	if(!name) {
+		notify('failure', 'Please enter a name');
+		return;
+	}
+	if(sites.hasOwnProperty(name)) {
+		notify('failure', 'A site with this name already exists!');
+		return;
+	}
+
+	// Copy old meta-data and fix with new info (name / type)
+	meta.name = name;
+	meta.type += ' (EI)';
+
+	sites[name] = new site(meta, newDatArray, true);
+	setStorage();	
+}
+
+
+
+

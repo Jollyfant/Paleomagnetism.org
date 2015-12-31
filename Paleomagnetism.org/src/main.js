@@ -1119,7 +1119,7 @@ var processUserInput = function ( data, type, name ) {
 			
 			//Regex for splitting on spaces, tabs, and commas; p becomes an array p[c0, c1, c2, c3, c4] where c represents column
 			//Also remove double spaces
-			var p = lines[i].split(/[,\s\t]+/);
+			var p = lines[i].split(/[,\t]+/);
 			var numberInput = p.length;
 			p = $.grep(p, function(n) { 
 				return(n) 
