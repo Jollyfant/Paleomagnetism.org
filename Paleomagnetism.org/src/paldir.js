@@ -3149,7 +3149,6 @@ function importUtrecht(applicationData, text) {
 function importApplication(applicationData, text) {
 
 	importedData = JSON.parse(text);
-	var nSamples = importedData.length;
 	for(var i = 0; i < importedData.length; i++) {
 		var skip = false;
 		for(var l = 0; l < applicationData.length; l++) {
@@ -3158,14 +3157,11 @@ function importApplication(applicationData, text) {
 			}
 		}
 		if(skip) {
-			nSamples--;
 			notify('failure', 'Found duplicate ' + importedData[i].name + '; skipping specimen');
 			continue;
 		}
 		applicationData.push(importedData[i]);
 	}
-	
-	notify('success', 'Importing was succesful; added ' + nSamples + ' samples');	
 	return applicationData;	
 }
 
@@ -3311,7 +3307,6 @@ function importMac (applicationData, text) {
 function importDefault ( applicationData, text ) {
 
 	var blocks = text.split(/9999[\n\r]/);
-	var nSamples = blocks.length; 
 	
 	for(var i = 0; i < blocks.length; i++) {
 
@@ -3365,7 +3360,6 @@ function importDefault ( applicationData, text ) {
 		
 		if(skip) {
 			notify('failure', 'Found duplicate ' + name + '; skipping specimen');
-			nSamples--;
 			continue;
 		}
 		
@@ -3379,10 +3373,8 @@ function importDefault ( applicationData, text ) {
 			'bedStrike'		: bedStrike,
 			'bedDip'		: bedDip,
 			'data'			: parsedData
-		})
+		});
 	}
-	
-	notify('success', 'Importing was succesful; added ' + nSamples + ' samples');
 	return applicationData;
 }
 /* IMPORTING / PARSING FUNCTIONS
