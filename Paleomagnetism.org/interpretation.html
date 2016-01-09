@@ -55,6 +55,7 @@
 			<select id="importFormats" title="Select an importing format" style="text-align: center; width: 150px;">
 				<option value="UTRECHT"> Utrecht (.TH, .AF) </option>
 				<option value="MUNICH"> Munich </option>
+				<option value="PALEOMAC"> PaleoMac </option>
 				<!-- <option value="SPINNER"> Spinner </option> -->
 				<!-- <option value="DEFAULT"> Default </option> -->
 			</select>
@@ -118,7 +119,7 @@
 						<button id="right" style="font-family: times;"><span style="font-size: 22px;">  > </span></button>
 					</div>
 				</div>
-				<input style="display: none" id="file-type" type="file" size="4" name="file" onChange="importing(event)"/>
+				<input multiple style="display: none" id="file-type" type="file" size="4" name="file" onChange="importing(event)"/>
 				<input style="display: none" id="file-type2" type="file" size="4" name="file" onChange="importing(event, 'APP')"/>
 				<p>
 

@@ -3256,6 +3256,66 @@ function importSpinner(applicationData, text) {
 	}
 }
 
+/*
+ * Importing function for PaleoMac
+ */
+function importMac (applicationData, text) {
+	var lines = text.split(/[\n\r]/);
+	console.log(text);
+	lines = $.grep(lines, function(n) { 
+		return n;
+	});
+
+	var header = lines[0].split(/[,\s\t]+/);
+	var sampleName = header[0];
+	
+	// Get header values
+	// values will be [a, b, s, d, [v]]
+	var parameters = lines[0].split('=');
+	var values = new Array();
+	for(var i = 1; i < parameters.length; i++) {
+		var value = parameters[i].match(/[+-]?\d+(\.\d+)?/g);
+		values.push(value);
+	}
+	
+	/*
+	 * Their coordinate system
+	 */
+	var coreAzi = Number(values[0]);	
+	var coreDip = 90 - Number(values[1]);
+	var bedStrike = Number(values[2]);
+	var bedDip = Number(values[3]);
+
+	var parsedData = new Array();
+	
+	// Skip first two and last line
+	for(var i = 2; i < lines.length - 1; i++) {
+		var parameters = lines[i].split(/[,\s\t]+/);
+		parsedData.push({
+			'visible'	: true, 
+			'include'	: false,
+			'step'		: parameters[0],
+			'x'			: 10e6 * Number(parameters[1]),
+			'y'			: 10e6 * Number(parameters[2]),
+			'z'			: 10e6 * Number(parameters[3]),
+			'a95'		: Number(parameters[9]),
+			'info'		: 'No Information'
+		});	
+	}
+	applicationData.push({
+		'GEO'			: [],
+		'TECT'			: [],
+		'interpreted'	: false,
+		'name'			: sampleName,
+		'coreAzi'		: coreAzi,
+		'coreDip'		: coreDip,
+		'bedStrike'		: bedStrike,
+		'bedDip'		: bedDip,
+		'data'			: parsedData
+	})
+	return applicationData;
+}
+
 function importDefault ( applicationData, text ) {
 
 	var blocks = text.split(/9999[\n\r]/);
@@ -3352,45 +3412,55 @@ function importing (event, format)  {
 		var format = $("#importFormats").val();
 	}
 	
+	//Not appending, reset data array
+	var append = $('#appendFlag').prop('checked');
+	if(!append) {
+		data = new Array();
+	}
+	
 	//Filehandler API; handles the file importing
     var input = event.target;
     var reader = new FileReader();
-	
-	//Single input
-    reader.readAsText(input.files[0]);
-	reader.onload = function () {
-		
-		var text = reader.result;
-		
-		//Not appending, reset data array
-		var append = $('#appendFlag').prop('checked');
-		if(!append) {
-			data = new Array();
-		}
+	var index;
+	//Multiple input
+	(function readFile(index) {
 
-		//Parsing formats refer to own functions
-		//Contact us if you would like your custom format to be added
-		//See the importUtrecht function as an example parser
-		if(format === 'UTRECHT') {
-			data = importUtrecht(data, text);
-		} else if(format === 'APP') {
-			data = importApplication(data, text);
-		} else if(format === 'SPINNER') {
-			notify('failure', 'Spinner input is currently not supported.');
-			return;
-		} else if(format === 'DEFAULT') {
-			data = importDefault(data, text);
-		} else if(format === 'MUNICH') {
-			data = importMunich(data, text);
+		reader.readAsText(input.files[index]);
+		reader.onload = function () {
+			
+			var text = reader.result;
+	
+			//Parsing formats refer to own functions
+			//Contact us if you would like your custom format to be added
+			//See the importUtrecht function as an example parser
+			if(format === 'UTRECHT') {
+				data = importUtrecht(data, text);
+			} else if(format === 'APP') {
+				data = importApplication(data, text);
+			} else if(format === 'SPINNER') {
+				notify('failure', 'Spinner input is currently not supported.');
+				return;
+			} else if(format === 'DEFAULT') {
+				data = importDefault(data, text);
+			} else if(format === 'MUNICH') {
+				data = importMunich(data, text);
+			} else if(format === 'PALEOMAC') {
+				data = importMac(data, text);
+			}
+			
+			index++;
+			
+			if(index < input.files.length) {
+				readFile(index);
+			} else {
+				//Refresh the specimen scroller with the new data
+				refreshSpecimenScroller();
+	
+				//Save application
+				setStorage();				
+			}
 		}
-		
-		//Refresh the specimen scroller with the new data
-		refreshSpecimenScroller();
-	
-		//Save application
-		setStorage();
-	
-	}
+	})(0);
 }
 
 /*
