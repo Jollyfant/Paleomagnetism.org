@@ -3276,6 +3276,9 @@ function importMac (applicationData, text) {
 	var parsedData = new Array();
 	
 	// Skip first two and last line
+	// Intensity is in A/m (V = 10e-6m3) so divide
+	// Display in microamps (1e6)
+	// Scale by 10.5 because I'm dumb -> hardcoded this volume in intensity routine (need to fix this)
 	for(var i = 2; i < lines.length - 1; i++) {
 		var parameters = lines[i].split(/[,\s\t]+/);
 		if(Number(parameters[4]) === 0) continue;
@@ -3283,9 +3286,9 @@ function importMac (applicationData, text) {
 			'visible'	: true, 
 			'include'	: false,
 			'step'		: parameters[0],
-			'x'			: 10.5 * 10e4 * Number(parameters[1]),
-			'y'			: 10.5 * 10e4 * Number(parameters[2]),
-			'z'			: 10.5 * 10e4 * Number(parameters[3]),
+			'x'			: 10.5 * 1e6 * Number(parameters[1]) / 10e-6,
+			'y'			: 10.5 * 1e6 * Number(parameters[2]) / 10e-6,
+			'z'			: 10.5 * 1e6 * Number(parameters[3]) / 10e-6,
 			'a95'		: Number(parameters[9]),
 			'info'		: 'No Information'
 		});	
