@@ -3282,6 +3282,7 @@ function importMac (applicationData, text) {
 	// Skip first two and last line
 	for(var i = 2; i < lines.length - 1; i++) {
 		var parameters = lines[i].split(/[,\s\t]+/);
+		if(Number(parameters[4]) === 0) continue;
 		parsedData.push({
 			'visible'	: true, 
 			'include'	: false,
