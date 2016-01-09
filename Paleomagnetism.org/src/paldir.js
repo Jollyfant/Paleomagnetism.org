@@ -2956,7 +2956,6 @@ function importMunich(applicationData, text) {
 	
 	var lines = text.split(/[\n]/);
 	var parsedData = new Array();
-	var nSamples = 1;
 	
 	for(var k = 0; k < 1; k++) {
 		for(var i = 0; i < lines.length; i++) {
@@ -3004,7 +3003,6 @@ function importMunich(applicationData, text) {
 		
 		if(skip) {
 			notify('failure', 'Found duplicate ' + name + '; skipping specimen');
-			nSamples--;
 			continue;
 		}
 	
@@ -3022,8 +3020,6 @@ function importMunich(applicationData, text) {
 			'data'			: parsedData
 		});
 	}
-
-	notify('success', 'Importing was succesful; added ' + nSamples + ' samples');
 	return applicationData;
 }
 
@@ -3039,7 +3035,6 @@ function importUtrecht(applicationData, text) {
 	//Fixed problem where script would split on every 9999 (also sample intensities)
 	var blocks = text.split(/9999[\n\r]/);
 	var nSpecimens = blocks.length - 1;
-	var nSamples = nSpecimens;
 	
 	//Loop over all data blocks and split by new lines
 	for(var i = 0; i < nSpecimens; i++) {
@@ -3129,7 +3124,6 @@ function importUtrecht(applicationData, text) {
 		
 		if(skip) {
 			notify('failure', 'Found duplicate ' + name + '; skipping specimen');
-			nSamples--;
 			continue;
 		}
 		
@@ -3147,9 +3141,7 @@ function importUtrecht(applicationData, text) {
 			'data'			: parsedData
 		})
 	}
-	
-	notify('success', 'Importing was succesful; added ' + nSamples + ' samples');
-	
+		
 	return applicationData;
 	
 }
@@ -3261,7 +3253,6 @@ function importSpinner(applicationData, text) {
  */
 function importMac (applicationData, text) {
 	var lines = text.split(/[\n\r]/);
-	console.log(text);
 	lines = $.grep(lines, function(n) { 
 		return n;
 	});
@@ -3295,9 +3286,9 @@ function importMac (applicationData, text) {
 			'visible'	: true, 
 			'include'	: false,
 			'step'		: parameters[0],
-			'x'			: 10e6 * Number(parameters[1]),
-			'y'			: 10e6 * Number(parameters[2]),
-			'z'			: 10e6 * Number(parameters[3]),
+			'x'			: 10.5 * 10e4 * Number(parameters[1]),
+			'y'			: 10.5 * 10e4 * Number(parameters[2]),
+			'z'			: 10.5 * 10e4 * Number(parameters[3]),
 			'a95'		: Number(parameters[9]),
 			'info'		: 'No Information'
 		});	
@@ -3418,10 +3409,13 @@ function importing (event, format)  {
 		data = new Array();
 	}
 	
+	var initialSize = data.length; 
+
 	//Filehandler API; handles the file importing
     var input = event.target;
     var reader = new FileReader();
 	var index;
+	
 	//Multiple input
 	(function readFile(index) {
 
@@ -3457,7 +3451,8 @@ function importing (event, format)  {
 				refreshSpecimenScroller();
 	
 				//Save application
-				setStorage();				
+				setStorage();
+				notify('success', 'Importing was succesful; added ' + (data.length - initialSize) + ' samples');		
 			}
 		}
 	})(0);
@@ -3494,15 +3489,14 @@ var clearStorage = function () {
 }
 
 var setStorage = function() {
-
 		try {
 			var storeObj = JSON.stringify(data); //parse JSON encoded object
+			if(localStorage) {
+				localStorage.setItem('InterPortal', storeObj);				
+			}
 		} catch (err) {
 			notify('failure', 'Failure writing data to local storage: ' + err);
-		}
-		
-		if(localStorage) {
-			localStorage.setItem('InterPortal', storeObj);
+			notify('failure', 'Changes will not be saved! Please export manually!');
 		}
 }
 
