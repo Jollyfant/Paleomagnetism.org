@@ -1168,7 +1168,7 @@ function fitCirclesToDirections() {
 				maxAngle = angles[i];
 			}
 		}
-		if(maxAngle < 0.1) {
+		if(maxAngle < 0.001) {
 			break;
 		}
 	}
