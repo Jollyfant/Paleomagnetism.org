@@ -503,6 +503,11 @@ $(function() {
 			var type = 'great circles';
 		}
 		
+		if($("#beddingSame").prop('checked')) {
+			type = 'directions';
+		}
+		console.log(type);
+		
 		var name = prompt('Please enter a name below:');
 		
 		//On empty name

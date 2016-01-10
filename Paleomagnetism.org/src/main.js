@@ -564,14 +564,8 @@ var addInterpretations = function () {
 				input += capture[i].dec + ', ' + capture[i].inc + ', ' + capture[i].bedStrike + ', ' + capture[i].bedDip + ', ' + capture[i].sample + '\n';
 			}
 		} else {
-			if(coordType == 'GEO' && overRide) {
-				for(var i = 0; i < capture.length; i++) {
-					input += capture[i].dec + ', ' + capture[i].inc + ', ' + capture[i].bedStrike + ', ' + capture[i].bedDip + ', ' + capture[i].sample + '\n';
-				}
-			} else {
-				for(var i = 0; i < capture.length; i++) {
-					input += capture[i].dec + ', ' + capture[i].inc + ', ' + capture[i].sample + '\n';
-				}
+			for(var i = 0; i < capture.length; i++) {
+				input += capture[i].dec + ', ' + capture[i].inc + ', ' + capture[i].sample + '\n';
 			}
 		}
 		
