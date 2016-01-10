@@ -533,10 +533,10 @@ $(function() {
 			'coordType': coordType
 		});
 
-			localStorage.setItem('savedInt', JSON.stringify(parsedObj));
-			notify('success', 'Site ' + name + ' has been added to interpreted directions (' + type + ', ' + coordType + ')');	
+		localStorage.setItem('savedInt', JSON.stringify(parsedObj));
+		notify('success', 'Site ' + name + ' has been added to interpreted directions (' + type + ', ' + coordType + ')');	
 			
-			exportData = new Array();
+		exportData = new Array();
 		
 	});
 	
@@ -1009,6 +1009,8 @@ function fitCirclesToDirections() {
 			for(var j = 0; j < data[i][coordType].length; j++) {
 				var dec = data[i][coordType][j].dec;
 				var inc = data[i][coordType][j].inc;
+				var bedStrike = data[i].bedStrike;
+				var bedDip = data[i].bedDip;
 				var sample = data[i].name;
 				
 				//Now check if it is a direction or a great circle and sort them to respective arrays
@@ -1017,6 +1019,8 @@ function fitCirclesToDirections() {
 					exportData.push({
 						'dec': dec, 
 						'inc': inc,
+						'bedStrike': bedStrike,
+						'bedDip': bedDip,
 						'sample': sample
 					});
 					
@@ -1037,7 +1041,7 @@ function fitCirclesToDirections() {
 						}
 					});
 				} else if(data[i][coordType][j].type === 'GC') {
-					row = [sample, data[i].info, dec, inc, 'gc'];
+					row = [sample, data[i].info, dec, inc, 'gc', [bedStrike, bedDip]];
 				}
 				fitData.push(row);
 			}
@@ -1066,11 +1070,9 @@ function fitCirclesToDirections() {
 		}
 	}
 	
-	console.log(fitData);
-
 	//@Circle is an array containing Cartesian coordinates of pole to great circle
 	var xCircle = new Array(), yCircle = new Array(), zCircle = new Array();
-	var sampleCircle = new Array(), infoCircle = new Array();
+	var sampleCircle = new Array(), infoCircle = new Array(), bedCircle = new Array();
 	
 	//Number of set points and great circles
 	var nPoints = 0, nCircles = 0;
@@ -1099,6 +1101,7 @@ function fitCirclesToDirections() {
 			xCircle.push(circleCoordinates.x), yCircle.push(circleCoordinates.y), zCircle.push(circleCoordinates.z);
 			sampleCircle.push(fitData[i][0]);
 			infoCircle.push(fitData[i][1]);
+			bedCircle.push(fitData[i][5]);
 			
 		} else {
 			notify('failure', 'Unfamiliar fitting type; expected "fake", "dir", or "gc"');
@@ -1191,7 +1194,9 @@ function fitCirclesToDirections() {
 		exportData.push({
 			'dec': direction.dec, 
 			'inc': direction.inc,
-			'sample': sample
+			'sample': sample,
+			'bedStrike': bedCircle[i][0],
+			'bedDip': bedCircle[i][1]
 		});
 
 		//Data array for points fitted on great circle
