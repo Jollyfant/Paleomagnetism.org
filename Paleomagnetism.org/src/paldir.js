@@ -257,6 +257,7 @@ $(function() {
 		plotInterpretations();
 		$("#saveInterpretation").text('Save Interpreted Directions');
 		$("#eqAreaFitted").hide();
+		$("#beddingSameDiv").hide();
 	});
 
 	//Fix for blurring tab after click (interferes with arrow key movement)
@@ -459,6 +460,7 @@ $(function() {
 	$("#fitCircles").click( function () {
 		fitCirclesToDirections();
 		$("#saveInterpretation").text('Save Interpreted Directions and fitted Great Circles');
+		$("#beddingSameDiv").show();
 	});
 	
 	//Function to save interpretations to the statistics portal through localStorage
