@@ -1060,10 +1060,13 @@ function fitCirclesToDirections() {
 			var inclination = Number(getSuggestion[1]);
 			
 			fitData.push(['FORCED', 0, declination, inclination, 'fake']);
+		} else {
+			notify('failure', 'Adding your suggestion has failed. Breaking fitting procedure.');
+			return;
 		}
-		notify('failure', 'Adding your suggestion has failed. Breaking fitting procedure.');
-		return;
 	}
+	
+	console.log(fitData);
 
 	//@Circle is an array containing Cartesian coordinates of pole to great circle
 	var xCircle = new Array(), yCircle = new Array(), zCircle = new Array();
@@ -1080,7 +1083,7 @@ function fitCirclesToDirections() {
 		//If there are no set-points use the fake anchor as the mean vector
 		if(fitData[i][4] === 'fake') { 
 			var anchorCoordinates = cart(fitData[i][2], fitData[i][3]);
-			var newMeanVector = {'x': anchorCoordinates.x, 'y': anchorCoordinates.y, 'z': anchorCoordinates.z};	
+			var unitMeanVector = {'x': anchorCoordinates.x, 'y': anchorCoordinates.y, 'z': anchorCoordinates.z};	
 		} else if(fitData[i][4] === 'dir') {
 			nPoints++
 			
@@ -1109,9 +1112,9 @@ function fitCirclesToDirections() {
 		var R = Math.sqrt(xSum*xSum + ySum*ySum + zSum*zSum);
 		var unitMeanVector = {'x': xSum/R, 'y': ySum/R, 'z': zSum/R};
 	}
-	
+
 	var meanVector = {'x': xSum, 'y': ySum, 'z': zSum};
-	
+
 	//Bucket to contain x, y, z coordinates of the fitted points respectively
 	var fittedCircleCoordinates = new Array();
 	
