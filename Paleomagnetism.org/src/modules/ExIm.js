@@ -151,6 +151,8 @@ module.IO.table = function(siteNames) {
 		}
 		
 		row.push("latitude", "longitude", "author", "age", "min age", "max age");
+		row.push("beddings");
+		
 		csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
 	
 		for(var i = 0; i < siteNames.length; i++) {
@@ -172,7 +174,8 @@ module.IO.table = function(siteNames) {
 				row.push(sites[key].userInput.metaData['age'])
 				row.push(sites[key].userInput.metaData['minAge'])
 				row.push(sites[key].userInput.metaData['maxAge'])
-				
+				var beddings = sites[key].userInput.data.map(function (entry) { return entry[2] + '/' + entry[3]});
+				row.push(uniqueBedding(beddings).join(', '));
 				csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
 			}
 		}
@@ -186,6 +189,9 @@ module.IO.table = function(siteNames) {
 	module.IO.dlItem(csv, 'Parameter_Table', 'csv');
 }
 
+uniqueBedding = function (array) {
+	return array.filter(function(el,i,a){if(i==a.indexOf(el))return 1;return 0});
+}
 /* MODULE I/O
  * FUNCTION dlItem
  * Description: Attempts to create a download attribute to download CSV
