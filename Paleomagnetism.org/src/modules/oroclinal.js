@@ -350,6 +350,7 @@ function varianceFoldtest() {
 		}
 		
 		if(i === 0) {
+			danielTest(index, sampleDec, sampleStrike);
 			var realMax = index;
 		}	
 		
@@ -357,6 +358,7 @@ function varianceFoldtest() {
 		if(i <= 26) {
 			bootTaus.push(taus);
 		}
+		
 		untilt.push(index);
 	}
 
@@ -377,6 +379,116 @@ function varianceFoldtest() {
 	
 	//Call the foldtest plotting function
 	grfoldtestOro ( cdfData, bootTaus, lower, upper, unfoldingMin, unfoldingMax, sub, data, realMax, type );
+	
+}
+
+// Index is the minimum variance (%)
+// Dec, strike are arrays of declinations and strikes for which INDEX is the minimum variance
+function danielTest(index, dec, strike) {
+	
+	// Unfold the directions and strikes to the minimum variance
+	var decs = new Array();
+	for(var i = 0; i < dec.length; i++) {
+		var unfoldedDeclination = (dec[i] - (strike[i]-90)*0.01*index);
+		decs.push([unfoldedDeclination, 0]); // Push to unfolded declination with inclination 0 to a new array		
+	}
+	
+	//Calculate the mean declination for this set of data (this will be the reference for unfolding)
+	var k = fisher(decs, 'dir', 'simple');
+	
+	// Check this...
+	// Look at the difference between the reference declination and each declination
+	// The strike diveded by the angle between the reference and dec_i should equal the percentage of unfolding
+	// E.g. reference 0, dec 90, strike 45. Unfolding strike gives us (45 / (90 - 0)) = 0.50
+	// Meaning that if we fully unfold the strike, the declination has only moved 50% with respect to its reference
+	var diffs = new Array();
+	for(var i = 0; i < dec.length; i++) {
+		var diff = 100 * (strike[i]/(Math.abs(k.mDec - dec[i])));
+	}
+	
+	// Just to plot the CDF
+	diffs.sort(function (a, b) {
+		return a > b ? 1 : a < b ? -1 : 0;
+	});
+	var cdfData = new Array();
+	for(var i = 0; i < diffs.length; i++){
+		cdfData.push([diffs[i], i/(diffs.length-1)]);
+	}
+	
+	// And plot mister Pastor-Galan
+	plotDaniel(cdfData);
+}
+
+function plotDaniel (cdfData) {
+
+	"use strict";
+			
+	//Define the cumulative distribution function
+	//Info array contains site names
+	var mySeries = [{
+		'name': 'Test', 
+		'data': cdfData,
+		'color': 'rgb(119, 152, 191)',
+		'marker': {
+			'enabled': false
+		}
+	}];
+	
+	//Chart options	to be used
+	var chartOptions = {
+        'title': {
+            'text': 'Test',
+        },
+		'exporting': {
+			'filename': 'LinearityTest',
+		    'sourceWidth': 600,
+            'sourceHeight': 600,
+            'buttons': {
+                'contextButton': {
+                    'symbolStroke': '#7798BF',
+					'align': 'right'
+                },
+			}
+        },
+		'chart': {
+			'id': 'CTMDXYZ',
+			'renderTo': 'danielTest'
+		},
+        'subtitle': {
+			'text': 'Change'
+        },
+		'plotOptions': {
+			'series': {
+				'turboThreshold': 0
+			}
+		},
+        'xAxis': {
+			'title': {
+                'text': 'Percentage of Unfolding'
+            },
+		},
+		'credits': {
+			'text': "Paleomagnetism.org [CTMD] - Coordinate Bootstrap (Tauxe et al., 2010)",
+			'href': ''
+		},
+        'yAxis': {
+			'min': 0,
+			'max': 1,
+            'title': {
+                'text': 'Cumulative Distribution'
+            }
+        },
+        'tooltip': {
+    		'formatter': function() {
+        		return 'Something here'
+    		}
+		},
+        'series': mySeries
+    }
+	
+	//Call the Highcharts constructor
+	new Highcharts.Chart(chartOptions);
+	
 }
 
 /*
