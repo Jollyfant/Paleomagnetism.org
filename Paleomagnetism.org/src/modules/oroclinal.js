@@ -404,6 +404,7 @@ function danielTest(index, dec, strike) {
 	var diffs = new Array();
 	for(var i = 0; i < dec.length; i++) {
 		var diff = 100 * (strike[i]/(Math.abs(k.mDec - dec[i])));
+		diffs.push(diff);
 	}
 	
 	// Just to plot the CDF
@@ -414,7 +415,7 @@ function danielTest(index, dec, strike) {
 	for(var i = 0; i < diffs.length; i++){
 		cdfData.push([diffs[i], i/(diffs.length-1)]);
 	}
-	
+	console.log(cdfData);
 	// And plot mister Pastor-Galan
 	plotDaniel(cdfData);
 }
