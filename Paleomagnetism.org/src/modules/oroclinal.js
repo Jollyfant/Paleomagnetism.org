@@ -396,14 +396,24 @@ function danielTest(index, dec, strike) {
 	//Calculate the mean declination for this set of data (this will be the reference for unfolding)
 	var k = fisher(decs, 'dir', 'simple');
 	
+	var cutDec = new Array();
+	var cutStrike = new Array();
+	
+	for(var i = 0 ; i < dec.length; i++) {
+		if(Math.abs(k.mDec - dec[i]) >= 30) {
+			cutDec.push(dec[i]);
+			cutStrike.push(strike[i]);
+		}
+	}
+	
 	// Check this...
 	// Look at the difference between the reference declination and each declination
 	// The strike diveded by the angle between the reference and dec_i should equal the percentage of unfolding
 	// E.g. reference 0, dec 90, strike 45. Unfolding strike gives us (45 / (90 - 0)) = 0.50
 	// Meaning that if we fully unfold the strike, the declination has only moved 50% with respect to its reference
 	var diffs = new Array();
-	for(var i = 0; i < dec.length; i++) {
-		var diff = 100 * (strike[i]/(Math.abs(k.mDec - dec[i])));
+	for(var i = 0; i < cutDec.length; i++) {
+		var diff = 100 * (cutStrike[i]/(Math.abs(k.mDec - cutDec[i])));
 		diffs.push(diff);
 	}
 	
@@ -415,7 +425,7 @@ function danielTest(index, dec, strike) {
 	for(var i = 0; i < diffs.length; i++){
 		cdfData.push([diffs[i], i/(diffs.length-1)]);
 	}
-	console.log(cdfData);
+
 	// And plot mister Pastor-Galan
 	plotDaniel(cdfData);
 }
@@ -1315,6 +1325,30 @@ function bootstrapData(type) {
 	})();
 }
 
+function standardDeviation(values){
+  var avg = average(values);
+  
+  var squareDiffs = values.map(function(value){
+    var diff = value - avg;
+    var sqrDiff = diff * diff;
+    return sqrDiff;
+  });
+  
+  var avgSquareDiff = average(squareDiffs);
+
+  var stdDev = Math.sqrt(avgSquareDiff);
+  return stdDev;
+}
+
+function average(data){
+  var sum = data.reduce(function(sum, value){
+    return sum + value;
+  }, 0);
+
+  var avg = sum / data.length;
+  return avg;
+}
+
 /*
  * FUNCTION callFunc
  * Description: prepares data to be plotted on the oroclinal test (top figure)
@@ -1394,7 +1428,9 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 			});
 		}
 	}
-		
+	
+	
+	var SWresid = new Array();
 	var pointCloud = new Array();
 	for(var i = 0; i < strike.length; i++) {
 		var residual = (strike[i] * lr.slope + lr.intercept) - dec[i];
@@ -1403,9 +1439,15 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 			'y': strike[i],
 			'code': codes[i],
 		});
+		SWresid.push(residual);
 	}
 	
-	plotResiduals(pointCloud, pointCloudBootstrap, minPlot, maxPlot);
+	console.log('Residual Regression:', linearRegression(strike, SWresid));
+	console.log('Shapiro Wilk:', ShapiroWilkW(SWresid));
+	var stdv = standardDeviation(SWresid);
+	var averageRes = average(SWresid);
+	
+	plotResiduals(pointCloud, pointCloudBootstrap, minPlot, maxPlot, stdv, averageRes);
 
 	var regDat = [{
 		'x': minPlot, 
@@ -1527,7 +1569,31 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 	
 }
 
-function plotResiduals (data, databs, min, max) {
+function createStdvLines(avg, stdv) {
+	
+	var stdvLines = new Array();
+	
+	//Sigma
+	[1, -1].forEach(function(x) {
+		stdvLines.push({
+			'value': avg + x*stdv,
+			'width': 2,
+			'color': 'rgba(119, 191, 152, 0.5)'
+		}, {
+			'value': avg + 2*x*stdv,
+			'width': 2,
+			'color': 'rgba(191, 152, 119, 0.5)'
+		}, {
+			'value': avg + 3*x*stdv,
+			'width': 2,
+			'color': 'rgba(191, 119, 152, 0.5)'
+		});
+	});
+	return stdvLines;
+}
+function plotResiduals (data, databs, min, max, stdv, average) {
+	
+	var stdvLines = createStdvLines(average, stdv);
 	
 	var sortedArr = new Object();
 	var binSize = 5;
@@ -1564,6 +1630,9 @@ function plotResiduals (data, databs, min, max) {
         },
 		'title': {
 			'text': 'Residuals'
+		},
+		'xAxis': {
+			'plotLines': stdvLines
 		},
 		'yAxis': {
 			'gridLineWidth': 0,

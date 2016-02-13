@@ -21,13 +21,13 @@
 <script src="./src/libs/Highcharts/highcharts-more.src.js"></script> <!-- Highcharts plugin for extra graphs -->
 <script src="./src/libs/Highcharts/heatmap.src.js"></script> <!-- HighCharts HeatMap Plugin -->
 <script src="./src/libs/Highcharts/exporting.src.js"></script> <!-- Highcharts figure exporting -->
+<script src="./src/libs/jQuery/jquery-linedtextarea.js"></script> <!-- jQuery plugin for lined text-area -->
 <script src="./src/libs/numeric-1.2.6.js"></script> <!-- Numeric JS to calculate principle components -->
-<script src="./src/libs/jQuery/jquery.multiselect.js"></script> <!-- jQuery plugin for multiselect -->
 
 <script src="./src/core.js"></script> <!-- jQuery plugin for multiselect -->
 
 <link rel="shortcut icon" type="image/x-icon" href="icon.ico" />
-<title> Paleomagnetism.org - Miscellaneous Portal </title>
+<title> Paleomagnetism.org - Palpole </title>
 
 <!-- Google Analytics -->
 <script>
@@ -38,7 +38,7 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 ga('create', 'UA-68024347-1', 'auto');
 ga('send', 'pageview');
 </script>
-
+	
 </HEAD>
 
 <BODY>
@@ -55,25 +55,51 @@ ga('send', 'pageview');
 	<div style="background-color: #7798BF; color: white; padding: 10px;">
 		<li class="menuLink"><a class="link" href="./index.html"> Home </a>
 		<li class="menuLink"><a class="link" href="./interpretation.html"> Interpretation Portal </a>
-		<li class="menuLink"><a class="link" href="./statistics.html"> Statistics Portal </a>
+		<li class="menuLink"><a class="link" href="./statistics.html"> Statistics Portal </a> 
 		<li class="menuLink"><a class="link" style="background: #DED;"><img src="./images/icon.ico" height="16" width="16" style="vertical-align: middle;">&nbsp Miscellaneous Portal </a> 
 		<li class="menuLink"><a class="link" href="./cite.html"> References </a>
-		<li class="menuLink"><a class="link" href="./team.html"> Team and Code </a>
-		<!-- <li class="menuLink"><a class="link" href="mailto:fort@paleomagnetism.org"> Contact </a> -->
+		<li class="menuLink"><a class="link" href="./team.html">Team and Code </a>
 		<li class="menuLink"><a class="link" href="mailto:paleomagnetism.org@gmail.com" title="temporary address"> Contact </a>
 	</div>
-		
+	
 	<div class="information" style="margin: 10px; font-size: 12px; font-family: Helvetica,Arial,sans-serif;">
-		<h1> Miscellaneous Portal: Home </h1>
-		<p> This portal includes multiple tools with a distinctive input and output.
-		<h2> <a href="./NTR.html"> NTR Analysis </a> </h2>
-		<p> Allows for the net tectonic rotation to an original paleovertical.
-		<h2> <a href="./oroclinal.html"> Oroclinal Test </a> </h2>
-		<p> Allows bootstrapped linear regressive methods on bi-dimensional data (e.g. strike and declination). Also includes an oroclinal foldtest.
-		<h2> <a href="./palpole.html"> PalPole Implementation </a> </h2>
-		<p> Converts between poles and directions for a given site location.
-
+	<h1> PalPole Implementation </h1>
+		<p>This small tool converts between VGPs and directions for a particular site location. <b> Only enter one of the two boxes, the tool will calculate the other</b>. 
+		<p><b>Usage:</b>
+		<ul>
+		<li>Fill in a site latitude and longitude in decimal degrees.
+		<li>Insert a list of declination, inclination (latitude, longitude) pairs in the appropriate textbox. Each data pair must be entered on a new white line. Data may be copied from Excel.
+		<li>Click the calculate VGP or DIR, and the tool will fill in the empty box above the button.
+		<li>Calculate the paleolatitude yourself if required (Tauxe, 2.12)
+		</ul>
+		<div style="text-align: center;">
+		<input id="siteLat" type='text' placeholder='Site Latitude'> and
+		<input id="siteLon" type='text' placeholder='Site Longitude'>
+		</div>
+		<hr>
+		<div style="text-align: center;">
+		<table style="margin: 0 auto;">
+		<tr>
+		<td><h2>VGPs</h2></td>
+		<td><h2>Directions</h2></td>
+		</tr>
+		<tr>
+		<td><textarea placeholder='Lat, Lng' id="VGP2DIR" rows="5" style="width: 200px; height: 300px;"></textarea></td>
+		<td><textarea placeholder='Dec, Inc' id="DIR2VGP" rows="5" style="width: 200px; height: 300px;"></textarea></td>
+		</tr>
+		<tr>
+		<td><b>VGP Latitude, VGP Longitude</b></td>
+		<td><b>Declination, Inclination</b></td>
+		</tr>
+		<tr>
+		<td> <button id="getVGP">Calculate Virtual Geomagnetic Pole</button> </td>
+		<td> <button id="getDIR">Calculate Direction</button> </td>
+		</tr>		
+		</table>
+		</div>
 	</div>
+
+	<hr>
 	
 	<!-- FOOTER -->
 	<div id="footer" class="textplot" style="margin: 10px;">
@@ -88,6 +114,96 @@ ga('send', 'pageview');
 	</div>
 </div>
 
+<style>
+.linedwrap {
+  display: inline-block;
+}
+</style>
+<script>
+$(function () {
+
+  $("#VGP2DIR, #DIR2VGP").linedtextarea();
+  
+  $("#getVGP").click(function () {
+
+	// Get site location, return if empty
+	var location = getLatLong();
+	if(!location) {
+	  return
+	}
+
+	// Get the input for that particular box
+	var input = $("#DIR2VGP").val();
+	if(!input && $("#VGP2DIR").val()) {
+		notify('failure', "You're looking for the other button.");
+		return;
+	}
+	
+	// Split by new lines, put empty lines in garbage
+	var lines = input.split("\n").filter(Boolean);
+	
+	var output = new Array();
+	
+	// Loop over all data pairs, and calculate the poles
+	for(var i = 0; i < lines.length; i++) {
+	
+		// Split by comma, tab, spaces; require two parameters
+		var parameters = lines[i].split(/[\s\t,]+/);
+		if(parameters.length !== 2) {
+			notify('failure', 'Got ' + parameters.length + ' parameter(s) at line ' + i + ' in Directions. Need 2.');
+			return;
+		}
+		
+		var p = poles(location.lat, location.lon, parameters);
+		output.push(p[1] + ', ' + p[0]);
+	}
+	// Put the pole output to the other box
+	$("#VGP2DIR").val(output.join('\n'));
+  });
+  
+  // See above, just get directions instead of poles
+  $("#getDIR").click(function () {
+  
+ 	var location = getLatLong(); 
+	if(!location) {
+	  return
+	}
+	
+	var input = $("#VGP2DIR").val();
+	if(!input && $("#DIR2VGP").val()) {
+		notify('failure', "You're looking for the other button.");
+		return;
+	}
+	
+	var lines = input.split("\n").filter(Boolean);
+	var output = new Array();
+	for(var i = 0; i < lines.length; i++) {
+		var parameters = lines[i].split(/[\s\t,]+/);
+		if(parameters.length !== 2) {
+			notify('failure', 'Got ' + parameters.length + ' parameter(s) at line ' + i + ' in VGPs. Need 2.');
+			return;
+		}
+		var p = invPoles(location.lat, location.lon, parameters.reverse());
+		output.push(p[0] + ', ' + p[1]);
+	}
+	
+	$("#DIR2VGP").val(output.join('\n'));
+	
+  })
+  
+  function getLatLong () {
+ 	var latitude = $("#siteLat").val();
+	var longitude = $("#siteLon").val(); 
+
+	if(latitude === '' || longitude === '') {
+	  notify('failure', 'Give site location');
+	  return false;
+	}
+	return {'lat': latitude, 'lon': longitude};
+  }
+  
+})
+</script>
 
 </BODY>
 

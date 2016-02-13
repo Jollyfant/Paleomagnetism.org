@@ -29,7 +29,7 @@ module.IO.downloadSelected = function () {
 	
 	//Add all sites to the export data; ignore internally used site TEMP
 	for(var i = 0; i < siteNames.length; i++) {
-		if(sites[siteNames[i]].userInput.metaData.name != "TEMP") {
+		if(sites[siteNames[i]].userInput.metaData.name !== "TEMP") {
 			exportData.data.push(sites[siteNames[i]].userInput);
 		}
 	}
@@ -65,18 +65,20 @@ module.IO.importing = function(event) {
 		
 		//Loop over all sites in the .pmag file and append site names that do not presently exist in the instance
 		var i = 0;
+		var j = 0;
 		$("#loading").show();
 		(addSitesTimed = function () {
 			if(i < importData.data.length) {
-				if(importData.data[i].metaData.name != "TEMP") {
+				if(!sites.hasOwnProperty(importData.data[i].metaData.name)) {
 					sites[importData.data[i].metaData.name] = new site(importData.data[i].metaData, importData.data[i].data, false);
-					i++;
-					setTimeout( function() { addSitesTimed(); }, 1);
+					j++;
 				} else {
 					notify('failure', 'Skipping site ' + importData.data[i].metaData.name + '; a site with this name already exists in this instance.');
 				}
+				i++;
+				setTimeout( function() { addSitesTimed(); }, 1);
 			} else {
-				notify('success', 'Application has been initialized succesfully; found ' + i + ' site(s) and ' + Object.keys(APWPs).length + ' APWP(s)');
+				notify('success', 'Application has been initialized succesfully; found ' + j + ' site(s) and ' + Object.keys(APWPs).length + ' APWP(s)');
 				$("#loading").hide();
 				finishedLoading();
 				setStorage();
@@ -403,17 +405,18 @@ $(function() {
 				//The last two series are the confidence envelope and not interesting for exporting. Just parse the A95 data.
 				for(var i = 0; i < this.series.length; i += 4) {
 					
+					
 					//Put name and information
 					csv += '"' + this.series[i].name + '"' + lineDelimiter;
-					var columns = ['Latitude', 'Longitude', 'Age', 'Alpha95'];
+					var columns = ['Latitude', 'Longitude', 'Age', 'Alpha95', 'Name'];
 					csv += '"' + columns.join(itemDelimiter) + '"' + lineDelimiter;		
 					
 					//For all data put latitude/longitude/age/A95
 					for(var j = 0; j < this.series[i].data.length; j++)	{
-						var columns = [this.series[i].data[j].x, this.series[i].data[j].inc, this.series[i].data[j].age, this.series[i].data[j].A95];				
+						var columns = [this.series[i].data[j].inc, this.series[i].data[j].x, this.series[i].data[j].age, this.series[i].data[j].A95, this.series[i].data[j].name];
 						csv += '"' + columns.join(itemDelimiter) + '"' + lineDelimiter;			
 					}
-					
+
 					csv += lineDelimiter;	
 				}
 				
@@ -429,12 +432,12 @@ $(function() {
 					
 					//Put name and information
 					csv += '"' + this.series[i].name + '"' + lineDelimiter;
-					var columns = ['Age', this.title.textStr, 'Error High', 'Error Low'];
+					var columns = ['Age', this.title.textStr, 'Error High', 'Error Low', 'Name'];
 					csv += '"' + columns.join(itemDelimiter) + '"' + lineDelimiter;			
 					
 					//Loop over all data points and put them in columns/rows (include the error range in series[i+1])
 					for(var j = 0; j < this.series[i].data.length; j++) {
-						var columns = [this.series[i].data[j].x, this.series[i].data[j].y, this.series[i+1].data[j].high, this.series[i+1].data[j].low];
+						var columns = [this.series[i].data[j].x, this.series[i].data[j].y, this.series[i+1].data[j].high, this.series[i+1].data[j].low, this.series[i].data[j].name];
 						csv += '"' + columns.join(itemDelimiter) + '"' + lineDelimiter;
 					}	
 					csv += lineDelimiter;
