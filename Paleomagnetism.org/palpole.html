@@ -64,17 +64,17 @@ ga('send', 'pageview');
 	
 	<div class="information" style="margin: 10px; font-size: 12px; font-family: Helvetica,Arial,sans-serif;">
 	<h1> PalPole Implementation </h1>
-		<p>This small tool converts between VGPs and directions for a particular site location. <b> Only enter one of the two boxes, the tool will calculate the other</b>. 
+		<p>This small tool converts between VGPs and directions for a particular site location. <b> Only enter one of the two (VGPs / Directions) boxes, the tool will dictate the other</b>. 
 		<p><b>Usage:</b>
 		<ul>
-		<li>Fill in a site latitude and longitude in decimal degrees.
-		<li>Insert a list of declination, inclination (latitude, longitude) pairs in the appropriate textbox. Each data pair must be entered on a new white line. Data may be copied from Excel.
+		<li>Fill in a site latitude and longitude in decimal degrees (N lines). A single line input forces all transformations to that site.
+		<li>Insert a list of declination, inclination (latitude, longitude) pairs in the appropriate textbox (equal to N lines; above). Each data pair must be entered on a new line. Data may be copied from Excel.
 		<li>Click the calculate VGP or DIR, and the tool will fill in the empty box above the button.
-		<li>Calculate the paleolatitude yourself if required (Tauxe, 2.12)
+		<li>Calculate the paleolatitude yourself if required (Tauxe, 2.12).
 		</ul>
 		<div style="text-align: center;">
-		<input id="siteLat" type='text' placeholder='Site Latitude'> and
-		<input id="siteLon" type='text' placeholder='Site Longitude'>
+		<h2>Latitude & Longitude</h2>
+		<p><textarea placeholder='Lat, Lng' id="LATLON" rows="5"></textarea>
 		</div>
 		<hr>
 		<div style="text-align: center;">
@@ -84,8 +84,8 @@ ga('send', 'pageview');
 		<td><h2>Directions</h2></td>
 		</tr>
 		<tr>
-		<td><textarea placeholder='Lat, Lng' id="VGP2DIR" rows="5" style="width: 200px; height: 300px;"></textarea></td>
-		<td><textarea placeholder='Dec, Inc' id="DIR2VGP" rows="5" style="width: 200px; height: 300px;"></textarea></td>
+		<td><textarea placeholder='Lat, Lng' id="VGP2DIR" rows="5" style="height: 300px;"></textarea></td>
+		<td><textarea placeholder='Dec, Inc' id="DIR2VGP" rows="5" style="height: 300px;"></textarea></td>
 		</tr>
 		<tr>
 		<td><b>VGP Latitude, VGP Longitude</b></td>
@@ -98,12 +98,11 @@ ga('send', 'pageview');
 		</table>
 		</div>
 	</div>
-
 	<hr>
 	
 	<!-- FOOTER -->
 	<div id="footer" class="textplot" style="margin: 10px;">
-		<small> © 2015 Paleomagnetism.org. Please <a href="./cite.html">cite</a> all contributors if you use this application for your research.
+		<small> © 2016 Paleomagnetism.org. Please <a href="./cite.html">cite</a> all contributors if you use this application for your research.
 		<p><b>Disclaimer:</b> Paleomagnetism.org is an open-source initiative licensed under the <a href="https://www.gnu.org/licenses/gpl.html">GNU General Public License v3.0</a>. All data processing is handled on the client-side within your browser. Graph exporting is delivered via the Highcharts content delivery network under the Highcharts <a href="http://www.highcharts.com/docs/export-module/privacy-disclaimer/">exporting privacy policy</a>.
 		<hr>
 		<div style="text-align: right; display: inline-block;">
@@ -122,15 +121,12 @@ ga('send', 'pageview');
 <script>
 $(function () {
 
-  $("#VGP2DIR, #DIR2VGP").linedtextarea();
+  $("#VGP2DIR, #DIR2VGP, #LATLON").linedtextarea();
   
   $("#getVGP").click(function () {
 
 	// Get site location, return if empty
 	var location = getLatLong();
-	if(!location) {
-	  return
-	}
 
 	// Get the input for that particular box
 	var input = $("#DIR2VGP").val();
@@ -141,6 +137,16 @@ $(function () {
 	
 	// Split by new lines, put empty lines in garbage
 	var lines = input.split("\n").filter(Boolean);
+	if(location.length === 1) {
+		var location = lines.map(function(x) {
+			return location[0];
+		})
+	}
+
+	if(location.length !== lines.length) {
+		notify('failure', 'Input lengths N are not equal.');
+		return;
+	}
 	
 	var output = new Array();
 	
@@ -154,11 +160,12 @@ $(function () {
 			return;
 		}
 		
-		var p = poles(location.lat, location.lon, parameters);
+		var p = poles(location[i].lat, location[i].lon, parameters);
 		output.push(p[1] + ', ' + p[0]);
 	}
 	// Put the pole output to the other box
 	$("#VGP2DIR").val(output.join('\n'));
+		
   });
   
   // See above, just get directions instead of poles
@@ -176,33 +183,59 @@ $(function () {
 	}
 	
 	var lines = input.split("\n").filter(Boolean);
+	
+	if(location.length === 1) {
+		var location = lines.map(function(x) {
+			return location[0];
+		})
+	}
+	
+	if(location.length !== lines.length) {
+		notify('failure', 'Input lengths N are not equal.');
+		return;
+	}
+	
 	var output = new Array();
+	var data = new Array();
 	for(var i = 0; i < lines.length; i++) {
 		var parameters = lines[i].split(/[\s\t,]+/);
 		if(parameters.length !== 2) {
 			notify('failure', 'Got ' + parameters.length + ' parameter(s) at line ' + i + ' in VGPs. Need 2.');
 			return;
 		}
-		var p = invPoles(location.lat, location.lon, parameters.reverse());
+		var p = invPoles(location[i].lat, location[i].lon, parameters.reverse());
 		output.push(p[0] + ', ' + p[1]);
+		data.push({
+			'site': location[i], 
+			'direction': {'dec': p[0], 'inc': p[1]},
+			'vgp': {'lat': parameters[1], 'lon': parameters[0]}
+		});
 	}
 	
 	$("#DIR2VGP").val(output.join('\n'));
-	
+		
   })
   
   function getLatLong () {
- 	var latitude = $("#siteLat").val();
-	var longitude = $("#siteLon").val(); 
-
-	if(latitude === '' || longitude === '') {
-	  notify('failure', 'Give site location');
-	  return false;
+  
+ 	var input = $("#LATLON").val();
+	if(!input) {
+		notify('failure', 'Give site locations');
+		return false;
 	}
-	return {'lat': latitude, 'lon': longitude};
+	
+	var lines = input.split("\n").filter(Boolean);
+	
+	var location = lines.map(function(x) {
+		var parameters = x.split(/[\s\t,]+/);
+		return {'lat': parameters[0], 'lon': parameters[1]};
+	});
+
+	return location;
   }
   
-})
+});
+
 </script>
 
 </BODY>
