@@ -2969,9 +2969,9 @@ function importMunich(applicationData, text) {
 	
 	"use strict"
 	
-	var lines = text.split(/[\n]/);
+	var lines = text.split(/[\n]/).filter(Boolean);
 	var parsedData = new Array();
-	
+	console.log(lines)
 	for(var k = 0; k < 1; k++) {
 		for(var i = 0; i < lines.length; i++) {
 			
@@ -3002,7 +3002,7 @@ function importMunich(applicationData, text) {
 				var info = parameters[5];
 			} else {
 				//Get Cartesian coordinates for specimen coordinates, intensity multiply by 10.5 (volume, this is later reduced) and 1000 from mili to micro
-				var cartesianCoordinates = cart(Number(parameters[3]), Number(parameters[4]), Number(parameters[1])*10.5*1000);
+				var cartesianCoordinates = cart(Number(parameters[3]), Number(parameters[4]), Number(parameters[1])*10.5*1e6);
 				parsedData.push({
 					'visible'	: true, 
 					'include'	: false,
