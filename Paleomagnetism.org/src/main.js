@@ -1204,7 +1204,7 @@ var processUserInput = function ( data, type, name ) {
 			p = $.grep(p, function(n) { 
 				return(n) 
 			});
-			
+
 			//Default bedding parameters and sample name
 			var bedOrient = 0, bedDip = 0;
 			var sampleName = name + '.' + (i+1);
@@ -1218,7 +1218,7 @@ var processUserInput = function ( data, type, name ) {
 			
 			//Four or more columns, take bedding parameters
 			if(p.length > 3) {
-				var bedOrient = p[2];
+				var bedOrient = (p[2] + 360)%360;
 				var bedDip = p[3];
 			}
 	
@@ -1247,7 +1247,7 @@ var processUserInput = function ( data, type, name ) {
 				var outputIteration = new Array();
 				var p = lines[j].split(/[,\t]+/);
 				
-				p[0] = (p[0]%360); //Keep declination within bounds
+				p[0] = ((p[0]+360)%360); //Keep declination within bounds
 				
 				if( Number(p[0]) >= 0 && Number(p[0]) <= 360 && Number(p[1]) >= -90 && Number(p[1]) <= 90) {
 					var dec = Number(p[0]);

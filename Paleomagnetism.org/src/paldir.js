@@ -2147,7 +2147,7 @@ function zijderveld ( samples ) {
 		'tooltip': {
 			'useHTML': true,
 			'formatter': function () {
-				return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>Declination: </b>' + this.point.dec.toFixed(1) + '<br> <b>Inclination: </b>' + this.point.inc.toFixed(1) + '<br> <b>Intensity: </b>' + this.point.intensity.toFixed(3) + 'µA/m';
+				return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>Declination: </b>' + this.point.dec.toFixed(1) + '<br> <b>Inclination: </b>' + this.point.inc.toFixed(1) + '<br> <b>Intensity: </b>' + this.point.intensity.toFixed(2) + 'µA/m';
 			}
 		},
 		'subtitle': {
@@ -2343,7 +2343,7 @@ function intensity ( sample ) {
         },
 		'tooltip': {
 			'formatter': function () {
-				return '<b>Demagnetization Step: </b>' + this.x + '<br> <b>Intensity </b>' + this.y.toFixed(3)
+				return '<b>Demagnetization Step: </b>' + this.x + '<br> <b>Intensity </b>' + this.y.toFixed(2)
 			}
 		},
         'xAxis': {
@@ -2969,7 +2969,7 @@ function importMunich(applicationData, text) {
 	
 	"use strict"
 	
-	var lines = text.split(/[\n]/);
+	var lines = text.split(/[\n]/).filter(Boolean);
 	var parsedData = new Array();
 	
 	for(var k = 0; k < 1; k++) {
@@ -3002,7 +3002,7 @@ function importMunich(applicationData, text) {
 				var info = parameters[5];
 			} else {
 				//Get Cartesian coordinates for specimen coordinates, intensity multiply by 10.5 (volume, this is later reduced) and 1000 from mili to micro
-				var cartesianCoordinates = cart(Number(parameters[3]), Number(parameters[4]), Number(parameters[1])*10.5*1000);
+				var cartesianCoordinates = cart(Number(parameters[3]), Number(parameters[4]), Number(parameters[1])*10.5*1e3);
 				parsedData.push({
 					'visible'	: true, 
 					'include'	: false,
