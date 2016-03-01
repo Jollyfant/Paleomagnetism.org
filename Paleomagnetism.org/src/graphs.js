@@ -1486,6 +1486,7 @@ function plotSiteDataExpected ( type ) {
 					'y': eqArea(polePosition[1]), 
 					'name': name,
 					'age': age,
+					'A95': A95,
 					'inc': polePosition[1], 
 					'marker': { 
 						'radius': 4, 
@@ -1753,7 +1754,7 @@ function plotPole ( plotData ) {
 		'tooltip': {
 			'formatter': function(evt) {
 				if(this.series.name === 'Selected Site Data') {
-					return '<b>Site name: </b>' + this.point.name + '<br><b>Site age: </b>' + this.point.age + ' Ma<br><b>Longitude: </b>' + this.x.toFixed(2) + '<br><b>Latitude: </b>' + this.point.inc.toFixed(2);
+					return '<b>Site name: </b>' + this.point.name + '<br><b>Site age: </b>' + this.point.age + ' Ma<br><b>Longitude: </b>' + this.x.toFixed(2) + '<br><b>Latitude: </b>' + this.point.inc.toFixed(2) + '<br><b>A95: </b>' + this.point.A95.toFixed(1);
 				} else {
 					return '<b>Apparent Polar Wander Path</b><br><b>Plate: </b>'+ this.series.name + '<br><b>Age: </b>' + this.point.age + ' Ma<br><b>Latitude: </b>' + this.point.inc.toFixed(2) + '° <br><b> Longitude: </b>' + this.x.toFixed(2) + '° <br><b> Confidence Interval (A95): </b>' + this.point.A95 +'°';
 				}
@@ -1923,7 +1924,7 @@ function plotExpectedLocation( data, container, title, lat, lon ) {
 		'exporting': {
 			'filename': 'expected_' + title,
             'sourceWidth': 800,
-            'sourceHeight': 400,
+            'sourceHeight': 600,
             'buttons': {
                 'contextButton': {
                     'symbolStroke': '#7798BF',

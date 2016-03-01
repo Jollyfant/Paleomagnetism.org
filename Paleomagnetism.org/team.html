@@ -43,11 +43,11 @@ ga('send', 'pageview');
 <script>
 $(function () {
 	$('.avatar').each( function (i) {
-		if(Math.random() < 0.05) {
+		if(Math.random() < 0.01) {
 			$(this).find('img').attr("src","images/bear.jpg");
 			var bio = $(this).closest('td').next();
 			bio.find('h2').text('Bramblebear Honeyfudge');
-			bio.find('p').text('Bramblebear Honeyfudge obtained his PhD in honey in 2014, with a unmatched speciality in consuming the syrupy goodness. Bramblebear is a greatly appreciated contributor to the Paleomagnetism.org application despite the precariously sticky paws prints he leaves on the keyboard. ');
+			bio.find('p').text('Bramblebear Honeyfudge obtained his PhD in honey during 2014, with a unmatched speciality in consuming the syrupy goodness. Honeyfudge is a greatly appreciated contributor to the Paleomagnetism.org application despite the sticky paw prints he leaves on the keyboard.');
 			return false
 		}
 	});

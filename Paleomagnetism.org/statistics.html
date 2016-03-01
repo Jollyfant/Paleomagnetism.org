@@ -289,6 +289,8 @@ $(function () {
 						<option value="NA" custom="false">North America</option>
 						<option value="PA" custom="false">Pacific</option>
 						<option value="SA" custom="false">South America</option>
+						<option value="TEMP_Jammes" custom="false">TEMP_Jammes</option>
+						<option value="TEMP_Olivet" custom="false">TEMP_Olivet</option>
 					</select>
 					<button id="addNewAPWP" style="display: inline-block;"> Add APWP </button>
 					<button id="removeAPWP" style="display: inline-block;"> Remove APWP </button>
@@ -534,7 +536,7 @@ $(function () {
 		</div>
 		<p>
 		<textarea id="APWPZone" rows="5" style="width: 570px;"></textarea>
-		<small>Input parameters must be delimited by a comma or single white space.</small>
+		<small>Input parameters must be delimited by a comma or tab character.</small>
 		<div style="padding: 10px; border: 1px dotted rgb(119, 152, 191); display: inline-block;">
 			<b>APWP name </b><input type="text" id="APWPName" title="Enter a name">
 			<button id="confirmAPWP">Add APWP</button>

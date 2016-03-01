@@ -21,7 +21,7 @@ function importing (event) {
 	var siteName = getSiteName();
 
 	//Single input
-    	reader.readAsText(input.files[0]);
+    reader.readAsText(input.files[0]);
 	reader.onload = function() {
 
 		var savingArray = new Array();
@@ -48,9 +48,9 @@ function importing (event) {
 		}
 
 		sites[siteName].userInput.metaData.strat = savingArray;
-		showBW(formatBinaryColumn(savingArray))
+		showBW(formatBinaryColumn(savingArray));
+		notify('success', 'Stratigraphy has succesfully been added.');
 		setStorage();
-		notify('success', 'Stratigraphy has been added.');
 	}
 
 }
@@ -62,15 +62,19 @@ function importing (event) {
  * Output: VOID
  */
 function removeStrat () {
+	
 	var siteName = getSiteName();
+	
 	if(!siteName) {
 		notify('failure', 'Please select a site to be cleared.');
 		return;
 	}
+	
 	sites[siteName].userInput.metaData.strat = new Array();	
 	setStorage();
 	showBW(new Array())
 	notify('success', 'Stratigraphy has been cleared succesfully.');
+	
 }
 
 /* 
@@ -285,7 +289,8 @@ function showBW (strat) {
 
 	$('#magstratSet').highcharts({
         	'title': {
-            		'text': '⊶',
+				useHTML: true,
+            	'text': '<a style="cursor: crosshair;" onClick="pp()">⊶</a>',
         	},
 
        		'xAxis': {
@@ -344,11 +349,11 @@ function showBW (strat) {
 		},
         	'series': [{
 			'enableMouseTracking': false,
-                	'type': 'arearange',
-                	'name': 'Magnetostratigraphy',
-                	'data': strat,
-                	'lineWidth': 0,
-                	'color': 'rgb(0, 0, 0)',
+                'type': 'arearange',
+                'name': 'MagStrat',
+                'data': strat,
+                'lineWidth': 0,
+                'color': 'rgb(0, 0, 0)',
 			'zIndex': 0,
         states: {
             hover: {
@@ -361,6 +366,58 @@ function showBW (strat) {
 	// Update y-	axis for binary graph to match dec/inc plots
 	updateStratigraphicLevel();
 }
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+var party = false;
+var reversed = true;
+var partyLoop;
+
+function pp() {
+		
+	if(party) {
+		$("#um")[0].pause();	
+		clearInterval(partyLoop);
+		party = false;
+		var reversed = false;
+			$("#magstratSet").highcharts().series[0].update({
+				'color': 'rgb(0,0,0)'
+		});
+			$("#magstratDeclination").highcharts().yAxis[0].update({
+           reversed: reversed
+       }); 
+	   	$("#magstratInclination").highcharts().yAxis[0].update({
+           reversed: reversed
+       }); 
+		return;
+	}
+	
+	party = true;
+	
+	$("#um")[0].play();
+	
+	partyLoop = setInterval(function (x) {
+	reversed = !reversed;
+	$("#magstratDeclination").highcharts().yAxis[0].update({
+           reversed: reversed
+       }); 
+	   	$("#magstratInclination").highcharts().yAxis[0].update({
+           reversed: reversed
+       }); 
+	   
+	$("#magstratSet").highcharts().series[0].update({
+		'color': (function() { return getRandomColor(); })()
+	});
+	
+	}, 250);	
+	}
 
 /*
  * FUNCTION showStratigraphy
@@ -379,13 +436,16 @@ function showStratigraphy(container, title, xRange, plotData) {
 			'href': ''
 		},
        		'xAxis': {
-               		'min': xRange.min,
-                	'max': xRange.max,
+               	'min': xRange.min,
+                'max': xRange.max,
 			'tickInterval': title === 'Declination' ? 90 : 45,
 			'labels': {
 				'format': '{value}°'
 			}
         	},
+			'exporting': {
+				'enabled': false
+			},
 		'tooltip': {
 			'formatter': function () {
 				var tooltip = 
@@ -400,8 +460,8 @@ function showStratigraphy(container, title, xRange, plotData) {
 			'gridLineDashStyle': 'Dot',
 			'min': 0,
 			'title': {
-				'text': title === 'Declination' ? "Arbitrary Stratigraphic Level" : ""
-			},
+				'text': ''
+			}
         	},
         	'series': [{
             		'type': 'line',

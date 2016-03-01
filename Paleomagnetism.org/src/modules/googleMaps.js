@@ -79,6 +79,8 @@ module.map.mapAddSites = function() {
 	//Redraw all markers so initially remove all
 	module.map.clearMarkers();
 	
+	getExpectedLocation(true);
+	
 	//Get selected sites
 	var siteNames = $('#mapSel').val();	
 	if(siteNames == null) {

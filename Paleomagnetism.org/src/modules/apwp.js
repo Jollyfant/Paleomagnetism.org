@@ -64,6 +64,7 @@ function getPlate (plate, type) {
 	plate.africanPolePath = getAPWP(type);
 	plate.age = plate.africanPolePath.age
 	return plate;
+	
 }
 
 /*
@@ -170,15 +171,10 @@ function getRotatedPole (APWP, i) {
  * Input: NULL
  * Output: VOID (calls plotting functions
  */
-function getExpectedLocation () {
+function getExpectedLocation (skip) {
 	
 	"use strict";
-	
-	if($("#refFrame").val() == null) {
-		notify('failure', 'Select one or multiple reference frames.');			
-		return;
-	}
-		
+
 	//Site location (latitude and longitude) check
 	var siteLat = $("#palatLat").val()*rad;
 	var siteLon = $("#palatLon").val()*rad;
@@ -187,16 +183,13 @@ function getExpectedLocation () {
 	var ageMin = $( "#ageRange" ).slider( "values", 0);
 	var ageMax = $( "#ageRange" ).slider( "values", 1);	
 	
-	if(siteLat == '' || siteLon == '') {
-		notify('failure', 'Longitude or latitude field is empty.');
-		return;	
-	}
-	
 	//Plate and reference frame
-	var plates = $("#plateNames").val();
-	if(plates == null) {
-		notify('failure', 'Select one or multiple plates.');
-		return;
+	if(!skip) {
+		var plates = $("#plateNames").val();
+		if(plates === null) {
+			notify('failure', 'Select one or multiple plates.');
+			return;
+		}
 	}
 	
 	//Bucket for graphing data
@@ -204,178 +197,183 @@ function getExpectedLocation () {
 	var decData = new Array();
 	var incData = new Array();
 	var polePos = new Array();
-	var noData = true;
 	
-	//Loop over all of the selected plates
-	for(var numPlates = 0; numPlates < plates.length; numPlates++) {
-	
-		//Get the plate name for this iteration
-		var plateName = plates[numPlates];
+	if(plates) {
 		
-		//Get custom attribute for plate (is the reference frame default or added by the user)
-		var custom = eval($('#plateNames option[value="'+plateName+'"]').attr('custom'));
-		var refFrame = custom ? ['Custom APWP'] : $("#refFrame").val();
+		if($("#refFrame").val() === null) {
+			notify('failure', 'Select one or multiple reference frames.');			
+			return;
+		}
 		
-		//For one selected plate, loop over all selected reference frames
-		for(var numFrames = 0; numFrames < refFrame.length; numFrames++) {
-			
-			//Get the real plate name for displaying
-			var realPlateName = $("#plateNames option[value='"+plateName+"']").text();	
-			var realRefName = refFrame[numFrames];
-			var realRefName2 = $("#refFrame option[value='"+realRefName+"']").text();
-			if(custom) {
-				realRefName2 = 'Custom APWP';
+		if(siteLat === '' || siteLon === '') {
+			notify('failure', 'Longitude or latitude field is empty.');
+			return;	
+		}
+		
+		//Loop over all of the selected plates
+		for(var numPlates = 0; numPlates < plates.length; numPlates++) {
+		
+			//Get the plate name for this iteration
+			var plateName = plates[numPlates];
+				
+			//Get custom attribute for plate (is the reference frame default or added by the user)
+			var custom = eval($('#plateNames option[value="'+plateName+'"]').attr('custom'));
+			var refFrame = custom ? ['Custom APWP'] : $("#refFrame").val();
+				
+			//For one selected plate, loop over all selected reference frames
+			for(var numFrames = 0; numFrames < refFrame.length; numFrames++) {
+					
+				//Get the real plate name for displaying
+				var realPlateName = $("#plateNames option[value='"+plateName+"']").text();	
+				var realRefName = refFrame[numFrames];
+				var realRefName2 = $("#refFrame option[value='"+realRefName+"']").text();
+				if(custom) {
+					realRefName2 = 'Custom APWP';
+				}
+				
+				//Concatenate reference frame tag to platename ( to differentiate between ref. frames )
+				realPlateName = realPlateName + ' (' + realRefName2 + ')';
+				
+				//Buckets to capture all data
+				var paleoLats 	= new Array();
+				var paleoDecs 	= new Array();
+				var paleoIncs 	= new Array();
+				
+				//Errors
+				var decErrors 	= new Array();			
+				var incErrors 	= new Array();
+				var palatErrors = new Array();
+				
+				var poleData 	= new Array();
+				var ellyDat 	= new Array();
+				var ellyDat2 	= new Array();
+				
+				//Request APWP data for particular plate and reference frame
+				//Custom plates can take data directly from the APWPs GLOBAL object
+				var APWP = custom ? APWPs[plateName] : getPlate(plateName, realRefName);
+				
+				//Loop over all data points in the returned APWP object
+				for( var i = 0; i < APWP.lon.length; i++) {
+					
+					//Check if within age bounds
+					if(APWP.age[i] >= ageMin && APWP.age[i] <= ageMax) {
+					
+					//Only do the Euler rotation for non-custom APWPs
+					//Custom paths should already be transformed
+					if(!custom) {
+						var rotParameters = getRotatedPole(APWP, i);
+						var latPoleRot = rotParameters.latPoleRot;
+						var phiPoleRot = rotParameters.phiPoleRot;			
+					} else {
+						//Custom APWP, just take specified lat/lon 
+						var latPoleRot = APWP.lat[i]*rad;
+						var phiPoleRot = APWP.lon[i]*rad;
+					}
+					
+					//Lisa Tauxe Book, 2.4.2 Virtual geomagnetic poles	
+					var upper = Math.sin(latPoleRot) * Math.sin(siteLat) + Math.cos(latPoleRot) * Math.cos(siteLat) * Math.cos(phiPoleRot - siteLon);
+					var C = Math.abs(1 - upper * upper);
+					var lower = Math.sqrt(C);
+					
+					//Take either the user specified A95 or the one from the africanPolePath
+					var A95rad = custom ? APWP.A95[i]*rad : APWP.africanPolePath.A95[i]*rad
+					
+					//Get paleolatitude (degrees), declination (degrees), and inclination (radians)
+					var palat = Math.atan2(upper, lower)/rad;
+					var inc = Math.atan2(2 * upper, lower);					
+					var dec = Math.acos((Math.sin(latPoleRot) - Math.sin(siteLat) * upper) / (Math.cos(siteLat) * lower))/rad;
+		
+					//Check delta phi and fix the declination if necessary
+					var delPhi = (phiPoleRot - siteLon)/rad;
+					if(delPhi < 0 || delPhi > 180) {
+						dec = 360 - dec;
+					}
+					
+					//Keep the declination between -180 and 180
+					//If we take declintion between 0 and 360 it switches polarity often and ruins the look of the chart
+					//Axes swaps between 180 to -180 are much more uncommon as it requires huge rotations
+					if(dec > 180) {
+						dec = dec - 360;
+					}
+					
+					//Caclulate the Error on inclination and declination (after Butler, 1992)
+					var dDi = A95rad * ( 2 / ( 1 + 3 * Math.pow(Math.cos((90 - palat)*rad), 2)));
+					var dDx = Math.asin(Math.sin(A95rad)/Math.cos(palat*rad));
+					
+					//If there is a problem in the determination of the errors, put the error to 0
+					if(isNaN(dDx)) {
+						dDx = null;
+					}
+					if(isNaN(dDi)) {
+						dDi = null;
+					}
+					
+					//Use error on inclination to obtain error on paleolatitude
+					//We want to get the absolute difference with the paleolatitude (so we can add and subtract it later)
+					var min = Math.abs(palat - Math.atan(0.5*Math.tan(inc - dDi))/rad);
+					var max = Math.abs(palat - Math.atan(0.5*Math.tan(inc + dDi))/rad);
+					
+					//If the difference is very large (i.e. > 90 degrees) we probably went over a pole
+					//Therefore, take away 180
+					if(min > 90) {
+						min = Math.abs(180 - min);
+					}
+					if(max > 90) {
+						max = Math.abs(180 - max);
+					}
+					
+					//Put data in data bucket (in degrees)
+					poleData.push({
+						'x': phiPoleRot/rad, 
+						'y': eqArea(latPoleRot/rad), 
+						'inc': latPoleRot/rad, 
+						'age': APWP.age[i], 
+						'A95': A95rad/rad
+					}); 
+					
+					//Construct ellipse parameters to draw an ellipse around pole positions on polar plot
+					var ellipseParameters = {
+						'xDec' 	: phiPoleRot/rad,
+						'xInc'	: latPoleRot/rad,
+						'yDec'	: phiPoleRot/rad,
+						'yInc'	: latPoleRot/rad - 90,
+						'zDec'	: phiPoleRot/rad + 90,
+						'zInc'	: 0,
+						'beta'	: A95rad/rad,
+						'gamma'	: A95rad/rad
+					}
+					
+					//Call the ellipse subroutine and store the data in the arrays
+					var elly = new ellipseData(ellipseParameters, true);
+					ellyDat2 = ellyDat2.concat(elly.neg)
+					ellyDat = ellyDat.concat(elly.pos)
+					
+					//Push expected locations to array for plotting
+					//Paleo-latitudes (non-symmetrical error)
+					paleoLats.push({
+						'x': APWP.age[i], 
+						'y': palat, 
+						'error': [min, max]
+					});
+					
+					//Paleo-declinations
+					paleoDecs.push({
+						'x': APWP.age[i], 
+						'y': dec, 
+						'error': dDx/rad
+					});
+					
+					//Paleo-inclinations
+					paleoIncs.push({
+						'x': APWP.age[i], 
+						'y': (inc)/rad, 
+						'error': dDi/rad
+					});				
+					
+					}
+				}
 			}
 			
-			 //Concatenate reference frame tag to platename ( to differentiate between ref. frames )
-			realPlateName = realPlateName + ' (' + realRefName2 + ')';
-			
-			//Buckets to capture all data
-			var paleoLats 	= new Array();
-			var paleoDecs 	= new Array();
-			var paleoIncs 	= new Array();
-			
-			//Errors
-			var decErrors 	= new Array();			
-			var incErrors 	= new Array();
-			var palatErrors = new Array();
-			
-			var poleData 	= new Array();
-			var ellyDat 	= new Array();
-			var ellyDat2 	= new Array();
-			
-			//Request APWP data for particular plate and reference frame
-			//Custom plates can take data directly from the APWPs GLOBAL object
-			var APWP = custom ? APWPs[plateName] : getPlate(plateName, realRefName);
-
-			//Loop over all data points in the returned APWP object
-			for( var i = 0; i < APWP.lon.length; i++) {
-				
-				//Check if within age bounds
-				if(APWP.age[i] >= ageMin && APWP.age[i] <= ageMax) {
-				noData = false;
-				
-				//Only do the Euler rotation for non-custom APWPs
-				//Custom paths should already be transformed
-				if(!custom) {
-					var rotParameters = getRotatedPole(APWP, i);
-					var latPoleRot = rotParameters.latPoleRot;
-					var phiPoleRot = rotParameters.phiPoleRot;			
-				} else {
-					//Custom APWP, just take specified lat/lon 
-					var latPoleRot = APWP.lat[i]*rad;
-					var phiPoleRot = APWP.lon[i]*rad;
-				}
-				
-				//Lisa Tauxe Book, 2.4.2 Virtual geomagnetic poles	
-				var upper = Math.sin(latPoleRot) * Math.sin(siteLat) + Math.cos(latPoleRot) * Math.cos(siteLat) * Math.cos(phiPoleRot - siteLon);
-				var C = Math.abs(1 - upper * upper);
-				var lower = Math.sqrt(C);
-				
-				//Take either the user specified A95 or the one from the africanPolePath
-				var A95rad = custom ? APWP.A95[i]*rad : APWP.africanPolePath.A95[i]*rad
-				
-				//Get paleolatitude (degrees), declination (degrees), and inclination (radians)
-				var palat = Math.atan2(upper, lower)/rad;
-				var inc = Math.atan2(2 * upper, lower);					
-				var dec = Math.acos((Math.sin(latPoleRot) - Math.sin(siteLat) * upper) / (Math.cos(siteLat) * lower))/rad;
-
-				//Check delta phi and fix the declination if necessary
-				var delPhi = (phiPoleRot - siteLon)/rad;
-				if(delPhi < 0 || delPhi > 180) {
-					dec = 360 - dec;
-				}
-				
-				//Keep the declination between -180 and 180
-				//If we take declintion between 0 and 360 it switches polarity often and ruins the look of the chart
-				//Axes swaps between 180 to -180 are much more uncommon as it requires huge rotations
-				if(dec > 180) {
-					dec = dec - 360;
-				}
-				
-				//Caclulate the Error on inclination and declination (after Butler, 1992)
-				var dDi = A95rad * ( 2 / ( 1 + 3 * Math.pow(Math.cos((90 - palat)*rad), 2)));
-				var dDx = Math.asin(Math.sin(A95rad)/Math.cos(palat*rad));
-				
-				//If there is a problem in the determination of the errors, put the error to 0
-				if(isNaN(dDx)) {
-					dDx = null;
-				}
-				if(isNaN(dDi)) {
-					dDi = null;
-				}
-				
-				//Use error on inclination to obtain error on paleolatitude
-				//We want to get the absolute difference with the paleolatitude (so we can add and subtract it later)
-				var min = Math.abs(palat - Math.atan(0.5*Math.tan(inc - dDi))/rad);
-				var max = Math.abs(palat - Math.atan(0.5*Math.tan(inc + dDi))/rad);
-				
-				//If the difference is very large (i.e. > 90 degrees) we probably went over a pole
-				//Therefore, take away 180
-				if(min > 90) {
-					min = Math.abs(180 - min);
-				}
-				if(max > 90) {
-					max = Math.abs(180 - max);
-				}
-				
-				//Put data in data bucket (in degrees)
-				poleData.push({
-					'x': phiPoleRot/rad, 
-					'y': eqArea(latPoleRot/rad), 
-					'inc': latPoleRot/rad, 
-					'age': APWP.age[i], 
-					'A95': A95rad/rad
-				}); 
-				
-				//Construct ellipse parameters to draw an ellipse around pole positions on polar plot
-				var ellipseParameters = {
-					'xDec' 	: phiPoleRot/rad,
-					'xInc'	: latPoleRot/rad,
-					'yDec'	: phiPoleRot/rad,
-					'yInc'	: latPoleRot/rad - 90,
-					'zDec'	: phiPoleRot/rad + 90,
-					'zInc'	: 0,
-					'beta'	: A95rad/rad,
-					'gamma'	: A95rad/rad
-				}
-				
-				//Call the ellipse subroutine and store the data in the arrays
-				var elly = new ellipseData(ellipseParameters, true);
-				ellyDat2 = ellyDat2.concat(elly.neg)
-				ellyDat = ellyDat.concat(elly.pos)
-				
-				//Push expected locations to array for plotting
-				//Paleo-latitudes (non-symmetrical error)
-				paleoLats.push({
-					'x': APWP.age[i], 
-					'y': palat, 
-					'error': [min, max],
-					'min': palat - min,
-					'max': palat + max
-				});
-				
-				//Paleo-declinations
-				paleoDecs.push({
-					'x': APWP.age[i], 
-					'y': dec, 
-					'error': dDx/rad,
-					'min': dec - dDx/rad,
-					'max': dec + dDx/rad
-				});
-				
-				//Paleo-inclinations
-				paleoIncs.push({
-					'x': APWP.age[i], 
-					'y': (inc)/rad, 
-					'error': dDi/rad,
-					'min': inc - dDi/rad,
-					'max': inc + dDi/rad
-				});				
-				
-				}
-			}
-		
 			//Construct error boundaries ([x, yMin, yMax])
 			//The skip variable makes sure we put the errors on the right ages
 			var skip = 0
@@ -388,12 +386,12 @@ function getExpectedLocation () {
 					skip++;
 				}
 			}
-		
+			
 			//Get the color for this particular plate/reference frame; use highcharts custom palette 
 			var color = Highcharts.getOptions().colors[(numPlates + numFrames)%8];
-		
+			
 			poleData.push({x: null, y: null});
-		
+			
 			/* Format polar wander data for plot:
 			* 1 	Scatter to show markers
 			* 2 	Line connecting the markers of series 1 without mouse interaction
@@ -469,7 +467,7 @@ function getExpectedLocation () {
 				'data': decErrors,
 				'color': color
 			});
-
+	
 			incData.push({
 				'name': realPlateName, 
 				'data': paleoIncs,
@@ -489,12 +487,6 @@ function getExpectedLocation () {
 		}
 	}
 	
-	//Notify user if no data is found.
-	if(noData) {
-		notify('failure', 'No data was found.');
-		return;
-	}
-	
 	$("#poleTabs").show();
 	$("#poleTabCaption").show();
 	
@@ -502,7 +494,7 @@ function getExpectedLocation () {
 	//Age vs. parameter plots
 	var latitude = (siteLat/rad).toFixed(3);
 	var longitude = (siteLon/rad).toFixed(3);
-	
+		
 	//Call plotting function for the expected declination, inclination, and paleolatitude
 	plotExpectedLocation(palatData, 'palatContainer', 'Paleolatitude', latitude, longitude);
 	plotExpectedLocation(decData, 'decContainer', 'Declination', latitude, longitude);
@@ -510,10 +502,6 @@ function getExpectedLocation () {
 
 	//Polar plot for pole positions (also add selected data)
 	plotPole(polePos);
-	plotSiteDataExpected( 'poles' );
+	plotSiteDataExpected('poles');
 		
 }
-
-
-
-

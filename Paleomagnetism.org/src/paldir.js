@@ -31,6 +31,7 @@ var globalSticky = new Array();
 var exportData = new Array();
 var version = 'vALPHA.1512.1';
 var table;
+var group;
 
 /* FUNCTION getSampleIndex
  * Description: gets sample name from specimen scroller and returns it
@@ -47,107 +48,6 @@ function getSampleIndex() {
 	}
 	
 }
-
-var magicShit = function (event) {
-	var pmag = JSON.parse(localStorage.getItem('pMag'));
-	var dir = JSON.parse(localStorage.getItem('InterPortal'));
-	
-	console.log(pmag, dir);
-
-}
-
-var MagIC = function () {
-	
-	if(table) {
-		table.destroy();
-		$( ".magicFoot").unbind( "click" );
-		$( "#magicTable tbody").unbind( "click" );
-	}
-
-	var magicArray = new Array();
-	for(var i = 0; i < data.length; i++) {
-
-		for(var j = 0; j < data[i].data.length; j++) {
-
-			var name = data[i].name.split(/[.,-]+/);
-			
-			var methodCode = 'LP-DIR';
-			if(data[i].type === 'AF' || data[i].type === 'TH') {
-				methodCode += '-' + data[i].type;
-			}
-			var direction = dir(data[i].data[j].x, data[i].data[j].y, data[i].data[j].z);
-			var magicObject = [
-				name[0], 				//'Site Name': 
-				'...', 					//'Location Name': 
-				'...', 				//Measurement Temperature
-				'...', 				//Measurement Temperature
-				data[i].name, 				//'Sample Name': 
-				data[i].coreAzi, 				//Measurement Temperature
-				data[i].coreDip, 				//Measurement Temperature
-				data[i].bedStrike + 90, 				//Measurement Temperature
-				data[i].bedDip, 				//Measurement Temperature
-				'...', 				//Measurement Temperature
-				'...', 				//Measurement Temperature
-				'...', 				//Measurement Temperature
-				data[i].name, 		//'Specimen Name': 
-				'...', 					//'Synthetic Material Name': 
-				'Demagnetization', 			//'Experiment Name': 
-				data[i].data[j].visible ? 'g' : 'b', 	//'Measurement Flag': 
-				's', 					//'Measurement Standard Flag': 
-				data[i].info, 				//'Measurement Number': 
-				methodCode, 				//'Method Codes': '?',
-				'...', 					//'Instrument Code': '?',
-				'...', 					//'Citation Names': 
-				'...', 					//'Measurement Number of Positions': '?',
-				0, 					//Measurement Elevation
-				data[i].strat || '...', 		//Measurement Stratigraphic Height
-				data[i].type === 'TH' ? Number(data[i].data[j].step) + 273 : '...', 	//Lab Treatment Temperature
-				data[i].type === 'AF' ? Number(data[i].data[j].step) / 1000 : '...', 	//Lab Treatment DC Field
-				20 + 273, 				//Measurement Temperature
-				direction.inc.toFixed(2), 		//Measurement Inclination
-				direction.dec.toFixed(2), 		//Measurement Declination
-				direction.R.toFixed(2), 		//Measurement Magnetization Moment
-				(direction.R/10.5).toFixed(2), 		//Measurement Magnetization Volume
-				'Paleomagnetism.org', 			//MagIC Software Packages:
-				'...'
-			]
-
-		magicArray.push(magicObject);
-	}	}
-
-	$("#magicTable").show();
-
-    table = $('#magicTable').DataTable( {
-        data: magicArray,
-	"scrollX": true,
-    } );
-
-
-	$(".magicFoot").click( function () {
-		var columnIndex = $(this).attr('name');
-		var table = $('#magicTable').DataTable();
-		var numRows = table.rows().count();
-		var input = prompt('Change input for all columns.');
-		if(input) {
-			for(var i = 0; i < numRows; i++) {
-				table.cell(i, columnIndex).data(input);
-			}
-		}
-	});
-
-	$('#magicTable tbody').on( 'click', 'td', function () {
-		var rowIndex = table.cell(this).index().row
-		var input = prompt('Change input text');
-		if(input) {
-			table.cell(this).data(input);
-		}
-	} );
-		
-	$("#magicDiv").show();
-	table.draw();
-
-}
-
 
 var exportTable = function () {
 
@@ -391,6 +291,7 @@ $(function() {
 		plotInterpretations();
 		$("#saveInterpretation").text('Save Interpreted Directions');
 		$("#eqAreaFitted").hide();
+		$("#beddingSameDiv").hide();
 	});
 
 	//Fix for blurring tab after click (interferes with arrow key movement)
@@ -599,6 +500,14 @@ $(function() {
 	$("#fitCircles").click( function () {
 		fitCirclesToDirections();
 		$("#saveInterpretation").text('Save Interpreted Directions and fitted Great Circles');
+		$("#beddingSameDiv").show();
+	});
+	
+	$("#selectGroup").click(function () {
+		var input = prompt('Give group');
+		console.log(input);
+		group = input === '' ? undefined : Number(input);
+		plotInterpretations();
 	});
 	
 	//Function to save interpretations to the statistics portal through localStorage
@@ -627,6 +536,16 @@ $(function() {
 				if(data[i].interpreted) {
 					//Loop over all interpreted components
 					for(var j = 0; j < data[i][coordType].length; j++) {
+						
+						if(group !== undefined) {
+							if(!data[i][coordType][j].group) {
+								data[i][coordType][j].group = 1;
+							}
+							if(data[i][coordType][j].group !== group) {
+								continue;
+							}					
+						}
+				
 						if(data[i][coordType][j].type === 'dir') {
 							exportData.push({
 								'dec': data[i][coordType][j].dec,
@@ -642,6 +561,10 @@ $(function() {
 			}
 		} else {
 			var type = 'great circles';
+		}
+		
+		if($("#beddingSame").prop('checked')) {
+			type = 'directions';
 		}
 		
 		var name = prompt('Please enter a name below:');
@@ -674,10 +597,10 @@ $(function() {
 			'coordType': coordType
 		});
 
-			localStorage.setItem('savedInt', JSON.stringify(parsedObj));
-			notify('success', 'Site ' + name + ' has been added to interpreted directions (' + type + ', ' + coordType + ')');	
+		localStorage.setItem('savedInt', JSON.stringify(parsedObj));
+		notify('success', 'Site ' + name + ' has been added to interpreted directions (' + type + ', ' + coordType + ')');	
 			
-			exportData = new Array();
+		exportData = new Array();
 		
 	});
 	
@@ -1149,9 +1072,20 @@ function fitCirclesToDirections() {
 		
 			//Get declination/inclination and sample name
 			for(var j = 0; j < data[i][coordType].length; j++) {
-
+				
+				if(group !== undefined) {
+					if(!data[i][coordType][j].group) {
+						data[i][coordType][j].group = 1;
+					}
+					if(data[i][coordType][j].group !== group) {
+						continue;
+					}					
+				}
+				
 				var dec = data[i][coordType][j].dec;
 				var inc = data[i][coordType][j].inc;
+				var bedStrike = data[i].bedStrike;
+				var bedDip = data[i].bedDip;
 				var sample = data[i].name;
 				var strat = data[i].strat || ""
 
@@ -1167,7 +1101,7 @@ function fitCirclesToDirections() {
 				if(data[i][coordType][j].type == 'dir') {
 
 					isSet = true;
-
+	
 					exportData.push({
 						'dec': dec, 
 						'inc': inc,
@@ -1175,7 +1109,7 @@ function fitCirclesToDirections() {
 						'strat': strat,
 						'type': 'dir'
 					});
-
+	
 					//Highcharts data array for plotting the set points, these can be used directly
 					pointsSet.push({
 						'x': dec,
@@ -1188,9 +1122,7 @@ function fitCirclesToDirections() {
 							'lineWidth' : 1,
 						}
 					});
-
 				}
-
 				row.type = data[i][coordType][j].type;
 				fitData.push(row);
 			}
@@ -1225,7 +1157,7 @@ function fitCirclesToDirections() {
 			return;
 		}
 	}
-
+	
 	//@Circle is an array containing Cartesian coordinates of pole to great circle
 	var xCircle = new Array(), yCircle = new Array(), zCircle = new Array();
 	var circleInfo = new Array();
@@ -1267,7 +1199,7 @@ function fitCirclesToDirections() {
 			yCircle.push(circleCoordinates.y)
 			zCircle.push(circleCoordinates.z);
 			circleInfo.push(fitData[i]);
-			
+	
 		} else {
 			notify('failure', 'Unfamiliar fitting type; expected "fake", "dir", or "gc"');
 		}
@@ -1284,13 +1216,13 @@ function fitCirclesToDirections() {
 			'z': zSum/R
 		};
 	}
-	
+
 	var meanVector = {
 		'x': xSum,
 		'y': ySum,
 		'z': zSum
 	};
-	
+
 	//Bucket to contain x, y, z coordinates of the fitted points respectively
 	var fittedCircleCoordinates = new Array();
 	
@@ -1358,7 +1290,7 @@ function fitCirclesToDirections() {
 				maxAngle = angles[i];
 			}
 		}
-		if(maxAngle < 0.1) {
+		if(maxAngle < 0.01) {
 			break;
 		}
 	}
@@ -1816,12 +1748,17 @@ var drawInterpretations = function ( sample ) {
 	}
 	
 	//Update the parameter table
-	$("#update").html('<p> <table class="sample" id="infoTable"><tr><th> Component </th> <th> Type </th> <th> Declination </th> <th> Inclination </th> <th> Intensity (µA/m) </th> <th> MAD </th> <th> Coordinates </th> <th> Remark </th> <th> Remove </th> </tr>');
+	$("#update").html('<p> <table class="sample" id="infoTable"><tr><th> Component </th> <th> Type </th> <th> Declination </th> <th> Inclination </th> <th> Intensity (µA/m) </th> <th> MAD </th> <th> Coordinates </th> <th> Remark </th> <th> Group </th> <th> Remove </th> </tr>');
 	
 	//Loop over all interpretations in a particular coordinate reference frame (either Tectonic or Geographic)
 	for(var i = 0; i < data[sample][coordType].length; i++) {
 	
 		//Get the user entered remark, if there is none put default message
+		var group = data[sample][coordType][i].group;
+		if(!group) {
+			group = 1;
+		}
+		
 		var remark = data[sample][coordType][i].remark;
 			
 		if(remark === '') {
@@ -2014,7 +1951,7 @@ var drawInterpretations = function ( sample ) {
 		}
 		
 		//Update table with information on interpretations
-		$("#infoTable").append('<tr> <td> Component #' + (i+1) + '</td> <td> ' + type + '<td> ' + PCADirection.dec.toFixed(1) + ' </td> <td> ' + PCADirection.inc.toFixed(1) + ' </td> <td> ' + intensity.toFixed(1) + '</td> <td> ' + MAD.toFixed(1) + '</td> <td> ' + coordinatesPretty + ' </td> <td> <a comp="' + (i+1) + '" onClick="changeRemark(event)">' + remark + '</a> </td> <td> <b><a style="color: rgb(191, 119, 152); cursor: pointer; border-bottom: 1px solid rgb(191, 119, 152);" comp="' + (i+1) + '" id="del'+(i+1)+'" onClick="removeInterpretation(event)">Delete</a></b> </td> </tr>');
+		$("#infoTable").append('<tr> <td> Component #' + (i+1) + '</td> <td> ' + type + '<td> ' + PCADirection.dec.toFixed(1) + ' </td> <td> ' + PCADirection.inc.toFixed(1) + ' </td> <td> ' + intensity.toFixed(1) + '</td> <td> ' + MAD.toFixed(1) + '</td> <td> ' + coordinatesPretty + ' </td> <td> <a comp="' + (i+1) + '" onClick="changeRemark(event)">' + remark + '</a> </td> <td> <a comp="' + (i+1) + '" onClick="changeGroup(event)">' + group + '</a> </td> <td> <b><a style="color: rgb(191, 119, 152); cursor: pointer; border-bottom: 1px solid rgb(191, 119, 152);" comp="' + (i+1) + '" id="del'+(i+1)+'" onClick="removeInterpretation(event)">Delete</a></b> </td> </tr>');
 		$("#clrIntBox").show();
 		
 	}
@@ -2084,6 +2021,38 @@ var showNotInterpretedBox = function () {
  * Input: button press event (tracks which component is pressed)
  * Output: VOID
  */
+ var changeGroup = function (event) {
+
+	"use strict";
+	
+	var index = event.target.getAttribute('comp') - 1;
+	
+	//Capture specimen in samples variable
+	var sample = getSampleIndex();
+	var text = prompt("Please enter a group below");
+	
+	//Don't change note is cancel is pressed.
+	if(text === null) {
+		return;
+	}
+	
+	//If text is not empty, otherwise put the default group
+	if(text !== "" && text > 0 && text % 1 === 0) {
+		event.target.innerHTML = text;
+		data[sample]['GEO'][index].group = Number(text);
+		data[sample]['TECT'][index].group = Number(text);
+	} else {
+		notify('failure', 'Cannot change group to ' + text);
+		event.target.innerHTML = '1';
+		data[sample]['GEO'][index].group = '';
+		data[sample]['TECT'][index].group = '';
+	}
+	
+	//Save the session
+	setStorage();
+	
+}
+
 var changeRemark = function (event) {
 
 	"use strict";
@@ -2342,7 +2311,7 @@ function zijderveld ( samples ) {
 		'tooltip': {
 			'useHTML': true,
 			'formatter': function () {
-				return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>Declination: </b>' + this.point.dec.toFixed(1) + '<br> <b>Inclination: </b>' + this.point.inc.toFixed(1) + '<br> <b>Intensity: </b>' + this.point.intensity.toFixed(1) + 'µA/m';
+				return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>Declination: </b>' + this.point.dec.toFixed(1) + '<br> <b>Inclination: </b>' + this.point.inc.toFixed(1) + '<br> <b>Intensity: </b>' + this.point.intensity.toFixed(2) + 'µA/m';
 			}
 		},
 		'subtitle': {
@@ -2538,7 +2507,7 @@ function intensity ( sample ) {
         },
 		'tooltip': {
 			'formatter': function () {
-				return '<b>Demagnetization Step: </b>' + this.x + '<br> <b>Intensity </b>' + this.y.toFixed(1)
+				return '<b>Demagnetization Step: </b>' + this.x + '<br> <b>Intensity </b>' + this.y.toFixed(2)
 			}
 		},
         'xAxis': {
@@ -3028,7 +2997,6 @@ function getEqualAreaFittedCSV(self) {
 	var csv = "";
 	
 	csv += self.userOptions.chart.coordinates;
-	
 	csv += lineDelimiter + lineDelimiter;	
 	
 	var row = ['Specimen', 'Declination', 'Inclination', 'Type', 'Information'];
@@ -3040,7 +3008,7 @@ function getEqualAreaFittedCSV(self) {
 	}	
 	
 	for(var i = 0; i < self.series[1].data.length; i++) {
-		row = [self.series[0].data[i].options.sample, self.series[1].data[i].x, self.series[1].data[i].inc, 'Fitted Direction', self.series[1].data[i].info];
+		row = [self.series[1].data[i].options.sample, self.series[1].data[i].x, self.series[1].data[i].inc, 'Fitted Direction', self.series[1].data[i].info];
 		csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;		
 	}	
 	
@@ -3172,7 +3140,6 @@ function importMunich(applicationData, text) {
 	
 	var lines = text.split(/[\n]/);
 	var parsedData = new Array();
-	var nSamples = 1;
 	
 	for(var k = 0; k < 1; k++) {
 		for(var i = 0; i < lines.length; i++) {
@@ -3204,7 +3171,7 @@ function importMunich(applicationData, text) {
 				var info = parameters[5];
 			} else {
 				//Get Cartesian coordinates for specimen coordinates, intensity multiply by 10.5 (volume, this is later reduced) and 1000 from mili to micro
-				var cartesianCoordinates = cart(Number(parameters[3]), Number(parameters[4]), Number(parameters[1])*10.5*1000);
+				var cartesianCoordinates = cart(Number(parameters[3]), Number(parameters[4]), Number(parameters[1])*10.5*1e3);
 				parsedData.push({
 					'visible'	: true, 
 					'include'	: false,
@@ -3220,7 +3187,6 @@ function importMunich(applicationData, text) {
 		
 		if(skip) {
 			notify('failure', 'Found duplicate ' + name + '; skipping specimen');
-			nSamples--;
 			continue;
 		}
 	
@@ -3239,8 +3205,6 @@ function importMunich(applicationData, text) {
 			'data'			: parsedData
 		});
 	}
-
-	notify('success', 'Importing was succesful; added ' + nSamples + ' samples');
 	return applicationData;
 }
 
@@ -3256,7 +3220,6 @@ function importUtrecht(applicationData, text) {
 	//Fixed problem where script would split on every 9999 (also sample intensities)
 	var blocks = text.split(/9999[\n\r]/);
 	var nSpecimens = blocks.length - 1;
-	var nSamples = nSpecimens;
 	
 	//Loop over all data blocks and split by new lines
 	for(var i = 0; i < nSpecimens; i++) {
@@ -3346,7 +3309,6 @@ function importUtrecht(applicationData, text) {
 		
 		if(skip) {
 			notify('failure', 'Found duplicate ' + name + '; skipping specimen');
-			nSamples--;
 			continue;
 		}
 		
@@ -3365,9 +3327,7 @@ function importUtrecht(applicationData, text) {
 			'data'			: parsedData
 		})
 	}
-	
-	notify('success', 'Importing was succesful; added ' + nSamples + ' samples');
-	
+		
 	return applicationData;
 	
 }
@@ -3375,7 +3335,6 @@ function importUtrecht(applicationData, text) {
 function importApplication(applicationData, text) {
 
 	importedData = JSON.parse(text);
-	var nSamples = importedData.length;
 	for(var i = 0; i < importedData.length; i++) {
 		var skip = false;
 		for(var l = 0; l < applicationData.length; l++) {
@@ -3384,14 +3343,11 @@ function importApplication(applicationData, text) {
 			}
 		}
 		if(skip) {
-			nSamples--;
 			notify('failure', 'Found duplicate ' + importedData[i].name + '; skipping specimen');
 			continue;
 		}
 		applicationData.push(importedData[i]);
 	}
-	
-	notify('success', 'Importing was succesful; added ' + nSamples + ' samples');	
 	return applicationData;	
 }
 
@@ -3474,10 +3430,72 @@ function importSpinner(applicationData, text) {
 	}
 }
 
+/*
+ * Importing function for PaleoMac
+ */
+function importMac (applicationData, text) {
+	var lines = text.split(/[\n\r]/);
+	lines = $.grep(lines, function(n) { 
+		return n;
+	});
+
+	var header = lines[0].split(/[,\s\t]+/);
+	var sampleName = header[0];
+	
+	// Get header values
+	// values will be [a, b, s, d, [v]]
+	var parameters = lines[0].split('=');
+	var values = new Array();
+	for(var i = 1; i < parameters.length; i++) {
+		var value = parameters[i].match(/[+-]?\d+(\.\d+)?/g);
+		values.push(value);
+	}
+	
+	/*
+	 * Their coordinate system
+	 */
+	var coreAzi = Number(values[0]);	
+	var coreDip = 90 - Number(values[1]);
+	var bedStrike = Number(values[2]);
+	var bedDip = Number(values[3]);
+
+	var parsedData = new Array();
+	
+	// Skip first two and last line
+	// Intensity is in A/m (V = 10e-6m3) so divide
+	// Display in microamps (1e6)
+	// Scale by 10.5 because I'm dumb -> hardcoded this volume in intensity routine (need to fix this)
+	for(var i = 2; i < lines.length - 1; i++) {
+		var parameters = lines[i].split(/[,\s\t]+/);
+		if(Number(parameters[4]) === 0) continue;
+		parsedData.push({
+			'visible'	: true, 
+			'include'	: false,
+			'step'		: parameters[0],
+			'x'			: 10.5 * 1e6 * Number(parameters[1]) / 10e-6,
+			'y'			: 10.5 * 1e6 * Number(parameters[2]) / 10e-6,
+			'z'			: 10.5 * 1e6 * Number(parameters[3]) / 10e-6,
+			'a95'		: Number(parameters[9]),
+			'info'		: 'No Information'
+		});	
+	}
+	applicationData.push({
+		'GEO'			: [],
+		'TECT'			: [],
+		'interpreted'	: false,
+		'name'			: sampleName,
+		'coreAzi'		: coreAzi,
+		'coreDip'		: coreDip,
+		'bedStrike'		: bedStrike,
+		'bedDip'		: bedDip,
+		'data'			: parsedData
+	})
+	return applicationData;
+}
+
 function importDefault ( applicationData, text ) {
 
 	var blocks = text.split(/9999[\n\r]/);
-	var nSamples = blocks.length; 
 	
 	for(var i = 0; i < blocks.length; i++) {
 
@@ -3531,7 +3549,6 @@ function importDefault ( applicationData, text ) {
 		
 		if(skip) {
 			notify('failure', 'Found duplicate ' + name + '; skipping specimen');
-			nSamples--;
 			continue;
 		}
 		
@@ -3545,10 +3562,8 @@ function importDefault ( applicationData, text ) {
 			'bedStrike'		: bedStrike,
 			'bedDip'		: bedDip,
 			'data'			: parsedData
-		})
+		});
 	}
-	
-	notify('success', 'Importing was succesful; added ' + nSamples + ' samples');
 	return applicationData;
 }
 /* IMPORTING / PARSING FUNCTIONS
@@ -3570,45 +3585,59 @@ function importing (event, format)  {
 		var format = $("#importFormats").val();
 	}
 	
+	//Not appending, reset data array
+	var append = $('#appendFlag').prop('checked');
+	if(!append) {
+		data = new Array();
+	}
+	
+	var initialSize = data.length; 
+
 	//Filehandler API; handles the file importing
     var input = event.target;
     var reader = new FileReader();
+	var index;
 	
-	//Single input
-    reader.readAsText(input.files[0]);
-	reader.onload = function () {
-		
-		var text = reader.result;
-		
-		//Not appending, reset data array
-		var append = $('#appendFlag').prop('checked');
-		if(!append) {
-			data = new Array();
-		}
+	//Multiple input
+	(function readFile(index) {
 
-		//Parsing formats refer to own functions
-		//Contact us if you would like your custom format to be added
-		//See the importUtrecht function as an example parser
-		if(format === 'UTRECHT') {
-			data = importUtrecht(data, text);
-		} else if(format === 'APP') {
-			data = importApplication(data, text);
-		} else if(format === 'SPINNER') {
-			notify('failure', 'Spinner input is currently not supported.');
-			return;
-		} else if(format === 'DEFAULT') {
-			data = importDefault(data, text);
-		} else if(format === 'MUNICH') {
-			data = importMunich(data, text);
+		reader.readAsText(input.files[index]);
+		reader.onload = function () {
+			
+			var text = reader.result;
+	
+			//Parsing formats refer to own functions
+			//Contact us if you would like your custom format to be added
+			//See the importUtrecht function as an example parser
+			if(format === 'UTRECHT') {
+				data = importUtrecht(data, text);
+			} else if(format === 'APP') {
+				data = importApplication(data, text);
+			} else if(format === 'SPINNER') {
+				notify('failure', 'Spinner input is currently not supported.');
+				return;
+			} else if(format === 'DEFAULT') {
+				data = importDefault(data, text);
+			} else if(format === 'MUNICH') {
+				data = importMunich(data, text);
+			} else if(format === 'PALEOMAC') {
+				data = importMac(data, text);
+			}
+			
+			index++;
+			
+			if(index < input.files.length) {
+				readFile(index);
+			} else {
+				//Refresh the specimen scroller with the new data
+				refreshSpecimenScroller();
+	
+				//Save application
+				setStorage();
+				notify('success', 'Importing was succesful; added ' + (data.length - initialSize) + ' samples');		
+			}
 		}
-
-		//Refresh the specimen scroller with the new data
-		refreshSpecimenScroller();
-	
-		//Save application
-		setStorage();
-	
-	}
+	})(0);
 }
 
 /*
@@ -3642,15 +3671,14 @@ var clearStorage = function () {
 }
 
 var setStorage = function() {
-
 		try {
 			var storeObj = JSON.stringify(data); //parse JSON encoded object
+			if(localStorage) {
+				localStorage.setItem('InterPortal', storeObj);				
+			}
 		} catch (err) {
 			notify('failure', 'Failure writing data to local storage: ' + err);
-		}
-		
-		if(localStorage) {
-			localStorage.setItem('InterPortal', storeObj);
+			notify('failure', 'Changes will not be saved! Please export manually!');
 		}
 }
 
@@ -3743,7 +3771,7 @@ var plotInterpretationsGraph = function ( dataBucket, nCircles, container, title
 }
 
 function plotInterpretations() {
-
+	
 	var plotDataDir = [];
 	var plotDataCircle = [];
 	var plotDataCircle2 = [];
@@ -3767,12 +3795,21 @@ function plotInterpretations() {
 				var sample = data[i].name;
 				var color = (inc < 0) ? 'white' : 'rgb(119, 152, 191)';
 				
+				if(group !== undefined) {
+					if(!data[i][coordType][j].group) {
+						data[i][coordType][j].group = 1;
+					}
+					if(data[i][coordType][j].group !== group) {
+						continue;
+					}					
+				}
+
 				//This interpreted direction is a point and not a pole
-				if(data[i][coordType][j].type == 'dir') {
+				if(data[i][coordType][j].type === 'dir') {
 				
 					nPoints++;
 					dataFisher.push([dec, inc]);
-
+				
 					//Push to Highcharts formatted data array
 					plotDataDir.push({
 						'info': data[i].info ? data[i].info : "",
@@ -3868,7 +3905,7 @@ function plotInterpretations() {
 		}	
 	}];
 
-	plotInterpretationsGraph( plotData, nCircles, 'eqAreaInterpretations', 'Interpreted Directions and Great Circles', coordinateNice );
+	plotInterpretationsGraph( plotData, nCircles, 'eqAreaInterpretations', 'Interpreted Directions and Great Circles', coordinateNice);
 	$("#fittingTable").html('<table class="sample" id="fittingTableInfo"><tr><th> N <small> (setpoints) </small> </th> <th>Mean Declination </th> <th>Mean Inclination </th> </tr>');
 	$("#fittingTableInfo").append('<tr> <td> ' + nPoints + ' </td> <td> ' + parameters.mDec.toFixed(1) + ' </td> <td> ' + parameters.mInc.toFixed(1) + ' </td> </tr> </table>');
 	$("#fittingTable").show();

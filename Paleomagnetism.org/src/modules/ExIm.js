@@ -29,7 +29,7 @@ module.IO.downloadSelected = function () {
 	
 	//Add all sites to the export data; ignore internally used site TEMP
 	for(var i = 0; i < siteNames.length; i++) {
-		if(sites[siteNames[i]].userInput.metaData.name != "TEMP") {
+		if(sites[siteNames[i]].userInput.metaData.name !== "TEMP") {
 			exportData.data.push(sites[siteNames[i]].userInput);
 		}
 	}
@@ -69,18 +69,16 @@ module.IO.importing = function(event) {
 		$("#loading").show();
 		(addSitesTimed = function () {
 			if(i < importData.data.length) {
-				if(importData.data[i].metaData.name !== "TEMP") {
-					if(!sites.hasOwnProperty(importData.data[i].metaData.name)) {
-						j++
-						sites[importData.data[i].metaData.name] = new site(importData.data[i].metaData, importData.data[i].data, false);
-					} else {
-						notify('failure', 'Skipping site ' + importData.data[i].metaData.name + '; a site with this name already exists in this instance.');
-					}
-					i++;
-					setTimeout( function() { addSitesTimed(); }, 1);
+				if(!sites.hasOwnProperty(importData.data[i].metaData.name)) {
+					sites[importData.data[i].metaData.name] = new site(importData.data[i].metaData, importData.data[i].data, false);
+					j++;
+				} else {
+					notify('failure', 'Skipping site ' + importData.data[i].metaData.name + '; a site with this name already exists in this instance.');
 				}
+				i++;
+				setTimeout( function() { addSitesTimed(); }, 1);
 			} else {
-				notify('success', 'Loading succesful; added ' + j + ' new site(s)');
+				notify('success', 'Application has been initialized succesfully; found ' + j + ' site(s) and ' + Object.keys(APWPs).length + ' APWP(s)');
 				$("#loading").hide();
 				finishedLoading();
 				setStorage();
@@ -155,6 +153,8 @@ module.IO.table = function(siteNames) {
 		}
 		
 		row.push("latitude", "longitude", "author", "age", "min age", "max age");
+		row.push("beddings");
+		
 		csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
 	
 		for(var i = 0; i < siteNames.length; i++) {
@@ -176,7 +176,8 @@ module.IO.table = function(siteNames) {
 				row.push(sites[key].userInput.metaData['age'])
 				row.push(sites[key].userInput.metaData['minAge'])
 				row.push(sites[key].userInput.metaData['maxAge'])
-				
+				var beddings = sites[key].userInput.data.map(function (entry) { return entry[2] + '/' + entry[3]});
+				row.push(uniqueBedding(beddings).join(', '));
 				csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
 			}
 		}
@@ -190,6 +191,9 @@ module.IO.table = function(siteNames) {
 	module.IO.dlItem(csv, 'Parameter_Table', 'csv');
 }
 
+uniqueBedding = function (array) {
+	return array.filter(function(el,i,a){if(i==a.indexOf(el))return 1;return 0});
+}
 /* MODULE I/O
  * FUNCTION dlItem
  * Description: Attempts to create a download attribute to download CSV
@@ -401,17 +405,18 @@ $(function() {
 				//The last two series are the confidence envelope and not interesting for exporting. Just parse the A95 data.
 				for(var i = 0; i < this.series.length; i += 4) {
 					
+					
 					//Put name and information
 					csv += '"' + this.series[i].name + '"' + lineDelimiter;
-					var columns = ['Latitude', 'Longitude', 'Age', 'Alpha95'];
+					var columns = ['Latitude', 'Longitude', 'Age', 'Alpha95', 'Name'];
 					csv += '"' + columns.join(itemDelimiter) + '"' + lineDelimiter;		
 					
 					//For all data put latitude/longitude/age/A95
 					for(var j = 0; j < this.series[i].data.length; j++)	{
-						var columns = [this.series[i].data[j].x, this.series[i].data[j].inc, this.series[i].data[j].age, this.series[i].data[j].A95];				
+						var columns = [this.series[i].data[j].inc, this.series[i].data[j].x, this.series[i].data[j].age, this.series[i].data[j].A95, this.series[i].data[j].name];
 						csv += '"' + columns.join(itemDelimiter) + '"' + lineDelimiter;			
 					}
-					
+
 					csv += lineDelimiter;	
 				}
 				
@@ -427,12 +432,12 @@ $(function() {
 					
 					//Put name and information
 					csv += '"' + this.series[i].name + '"' + lineDelimiter;
-					var columns = ['Age', this.title.textStr, 'Error High', 'Error Low'];
+					var columns = ['Age', this.title.textStr, 'Error High', 'Error Low', 'Name'];
 					csv += '"' + columns.join(itemDelimiter) + '"' + lineDelimiter;			
 					
 					//Loop over all data points and put them in columns/rows (include the error range in series[i+1])
 					for(var j = 0; j < this.series[i].data.length; j++) {
-						var columns = [this.series[i].data[j].x, this.series[i].data[j].y, this.series[i+1].data[j].high, this.series[i+1].data[j].low];
+						var columns = [this.series[i].data[j].x, this.series[i].data[j].y, this.series[i+1].data[j].high, this.series[i+1].data[j].low, this.series[i].data[j].name];
 						csv += '"' + columns.join(itemDelimiter) + '"' + lineDelimiter;
 					}	
 					csv += lineDelimiter;

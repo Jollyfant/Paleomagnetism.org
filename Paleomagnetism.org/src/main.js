@@ -329,7 +329,7 @@ var addAPWP = function () {
 	//Loop over all the lines and put the proper parameters in the proper bucket
 	for(var i = 0; i < lines.length; i++) {
 	
-		var p = lines[i].split(/[,\s\t]+/);
+		var p = lines[i].split(/[,\t]+/);
 		age.push(Number(p[3]));
 		A95.push(Number(p[2]));
 		lon.push(Number(p[1]));
@@ -452,6 +452,8 @@ var addInterpretations = function () {
 			var coordinateReadable = 'Geographic';
 		}
 		
+		var overRide = $("#override").prop('checked');
+
 		//Generate line from dec, inc, bedding, and sample name
 		//Only put the bedding if the site has been interpreted in GEOGRAPHIC coordinates WITHOUT fitted great circles
 		//Otherwise, just put directions without beddings
@@ -1117,10 +1119,12 @@ var processUserInput = function ( data, type, name ) {
 			var includeStrat = $('#includeStrat').prop('checked');
 			var expected = 2;
 			
-			//Regex for splitting on spaces, tabs, and commas; p becomes an array p[c0, c1, c2, c3, c4] where c represents column
+			//Regex for splitting on tabs and commas; p becomes an array p[c0, c1, c2, c3, c4] where c represents column
 			//Also remove double spaces
+
 			var p = lines[i].split(/[,\t]+/);
 			var numberInput = p.length;
+
 			p = $.grep(p, function(n) { 
 				return(n) 
 			});
@@ -1134,7 +1138,7 @@ var processUserInput = function ( data, type, name ) {
 			var inclination = Number(p.shift());
 
 			if(includeBedding) {
-				var bedOrient = Number(p.shift());
+				var bedOrient = Number((p.shift() + 360))%360;
 				var bedDip = Number(p.shift());
 				expected += 2;
 			}
@@ -1177,7 +1181,7 @@ var processUserInput = function ( data, type, name ) {
 				
 				//Bucket to hold directions for a single simulation (iteration)
 				var outputIteration = new Array();
-				var p = lines[j].split(/[,\s\t]+/);
+				var p = lines[j].split(/[,\t]+/);
 				
 				p[0] = (p[0]%360); //Keep declination within bounds
 				

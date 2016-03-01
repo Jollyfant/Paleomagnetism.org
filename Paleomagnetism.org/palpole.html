@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<HTML>
+<HEAD>
+<meta charset="utf-8"/>
+<meta name="description" content="Paleomagnetism.org: An open source tool for paleomagnetic analysis">
+<meta name="keywords" content="Paleomagnetism, Palaeomagnetism, Statistics, Analysis, Javascript, Magnetic, Zijderveld">
+<meta name="author" content="Paleomagnetism.org">
+
+<!-- Supporting Libraries -->
+<link href="./src/libs/jQuery/jquery-ui.css" rel="stylesheet"> <!-- jQuery UI stylesheet -->
+
+<link href="./css/paldir.css" type="text/css" rel="stylesheet" /> <!-- paleomagnetism.org stylesheet -->
+<link href="./css/pMagJS.css" type="text/css" rel="stylesheet" /> <!-- paleomagnetism.org stylesheet -->
+
+<link href="./src/libs/notiny-master/src/notiny.css" rel="stylesheet"> <!-- Notification style sheet (Notiny) -->
+<script src="./src/libs/jQuery/jquery-1.11.1.js"></script> <!-- jQuery -->
+<script src="./src/libs/jQuery/jquery-ui.js"></script> <!-- jQuery UI -->
+<script src="./src/libs/notiny-master/src/notiny.js"></script> <!-- (notiny) notification plugin -->
+<script src="./src/libs/Highcharts/highcharts.src.js"></script> <!-- Highcharts Main -->
+<script src="./src/libs/Highcharts/highcharts-more.src.js"></script> <!-- Highcharts plugin for extra graphs -->
+<script src="./src/libs/Highcharts/heatmap.src.js"></script> <!-- HighCharts HeatMap Plugin -->
+<script src="./src/libs/Highcharts/exporting.src.js"></script> <!-- Highcharts figure exporting -->
+<script src="./src/libs/jQuery/jquery-linedtextarea.js"></script> <!-- jQuery plugin for lined text-area -->
+<script src="./src/libs/numeric-1.2.6.js"></script> <!-- Numeric JS to calculate principle components -->
+
+<script src="./src/core.js"></script> <!-- jQuery plugin for multiselect -->
+
+<link rel="shortcut icon" type="image/x-icon" href="icon.ico" />
+<title> Paleomagnetism.org - Palpole </title>
+
+<!-- Google Analytics -->
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-68024347-1', 'auto');
+ga('send', 'pageview');
+</script>
+	
+</HEAD>
+
+<BODY>
+<div id="body_container" style="text-align: justify;">
+
+	<!-- HEADER -->
+	<div id="title" style="margin: 0 auto; padding: 5px; background-color: #fff">
+		<div style="display: inline-block; padding-right: 10px;">
+			<img style="margin: 0px; height: 60px;" src="./images/icon.png">
+		</div>
+	</div>
+	
+	<!-- MENU CONTACT -->
+	<div style="background-color: #7798BF; color: white; padding: 10px;">
+		<li class="menuLink"><a class="link" href="./index.html"> Home </a>
+		<li class="menuLink"><a class="link" href="./interpretation.html"> Interpretation Portal </a>
+		<li class="menuLink"><a class="link" href="./statistics.html"> Statistics Portal </a> 
+		<li class="menuLink"><a class="link" style="background: #DED;"><img src="./images/icon.ico" height="16" width="16" style="vertical-align: middle;">&nbsp Miscellaneous Portal </a> 
+		<li class="menuLink"><a class="link" href="./cite.html"> References </a>
+		<li class="menuLink"><a class="link" href="./team.html">Team and Code </a>
+		<li class="menuLink"><a class="link" href="mailto:paleomagnetism.org@gmail.com" title="temporary address"> Contact </a>
+	</div>
+	
+	<div class="information" style="margin: 10px; font-size: 12px; font-family: Helvetica,Arial,sans-serif;">
+	<h1> PalPole Implementation </h1>
+		<p>This small tool converts between VGPs and directions for a particular site location. <b> Only enter one of the two (VGPs / Directions) boxes, the tool will dictate the other</b>. 
+		<p><b>Usage:</b>
+		<ul>
+		<li>Fill in a site latitude and longitude in decimal degrees (N lines). A single line input forces all transformations to that site.
+		<li>Insert a list of declination, inclination (latitude, longitude) pairs in the appropriate textbox (equal to N lines; above). Each data pair must be entered on a new line. Data may be copied from Excel.
+		<li>Click the calculate VGP or DIR, and the tool will fill in the empty box above the button.
+		<li>Calculate the paleolatitude yourself if required (Tauxe, 2.12).
+		</ul>
+		<div style="text-align: center;">
+		<h2>Latitude & Longitude</h2>
+		<p><textarea placeholder='Lat, Lng' id="LATLON" rows="5"></textarea>
+		</div>
+		<hr>
+		<div style="text-align: center;">
+		<table style="margin: 0 auto;">
+		<tr>
+		<td><h2>VGPs</h2></td>
+		<td><h2>Directions</h2></td>
+		</tr>
+		<tr>
+		<td><textarea placeholder='Lat, Lng' id="VGP2DIR" rows="5" style="height: 300px;"></textarea></td>
+		<td><textarea placeholder='Dec, Inc' id="DIR2VGP" rows="5" style="height: 300px;"></textarea></td>
+		</tr>
+		<tr>
+		<td><b>VGP Latitude, VGP Longitude</b></td>
+		<td><b>Declination, Inclination</b></td>
+		</tr>
+		<tr>
+		<td> <button id="getVGP">Calculate Virtual Geomagnetic Pole</button> </td>
+		<td> <button id="getDIR">Calculate Direction</button> </td>
+		</tr>		
+		</table>
+		</div>
+	</div>
+	<hr>
+	
+	<!-- FOOTER -->
+	<div id="footer" class="textplot" style="margin: 10px;">
+		<small> © 2016 Paleomagnetism.org. Please <a href="./cite.html">cite</a> all contributors if you use this application for your research.
+		<p><b>Disclaimer:</b> Paleomagnetism.org is an open-source initiative licensed under the <a href="https://www.gnu.org/licenses/gpl.html">GNU General Public License v3.0</a>. All data processing is handled on the client-side within your browser. Graph exporting is delivered via the Highcharts content delivery network under the Highcharts <a href="http://www.highcharts.com/docs/export-module/privacy-disclaimer/">exporting privacy policy</a>.
+		<hr>
+		<div style="text-align: right; display: inline-block;">
+			<a href="http://www.geo.uu.nl/~forth/"><img style="margin: 0px; height: 60px;" src="./images/UU.png"></a>
+			<a href="http://erc.europa.eu/"><img style="margin: 0px; height: 60px;" src="./images/ERC.png"></a>
+			<a href="http://www.nwo.nl/"><img style="margin: 0px; height: 60px;" src="./images/logo NWO_plain.png"></a>
+		</div>
+	</div>
+</div>
+
+<style>
+.linedwrap {
+  display: inline-block;
+}
+</style>
+<script>
+$(function () {
+
+  $("#VGP2DIR, #DIR2VGP, #LATLON").linedtextarea();
+  
+  $("#getVGP").click(function () {
+
+	// Get site location, return if empty
+	var location = getLatLong();
+
+	// Get the input for that particular box
+	var input = $("#DIR2VGP").val();
+	if(!input && $("#VGP2DIR").val()) {
+		notify('failure', "You're looking for the other button.");
+		return;
+	}
+	
+	// Split by new lines, put empty lines in garbage
+	var lines = input.split("\n").filter(Boolean);
+	if(location.length === 1) {
+		var location = lines.map(function(x) {
+			return location[0];
+		})
+	}
+
+	if(location.length !== lines.length) {
+		notify('failure', 'Input lengths N are not equal.');
+		return;
+	}
+	
+	var output = new Array();
+	
+	// Loop over all data pairs, and calculate the poles
+	for(var i = 0; i < lines.length; i++) {
+	
+		// Split by comma, tab, spaces; require two parameters
+		var parameters = lines[i].split(/[\s\t,]+/);
+		if(parameters.length !== 2) {
+			notify('failure', 'Got ' + parameters.length + ' parameter(s) at line ' + i + ' in Directions. Need 2.');
+			return;
+		}
+		
+		var p = poles(location[i].lat, location[i].lon, parameters);
+		output.push(p[1] + ', ' + p[0]);
+	}
+	// Put the pole output to the other box
+	$("#VGP2DIR").val(output.join('\n'));
+		
+  });
+  
+  // See above, just get directions instead of poles
+  $("#getDIR").click(function () {
+  
+ 	var location = getLatLong(); 
+	if(!location) {
+	  return
+	}
+	
+	var input = $("#VGP2DIR").val();
+	if(!input && $("#DIR2VGP").val()) {
+		notify('failure', "You're looking for the other button.");
+		return;
+	}
+	
+	var lines = input.split("\n").filter(Boolean);
+	
+	if(location.length === 1) {
+		var location = lines.map(function(x) {
+			return location[0];
+		})
+	}
+	
+	if(location.length !== lines.length) {
+		notify('failure', 'Input lengths N are not equal.');
+		return;
+	}
+	
+	var output = new Array();
+	var data = new Array();
+	for(var i = 0; i < lines.length; i++) {
+		var parameters = lines[i].split(/[\s\t,]+/);
+		if(parameters.length !== 2) {
+			notify('failure', 'Got ' + parameters.length + ' parameter(s) at line ' + i + ' in VGPs. Need 2.');
+			return;
+		}
+		var p = invPoles(location[i].lat, location[i].lon, parameters.reverse());
+		output.push(p[0] + ', ' + p[1]);
+		data.push({
+			'site': location[i], 
+			'direction': {'dec': p[0], 'inc': p[1]},
+			'vgp': {'lat': parameters[1], 'lon': parameters[0]}
+		});
+	}
+	
+	$("#DIR2VGP").val(output.join('\n'));
+		
+  })
+  
+  function getLatLong () {
+  
+ 	var input = $("#LATLON").val();
+	if(!input) {
+		notify('failure', 'Give site locations');
+		return false;
+	}
+	
+	var lines = input.split("\n").filter(Boolean);
+	
+	var location = lines.map(function(x) {
+		var parameters = x.split(/[\s\t,]+/);
+		return {'lat': parameters[0], 'lon': parameters[1]};
+	});
+
+	return location;
+  }
+  
+});
+
+</script>
+
+</BODY>
+
+</HTML>

@@ -350,6 +350,7 @@ function varianceFoldtest() {
 		}
 		
 		if(i === 0) {
+			danielTest(index, sampleDec, sampleStrike);
 			var realMax = index;
 		}	
 		
@@ -357,6 +358,7 @@ function varianceFoldtest() {
 		if(i <= 26) {
 			bootTaus.push(taus);
 		}
+		
 		untilt.push(index);
 	}
 
@@ -377,6 +379,127 @@ function varianceFoldtest() {
 	
 	//Call the foldtest plotting function
 	grfoldtestOro ( cdfData, bootTaus, lower, upper, unfoldingMin, unfoldingMax, sub, data, realMax, type );
+	
+}
+
+// Index is the minimum variance (%)
+// Dec, strike are arrays of declinations and strikes for which INDEX is the minimum variance
+function danielTest(index, dec, strike) {
+	
+	// Unfold the directions and strikes to the minimum variance
+	var decs = new Array();
+	for(var i = 0; i < dec.length; i++) {
+		var unfoldedDeclination = (dec[i] - (strike[i]-90)*0.01*index);
+		decs.push([unfoldedDeclination, 0]); // Push to unfolded declination with inclination 0 to a new array		
+	}
+	
+	//Calculate the mean declination for this set of data (this will be the reference for unfolding)
+	var k = fisher(decs, 'dir', 'simple');
+	
+	var cutDec = new Array();
+	var cutStrike = new Array();
+	
+	for(var i = 0 ; i < dec.length; i++) {
+		if(Math.abs(k.mDec - dec[i]) >= 30) {
+			cutDec.push(dec[i]);
+			cutStrike.push(strike[i]);
+		}
+	}
+	
+	// Check this...
+	// Look at the difference between the reference declination and each declination
+	// The strike diveded by the angle between the reference and dec_i should equal the percentage of unfolding
+	// E.g. reference 0, dec 90, strike 45. Unfolding strike gives us (45 / (90 - 0)) = 0.50
+	// Meaning that if we fully unfold the strike, the declination has only moved 50% with respect to its reference
+	var diffs = new Array();
+	for(var i = 0; i < cutDec.length; i++) {
+		var diff = 100 * (cutStrike[i]/(Math.abs(k.mDec - cutDec[i])));
+		diffs.push(diff);
+	}
+	
+	// Just to plot the CDF
+	diffs.sort(function (a, b) {
+		return a > b ? 1 : a < b ? -1 : 0;
+	});
+	var cdfData = new Array();
+	for(var i = 0; i < diffs.length; i++){
+		cdfData.push([diffs[i], i/(diffs.length-1)]);
+	}
+
+	// And plot mister Pastor-Galan
+	plotDaniel(cdfData);
+}
+
+function plotDaniel (cdfData) {
+
+	"use strict";
+			
+	//Define the cumulative distribution function
+	//Info array contains site names
+	var mySeries = [{
+		'name': 'Test', 
+		'data': cdfData,
+		'color': 'rgb(119, 152, 191)',
+		'marker': {
+			'enabled': false
+		}
+	}];
+	
+	//Chart options	to be used
+	var chartOptions = {
+        'title': {
+            'text': 'Test',
+        },
+		'exporting': {
+			'filename': 'LinearityTest',
+		    'sourceWidth': 600,
+            'sourceHeight': 600,
+            'buttons': {
+                'contextButton': {
+                    'symbolStroke': '#7798BF',
+					'align': 'right'
+                },
+			}
+        },
+		'chart': {
+			'id': 'CTMDXYZ',
+			'renderTo': 'danielTest'
+		},
+        'subtitle': {
+			'text': 'Change'
+        },
+		'plotOptions': {
+			'series': {
+				'turboThreshold': 0
+			}
+		},
+        'xAxis': {
+			'title': {
+                'text': 'Percentage of Unfolding'
+            },
+		},
+		'credits': {
+			'text': "Paleomagnetism.org [CTMD] - Coordinate Bootstrap (Tauxe et al., 2010)",
+			'href': ''
+		},
+        'yAxis': {
+			'min': 0,
+			'max': 1,
+            'title': {
+                'text': 'Cumulative Distribution'
+            }
+        },
+        'tooltip': {
+    		'formatter': function() {
+        		return 'Something here'
+    		}
+		},
+        'series': mySeries
+    }
+	
+	//Call the Highcharts constructor
+	new Highcharts.Chart(chartOptions);
+	
 }
 
 /*
@@ -1202,6 +1325,30 @@ function bootstrapData(type) {
 	})();
 }
 
+function standardDeviation(values){
+  var avg = average(values);
+  
+  var squareDiffs = values.map(function(value){
+    var diff = value - avg;
+    var sqrDiff = diff * diff;
+    return sqrDiff;
+  });
+  
+  var avgSquareDiff = average(squareDiffs);
+
+  var stdDev = Math.sqrt(avgSquareDiff);
+  return stdDev;
+}
+
+function average(data){
+  var sum = data.reduce(function(sum, value){
+    return sum + value;
+  }, 0);
+
+  var avg = sum / data.length;
+  return avg;
+}
+
 /*
  * FUNCTION callFunc
  * Description: prepares data to be plotted on the oroclinal test (top figure)
@@ -1270,7 +1417,7 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 	
 	//Do linear regression on actual data
 	lr = linearRegression(strike, dec);
-	
+
 	var pointCloudBootstrap = new Array();
 	for(var i = 0; i < sampledStuff.length; i++) {
 		for(var j = 0; j < sampledStuff[i].strike.length; j++) {
@@ -1281,7 +1428,8 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 			});
 		}
 	}
-		
+	
+	var SWresid = new Array();
 	var pointCloud = new Array();
 	for(var i = 0; i < strike.length; i++) {
 		var residual = (strike[i] * lr.slope + lr.intercept) - dec[i];
@@ -1290,9 +1438,96 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 			'y': strike[i],
 			'code': codes[i],
 		});
+		SWresid.push(residual);
 	}
 	
-	plotResiduals(pointCloud, pointCloudBootstrap, minPlot, maxPlot);
+/* fn cdf
+ * Javascript implementation of cdf
+ */
+function cdf (x, mean, std) {
+	return 0.5 * (1 + erf((x - mean) / Math.sqrt(2 * std * std)));
+}
+
+/* fn erf
+ * Javascript implementation of the error function, taken from JSTAT
+ * https://github.com/jstat/jstat
+ */
+function erf(x) {
+	
+	var cof = [
+		-1.3026537197817094,
+		6.4196979235649026e-1,
+		1.9476473204185836e-2,
+        -9.561514786808631e-3,
+		-9.46595344482036e-4,
+		3.66839497852761e-4,
+        4.2523324806907e-5,
+		-2.0278578112534e-5,
+		-1.624290004647e-6,
+        1.303655835580e-6,
+		1.5626441722e-8,
+		-8.5238095915e-8,
+        6.529054439e-9,
+		5.059343495e-9,
+		-9.91364156e-10,
+        -2.27365122e-10,
+		9.6467911e-11,
+		2.394038e-12,
+        -6.886027e-12,
+		8.94487e-13,
+		3.13092e-13,
+        -1.12708e-13,
+		3.81e-16,
+		7.106e-15,
+        -1.523e-15,
+		-9.4e-17,
+		1.21e-16,
+        -2.8e-17
+	];
+	
+  var j = cof.length - 1;
+  var isneg = false;
+  var d = 0;
+  var dd = 0;
+  var t, ty, tmp, res;
+
+  if (x < 0) {
+    x = -x;
+    isneg = true;
+  }
+
+  t = 2 / (2 + x);
+  ty = 4 * t - 2;
+
+  for(; j > 0; j--) {
+    tmp = d;
+    d = ty * d - dd + cof[j];
+    dd = tmp;
+  }
+
+  res = t * Math.exp(-x * x + 0.5 * (cof[0] + ty * d) - dd);
+  return isneg ? res - 1 : 1 - res;
+  
+};
+	
+
+	// Magic empirical Shapiro numbers
+	// See: http://esl.eng.ohio-state.edu/~rstheory/iip/shapiro.pdf @ (p. 6 eq. 11, 12)
+	// Do some statistics on the residuals
+	var W = ShapiroWilkW(SWresid);
+	var lnSamples = Math.log(SWresid.length);
+	var mu = 0.0038915 * Math.pow(lnSamples, 3) - 0.083751 * Math.pow(lnSamples, 2) - 0.31082 * lnSamples - 1.5861;
+	var power = 0.0030302 * Math.pow(lnSamples, 2) - 0.082676 * lnSamples - 0.4803;
+	var sigma = Math.pow(Math.E, power);
+	var zValue = (Math.log(1-W) - mu) / sigma;
+	var be = cdf(-Math.abs(zValue), 0, 1);
+	var stdv = standardDeviation(SWresid);
+	var averageRes = average(SWresid);
+	console.log(be);
+	
+	plotResiduals(pointCloud, pointCloudBootstrap, minPlot, maxPlot, stdv, averageRes);
+	plotQQ(SWresid, be);
+
 
 	var regDat = [{
 		'x': minPlot, 
@@ -1414,7 +1649,91 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 	
 }
 
-function plotResiduals (data, databs, min, max) {
+function plotQQ(residuals, pVal) {
+	
+	var gaussianDistrbution = residuals.map(function(x) {
+		return getRandom(0, 1, 'Gauss');
+	});
+	residuals.sort(function (a, b) {
+		return a > b ? 1 : a < b ? -1 : 0;
+	});
+	gaussianDistrbution.sort(function (a, b) {
+		return a > b ? 1 : a < b ? -1 : 0;
+	});
+	
+	var QQLr = linearRegression(residuals, gaussianDistrbution);
+	
+	var plotData = new Array();
+	for(var i = 0; i < residuals.length; i++) {
+		plotData.push({'x': residuals[i], 'y': gaussianDistrbution[i]});
+	}
+	createQQChart(plotData, QQLr, pVal);
+}
+	
+function createQQChart(data, QQLr, pVal) {
+	
+	dataLR = [[data[0].x, data[0].x * QQLr.slope + QQLr.intercept], [data[data.length - 1].x, data[data.length - 1].x * QQLr.slope + QQLr.intercept]];
+	
+	$("#QQ").highcharts({
+		'chart': {
+			'type': 'scatter',
+		},
+		'title': {
+			'text': 'Quantile-Quantile Plot (Shapiro-Wilk p-val: ' + pVal.toFixed(3) + ')' 
+		},
+		credits: {
+			text: "Paleomagnetism.org [Oroclinal Test] - QQ-Plot",
+			href: ''
+		},
+		'yAxis': {
+			'title': {
+				'text': "Gaussian Quantiles"
+			}
+		},
+		'xAxis': {
+			'title': {
+				'text': "Sample Quantiles"
+			}
+		},
+		series: [{
+			'name': 'Data',
+			'data': data
+		}, {
+			'name': 'Regression (' + QQLr.r2.toFixed(2) + ')',
+			'type': 'line',
+			'marker': {
+				'enabled': false
+			},
+			'data': dataLR
+		}]
+	});
+}
+
+function createStdvLines(avg, stdv) {
+	
+	var stdvLines = new Array();
+	
+	//Sigma
+	[1, -1].forEach(function(x) {
+		stdvLines.push({
+			'value': avg + x*stdv,
+			'width': 2,
+			'color': 'rgba(119, 191, 152, 0.5)'
+		}, {
+			'value': avg + 2*x*stdv,
+			'width': 2,
+			'color': 'rgba(191, 152, 119, 0.5)'
+		}, {
+			'value': avg + 3*x*stdv,
+			'width': 2,
+			'color': 'rgba(191, 119, 152, 0.5)'
+		});
+	});
+	return stdvLines;
+}
+function plotResiduals (data, databs, min, max, stdv, average) {
+	
+	var stdvLines = createStdvLines(average, stdv);
 	
 	var sortedArr = new Object();
 	var binSize = 5;
@@ -1451,6 +1770,9 @@ function plotResiduals (data, databs, min, max) {
         },
 		'title': {
 			'text': 'Residuals'
+		},
+		'xAxis': {
+			'plotLines': stdvLines
 		},
 		'yAxis': {
 			'gridLineWidth': 0,

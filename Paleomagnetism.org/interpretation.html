@@ -15,8 +15,6 @@
 	<link href="./css/pMagJS.css" type="text/css" rel="stylesheet" /> <!-- paleomagnetism.org Stylesheet -->
 	<link href="./src/libs/notiny-master/src/notiny.css" rel="stylesheet"> <!-- Notification style sheet (Notiny) -->
 
-	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/ju/dt-1.10.10/datatables.min.css"/>
-
 	<!-- Supporting Libraries -->
 	<script src="./src/libs/jQuery/jquery-1.11.1.js"></script> <!-- jQuery -->
 	<script src="./src/libs/jQuery/jquery-ui.js"></script> <!-- jQuery UI -->
@@ -32,8 +30,6 @@
 	<script src="./src/core.js"></script> <!-- Paleomagnetism.org Core Functions -->
 	<script src="./src/paldir.js"></script> <!-- Main Script for Interpretation Portal -->
 
-
-	<script type="text/javascript" src="https://cdn.datatables.net/s/ju/dt-1.10.10/datatables.min.js"></script>
 
 	<link rel="shortcut icon" type="image/x-icon" href="images/icon.ico" />
 	<title> Paleomagnetism.org - Interpretation Portal </title>
@@ -60,6 +56,7 @@
 			<select id="importFormats" title="Select an importing format" style="text-align: center; width: 150px;">
 				<option value="UTRECHT"> Utrecht (.TH, .AF) </option>
 				<option value="MUNICH"> Munich </option>
+				<option value="PALEOMAC"> PaleoMac (.PMD)</option>
 				<!-- <option value="SPINNER"> Spinner </option> -->
 				<!-- <option value="DEFAULT"> Default </option> -->
 			</select>
@@ -98,7 +95,6 @@
 				<li><a href="#interpretationTab" title="General information"> Interpretation </a></li>
 				<li><a href="#fittingTab" title="General information"> Direction Fitting </a></li>
 				<li><a href="#advancedTab" title="General information"> Advanced Options </a></li>
-				<li><a href="#magicTab" title="General information"> Raw Magic Exporting </a></li>
 			</ul>
 	
 			<div id="homeTab">
@@ -109,10 +105,6 @@
 					<div style="text-align: center;">
 						<button id="add" style="margin: 10px; height: 50px; width: 200px; border: 1px solid; " title="Load new data to the application"> Add Demagnetization Data </button>
 					</div>
-					<h2> Example Data </h2>
-					<p> <b> Note: </b> Currently, the only supported format for direct input is the <a href="./examples/Utrecht_Example.AF" download>Utrecht Format</a>. This file can be used as an example to test the application usage.
-					<p> An example for an exported data file from the application can be found <a href="./examples/dir_example.dir" download> here</a>. This file can be imported in the advanced options tab.
-					<p> If you wish your format to be added, please send us an example of your input format or write your own data parser. Multiple parameters are required: <b> name, step, dec, inc, int (x, y, z) </b> and we recommend adding core and bedding orientations for rotation between specimen/geographic/tectonic coordinates.
 				</div>
 			</div>
 			<div id="interpretationTab">
@@ -124,7 +116,7 @@
 						<button id="right" style="font-family: times;"><span style="font-size: 22px;">  > </span></button>
 					</div>
 				</div>
-				<input style="display: none" id="file-type" type="file" size="4" name="file" onChange="importing(event)"/>
+				<input multiple style="display: none" id="file-type" type="file" size="4" name="file" onChange="importing(event)"/>
 				<input style="display: none" id="file-type2" type="file" size="4" name="file" onChange="importing(event, 'APP')"/>
 				<p>
 
@@ -165,37 +157,13 @@
 						<div id="intensityPlot" style="display: none; width: auto; height: 500px; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
 						<small> <b> Note: </b> intensity is divided by default specimen volume (10.5 cc). </small>
 						<p>
-						<!--
-						<table style="border: 1px dotted rgb(119, 152, 191); width: 800px; margin: 0 auto; text-align: center;">
-						<thead>
-							<th><b> Sample Class </b></th>
-							<th><b> Sample Lithology </b></th>
-							<th><b> Sample Type </b></th>
-						</thead>
-						<tbody>
-						<td>
-						<select class="additionalOptions" id="sampleClass">
-							<option value="Sedimentary">Sedimentary</option>
-						</select>
-						</td>
-						<td>
-						<select class="additionalOptions" id="sampleLithology">
-							<option value="Winonaite Primitive Achondrite">Winonaite Primitive Achondrite</option>
-						</select>
-						</td>
-						<td>
-						<select class="additionalOptions" id="sampleType">
-							<option value="Sediment Layer">Sediment Layer</option>
-						</select>
-							</td>
-						</tbody>
-						</table>
-						-->
 			</div>
 	
 			<!-- DIRECTION FITTING TAB -->
 			<div id="fittingTab">
 				<div style="margin: 0 auto; text-align: center;">
+					<button id="selectGroup" style="height: 50px; width: 200px; font-size: 16px;"> Select a Group </button>
+					<hr>
 					<div id="fitCirclesDiv" style="display: none; ">
 						<div id="fitCirclesDivText"></div>
 						<p> 
@@ -215,6 +183,9 @@
 				</div>
 				<div style="text-align: center;">
 					<p> <button id="saveInterpretation" style="width: 200px; height: 50px;">Save Interpreted Directions</button>
+					<div id="beddingSameDiv" style="display: none;">
+					<p> <input type="checkbox" id="beddingSame"><label for="beddingSame"> Bedding is identical for all samples (Checking this option will add bedding parameters to the directional input) </label>
+					</div>
 					<p><small> Interpretations are saved to the Statistics Portal </small>
 				</div>
 			</div>
@@ -243,110 +214,6 @@
 					<p><button id="clearStorage" type="button" onClick="clearStorage()" title="Clear local storage">Clear local storage</button>
 					<p>	Clearing location storage will remove all saved sites and reload the application. Please remember to export your instance before resetting the application if you wish to save your data.
 				</div>
-			</div>
-
-			<!-- DIRECTION FITTING TAB -->
-			<div id="magicTab">
-					<div class="information">
-					<h1>Interpretation Portal: MagIC exporting </h1>
-					<p> This module allows users to export a table that can be ingested to the MagIC database. Currently, we only provide functionality for parsing <b>raw demagnetization data</b> to the expect MagIC format. Interpretations can be shared through the Paleomagnetism.org application .dir files. Additional fields are required to be filled out by the user. It is the users responsibility the data is entered correctly.
-					</div>
-					<p><button id="magICexport" type="button" onClick="MagIC()" title="Export to MagIC format"> Format Raw Demagnetization Data to MagIC Table </button>
-					<div id="magicDiv" style="display: none;">
-
-					<table class="display compact" style="text-align: center; display: none;" id="magicTable">
-					<thead>
-						<tr> 
-							<th colspan="4"> Site Information </th>
-							<th colspan="8"> Sample Information </th>
-						</tr>
-						<tr>
-							<!-- Site Info -->
-							<th title="Site initials (text)"><u>Site Name</u></th>
-							<th title="Site location (text)"><u>Location</u></th>
-							<th><u>Latitude</u></th>
-							<th><u>Longitude</u></th>
-							
-							<!-- Sample Info -->
-							<th title="Sample initials (text)"><u>Sample</u></th>
-							<th>Sample Azimuth</th>
-							<th>Sample Dip</th>
-							<th>Bedding Dip Direction</th>
-							<th>Bedding Dip</th>
-							<th><u>Class</u></th>
-							<th><u>Lithology</u></th>
-							<th><u>Type</u></th>
-							
-							<th title="Specimen indicator (text)"><u>Specimen</u></th>
-							<th title="No clue what this is"><u>Synthetic Material Name</u></th>
-							<th title="Type of experiment"><u>Experiment Name</u></th>
-							<th title="Good (g) or bad (b) measurement"><u>Quality Flag</u></th>
-							<th title="Standard (s) or unknown (u) measurement"><u>Standard Flag</u></th>
-							<th title="Measurement identifier or lab number"><u>Measurement Number</u></th>
-							<th title="list of method codes"><u>Method Codes</u></th>
-							<th><u>Instrument Code</u></th>
-							<th><u>Reference</u></th>
-							<th>Number of Positions</th>
-							<th>Elevation</th>
-							<th>Stratigraphic Height</th>
-							<th>Demag Temperature</th>
-							<th>Demag Field </th>
-							<th>Ambient Temperature</th>
-							
-
-						
-
-							<!-- Measurement Info -->
-							<th>Inclination</th>
-							<th>Declination</th>
-							<th>Magnetization Moment</th>
-							<th>Magnetization Volume</th>
-							<th>Software</th>
-							<th>Analyst Names</th>
-						</tr>
-					</thead>
-					<tfoot id="fillMe">
-						<td class="magicFoot" name="0"> Edit All </td>
-						<td class="magicFoot" name="1"> Edit All </td>
-						<td class="magicFoot" name="2"> Edit All </td>
-						<td class="magicFoot" name="3"> Edit All </td>
-						<td class="magicFoot" name="4"> Edit All </td>
-						<td class="magicFoot" name="5"> Edit All </td>
-						<td class="magicFoot" name="6"> Edit All </td>
-						<td class="magicFoot" name="7"> Edit All </td>
-						<td class="magicFoot" name="8"> Edit All </td>
-						<td class="magicFoot" name="9"> Edit All </td>
-						<td class="magicFoot" name="10"> Edit All </td>
-						<td class="magicFoot" name="11"> Edit All </td>
-						<td class="magicFoot" name="12"> Edit All </td>
-						<td class="magicFoot" name="13"> Edit All </td>
-						<td class="magicFoot" name="14"> Edit All </td>
-						<td class="magicFoot" name="15"> Edit All </td>
-						<td class="magicFoot" name="16"> Edit All </td>
-						<td class="magicFoot" name="17"> Edit All </td>
-						<td class="magicFoot" name="18"> Edit All </td>
-						<td class="magicFoot" name="19"> Edit All </td>
-						<td class="magicFoot" name="20"> Edit All </td>
-						<td class="magicFoot" name="21"> Edit All </td>
-						<td class="magicFoot" name="22"> Edit All </td>
-						<td class="magicFoot" name="23"> Edit All </td>
-						<td class="magicFoot" name="24"> Edit All </td>
-						<td class="magicFoot" name="25"> Edit All </td>
-						<td class="magicFoot" name="26"> Edit All </td>
-						<td class="magicFoot" name="27"> Edit All </td>
-						<td class="magicFoot" name="28"> Edit All </td>
-						<td class="magicFoot" name="29"> Edit All </td>
-						<td class="magicFoot" name="30"> Edit All </td>
-						<td class="magicFoot" name="31"> Edit All </td>
-						<td class="magicFoot" name="32"> Edit All </td>
-					</tfoot>
-
-				</table>
-			<p><button id="tableExport" type="button" onClick="exportTable()" title="Export to Excel Sheet"> Download table to Excel Sheet </button>
-
-		<p><b> Underlined columns are REQUIRED by MagIC </b>
-		<p> Sample name is split by special characters e.g. <b>Site.Sample.Specimen</b> or <b>Site-Sample-Specimen</b>. 
-			</div>
 			</div>
 		</div>
 		

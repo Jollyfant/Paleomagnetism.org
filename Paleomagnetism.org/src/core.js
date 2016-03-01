@@ -531,9 +531,9 @@ function invPoles(siteLat, siteLong, data) {
  */
 function poles(slat, slong, data) {
 
-	var dec = data[0];
-	var inc = data[1];
-	
+	var dec = Number(data[0]);
+	var inc = Number(data[1]);
+
 	//Make sure inclination is not 90
 	if(inc == 90) {
 		inc = 89.99;
