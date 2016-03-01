@@ -1183,7 +1183,7 @@ var processUserInput = function ( data, type, name ) {
 				var outputIteration = new Array();
 				var p = lines[j].split(/[,\t]+/);
 				
-				p[0] = (p[0]%360); //Keep declination within bounds
+				p[0] = ((p[0]+360)%360); //Keep declination within bounds
 				
 				if( Number(p[0]) >= 0 && Number(p[0]) <= 360 && Number(p[1]) >= -90 && Number(p[1]) <= 90) {
 					var dec = Number(p[0]);

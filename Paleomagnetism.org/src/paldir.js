@@ -3138,9 +3138,8 @@ function importMunich(applicationData, text) {
 	
 	"use strict"
 	
-	var lines = text.split(/[\n]/);
+	var lines = text.split(/[\n]/).filter(Boolean);
 	var parsedData = new Array();
-	
 	for(var k = 0; k < 1; k++) {
 		for(var i = 0; i < lines.length; i++) {
 			
