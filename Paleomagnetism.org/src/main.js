@@ -1218,10 +1218,10 @@ var processUserInput = function ( data, type, name ) {
 			
 			//Four or more columns, take bedding parameters
 			if(p.length > 3) {
-				var bedOrient = (p[2] + 360)%360;
+				var bedOrient = (Number(p[2]) + 360)%360;
 				var bedDip = p[3];
 			}
-	
+
 			//Check declination/inclination bounds (0, 360) and (-90, 90)
 			//If we find a problem, break the procedure
 			if( Number(p[0]) >= 0 && Number(p[0]) <= 360 && Number(p[1]) >= -90 && Number(p[1]) <= 90 && Number(bedOrient) >= 0 && Number(bedOrient) <= 360)  {
