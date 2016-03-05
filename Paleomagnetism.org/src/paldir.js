@@ -2249,7 +2249,7 @@ function zijderveld ( samples ) {
 			
 			//Push the values for x and (y, z) to arrays. At the end we determine the maximum/minimum from these arrays. 
 			valuesX.push(Math.abs(carts.x));
-			valuesY.push(Math.abs(carts.y), Math.abs(carts.z));
+			valuesY.push(Math.abs(carts.x), Math.abs(carts.y), Math.abs(carts.z));
 			
 		}
 	}
@@ -2304,8 +2304,8 @@ function zijderveld ( samples ) {
             'gridLineWidth': 0,
             'lineColor': 'black',
             'crossing': 0,
-			'min': -maximumX,
-			'max': maximumX,
+			'min': -maximumY,
+			'max': maximumY,
 			'tickWidth': 0,
             'opposite': true,
 			'title': {
