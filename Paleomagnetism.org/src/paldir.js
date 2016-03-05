@@ -29,9 +29,9 @@ var li, liSelected;
 var data = new Array();
 var globalSticky = new Array();
 var exportData = new Array();
-var version = 'vALPHA.1512.1';
+var version = 'vALPHA.1613.5';
 var table;
-var group;
+var group = 'None';
 
 /* FUNCTION getSampleIndex
  * Description: gets sample name from specimen scroller and returns it
@@ -47,26 +47,6 @@ function getSampleIndex() {
 		return parseInt($('#specimens option[value="' + name + '"]').attr('custom'));
 	}
 	
-}
-
-var exportTable = function () {
-
-	var table = $('#magicTable').DataTable();
-	var csv = '';
-	var data = table.rows().data();
-	var k = table.columns().header().to$();
-	var headers = new Array();
-	for(var i = 0; i < k.length; i++) {
-		headers.push(k[i].textContent);
-	}
-	csv += headers.join(', ');
-	csv += '\n';
-	for(var i = 0; i < data.length; i++) {
-		csv += data[i].join(', ');
-		csv += '\n';
-	}
-
-	dlItem(csv, 'xls');
 }
 
 /* 
@@ -299,17 +279,41 @@ $(function() {
         $(this).blur(); //Deselect the tab
     })
 	
+	/* function setGroup
+	 * Sets global variable group to user input
+	 * All interpretations will be put in this group
+	 */
+	function setGroup() {
+		var input = prompt('Please enter a group name.');
+		if(input === null) {
+			return
+		} else if(input === '') {
+			group = 'None';
+		} else {
+			group = input;
+		}
+		notify('success', 'Group changed to ' + group);
+		plotInterpretations();
+	}
+	
 	/* 
 	 * Keyboard handler for Paleomagnetism.org: Interpretation portal
 	 */
 	$(document).keydown(function(e) {
+
+		switch(e.which) {
+			case 71:
+				e.preventDefault();
+				setGroup();
+			break;			
+		}
 		
 		// Return if not in interpretation tab
 		var tabID = $("#tabs").tabs('option', 'active');
 		if(tabID !== 1) {
 			return;
 		}
-	
+
 		//Allow left and right to be moved
 		//Delegate to the clicking the < (left) and > (right) button
 		switch(e.which) {
@@ -326,8 +330,7 @@ $(function() {
 			case 68:
 				e.preventDefault();
 				$("#right").click();
-			break;
-			
+			break;		
 		}
 		
 		var index = getSelectedStep();
@@ -338,10 +341,10 @@ $(function() {
 		if(index === undefined || sample === undefined) {
 			return;
 		}
-
+		
 		//Other keys 
 		switch(e.which) {
-		
+
 			//Numpad 3 and 3
 			//Toggle the projection flag (Up/North - Up/West)
 			case 51:
@@ -503,13 +506,6 @@ $(function() {
 		$("#beddingSameDiv").show();
 	});
 	
-	$("#selectGroup").click(function () {
-		var input = prompt('Give group');
-		console.log(input);
-		group = input === '' ? undefined : Number(input);
-		plotInterpretations();
-	});
-	
 	//Function to save interpretations to the statistics portal through localStorage
 	$("#saveInterpretation").click( function () {
 	
@@ -537,13 +533,11 @@ $(function() {
 					//Loop over all interpreted components
 					for(var j = 0; j < data[i][coordType].length; j++) {
 						
-						if(group !== undefined) {
-							if(!data[i][coordType][j].group) {
-								data[i][coordType][j].group = 1;
-							}
-							if(data[i][coordType][j].group !== group) {
-								continue;
-							}					
+						if(!data[i][coordType][j].group) {
+							data[i][coordType][j].group = 'None';
+						}
+						if(data[i][coordType][j].group !== group) {
+							continue;
 						}
 				
 						if(data[i][coordType][j].type === 'dir') {
@@ -921,6 +915,8 @@ $(function() {
 				'minStep': steps[0],
 				'maxStep': steps[steps.length-1],
 				'steps': steps,
+				'group': group,
+				'version': version
 			};
 
 		//For great circles we find direction of tau3 (which serves as the pole to the plane spanned by tau1, tau2)	
@@ -960,6 +956,8 @@ $(function() {
 				'minStep': steps[0],
 				'maxStep': steps[steps.length-1],
 				'steps': steps,
+				'group': group,
+				'version': version
 			};
 		}
 		
@@ -1037,7 +1035,7 @@ function initialize() {
 		refreshSpecimenScroller();
 		
 		//Notify user and refresh specimen scroller to force update
-		notify('success', 'Importing was succesful. Added ' + data.length + ' new specimens.')	
+		notify('success', 'Importing was succesful. Added ' + data.length + ' new specimens.')
 	} else {
 		data = new Array();
 		notify('success', 'Welcome to the Paleomagnetism.org interpretation portal!');
@@ -1073,14 +1071,12 @@ function fitCirclesToDirections() {
 			//Get declination/inclination and sample name
 			for(var j = 0; j < data[i][coordType].length; j++) {
 				
-				if(group !== undefined) {
-					if(!data[i][coordType][j].group) {
-						data[i][coordType][j].group = 1;
-					}
-					if(data[i][coordType][j].group !== group) {
-						continue;
-					}					
+				if(!data[i][coordType][j].group) {
+					data[i][coordType][j].group = 'None';
 				}
+				if(data[i][coordType][j].group !== group) {
+					continue;
+				}					
 				
 				var dec = data[i][coordType][j].dec;
 				var inc = data[i][coordType][j].inc;
@@ -1700,6 +1696,12 @@ function showData( sample ) {
 	
 	var coordType = $('#tcViewFlag').prop('checked') ? 'TECT' : 'GEO';
 	
+	if($("#showStrat").prop('checked')) {
+		$("#stratLevelText").html('Stratigraphic Level: ' + data[sample].strat);
+	} else {
+		$("#stratLevelText").html('');
+	}
+	
 	//Draw the charts
 	zijderveld(data[sample]);
 	intensity(data[sample]);
@@ -1717,6 +1719,20 @@ function showData( sample ) {
 	$("#appBody").show();
 }
 
+function sortBy (type) {
+	if(type === 'stratigraphy') {
+		data = data.sort(function(a,b) {
+			return a.strat - b.strat;
+		});
+		notify('success', 'Specimens have been sorted by stratigraphic level (ascending)');
+	} else if(type === 'bogo') {
+		data = data.sort(function(a,b) {
+			return Math.random() < 0.5;
+		});
+		notify('success', 'Specimens have been shuffled randomly.');
+	}
+	refreshSpecimenScroller();
+}
 /*
  * FUNCTION drawInterpretations
  * Description: Draws interpretations on plots
@@ -1753,10 +1769,9 @@ var drawInterpretations = function ( sample ) {
 	//Loop over all interpretations in a particular coordinate reference frame (either Tectonic or Geographic)
 	for(var i = 0; i < data[sample][coordType].length; i++) {
 	
-		//Get the user entered remark, if there is none put default message
-		var group = data[sample][coordType][i].group;
-		if(!group) {
-			group = 1;
+		var sampleGroup = data[sample][coordType][i].group;
+		if(!sampleGroup) {
+			sampleGroup = 'None';
 		}
 		
 		var remark = data[sample][coordType][i].remark;
@@ -1951,7 +1966,7 @@ var drawInterpretations = function ( sample ) {
 		}
 		
 		//Update table with information on interpretations
-		$("#infoTable").append('<tr> <td> Component #' + (i+1) + '</td> <td> ' + type + '<td> ' + PCADirection.dec.toFixed(1) + ' </td> <td> ' + PCADirection.inc.toFixed(1) + ' </td> <td> ' + intensity.toFixed(1) + '</td> <td> ' + MAD.toFixed(1) + '</td> <td> ' + coordinatesPretty + ' </td> <td> <a comp="' + (i+1) + '" onClick="changeRemark(event)">' + remark + '</a> </td> <td> <a comp="' + (i+1) + '" onClick="changeGroup(event)">' + group + '</a> </td> <td> <b><a style="color: rgb(191, 119, 152); cursor: pointer; border-bottom: 1px solid rgb(191, 119, 152);" comp="' + (i+1) + '" id="del'+(i+1)+'" onClick="removeInterpretation(event)">Delete</a></b> </td> </tr>');
+		$("#infoTable").append('<tr> <td> Component #' + (i+1) + '</td> <td> ' + type + '<td> ' + PCADirection.dec.toFixed(1) + ' </td> <td> ' + PCADirection.inc.toFixed(1) + ' </td> <td> ' + intensity.toFixed(1) + '</td> <td> ' + MAD.toFixed(1) + '</td> <td> ' + coordinatesPretty + ' </td> <td> <a comp="' + (i+1) + '" onClick="changeRemark(event)">' + remark + '</a> </td> <td>' + sampleGroup + '</td> <td> <b><a style="color: rgb(191, 119, 152); cursor: pointer; border-bottom: 1px solid rgb(191, 119, 152);" comp="' + (i+1) + '" id="del'+(i+1)+'" onClick="removeInterpretation(event)">Delete</a></b> </td> </tr>');
 		$("#clrIntBox").show();
 		
 	}
@@ -2021,38 +2036,6 @@ var showNotInterpretedBox = function () {
  * Input: button press event (tracks which component is pressed)
  * Output: VOID
  */
- var changeGroup = function (event) {
-
-	"use strict";
-	
-	var index = event.target.getAttribute('comp') - 1;
-	
-	//Capture specimen in samples variable
-	var sample = getSampleIndex();
-	var text = prompt("Please enter a group below");
-	
-	//Don't change note is cancel is pressed.
-	if(text === null) {
-		return;
-	}
-	
-	//If text is not empty, otherwise put the default group
-	if(text !== "" && text > 0 && text % 1 === 0) {
-		event.target.innerHTML = text;
-		data[sample]['GEO'][index].group = Number(text);
-		data[sample]['TECT'][index].group = Number(text);
-	} else {
-		notify('failure', 'Cannot change group to ' + text);
-		event.target.innerHTML = '1';
-		data[sample]['GEO'][index].group = '';
-		data[sample]['TECT'][index].group = '';
-	}
-	
-	//Save the session
-	setStorage();
-	
-}
-
 var changeRemark = function (event) {
 
 	"use strict";
@@ -2871,14 +2854,17 @@ function exporting() {
 		return;
 	}
 
-	//Update version to active version of app
-	for(var i = 0; i < data.length; i++) {
-		data[i].version = version;
-	}
-	
+	var exportData = data.map(function (x) {
+		return $.extend({
+			'version': version,
+			'strat': 0,
+			'date': new Date()
+		}, x);
+	})
+
 	//Try to parse our data JSON object to a string and download it to a custom .dir file
 	try {
-		dlItem(JSON.stringify(data), 'dir');
+		dlItem(JSON.stringify(exportData), 'dir');
 	} catch (err) {
 		notify('failure', 'A critical error has occured when exporting the data: ' + err);
 	}
@@ -3195,7 +3181,7 @@ function importMunich(applicationData, text) {
 			'strat'			: "",
 			'GEO'			: new Array(),
 			'TECT'			: new Array(),
-			'interpreted'		: false,
+			'interpreted'	: false,
 			'name'			: name,
 			'coreAzi'		: Number(coreAzi),
 			'coreDip'		: Number(coreDip),
@@ -3334,6 +3320,7 @@ function importUtrecht(applicationData, text) {
 function importApplication(applicationData, text) {
 
 	importedData = JSON.parse(text);
+	
 	for(var i = 0; i < importedData.length; i++) {
 		var skip = false;
 		for(var l = 0; l < applicationData.length; l++) {
@@ -3630,10 +3617,10 @@ function importing (event, format)  {
 			} else {
 				//Refresh the specimen scroller with the new data
 				refreshSpecimenScroller();
-	
+						
 				//Save application
 				setStorage();
-				notify('success', 'Importing was succesful; added ' + (data.length - initialSize) + ' samples');		
+				notify('success', 'Importing was succesful; added ' + (data.length - initialSize) + ' samples');
 			}
 		}
 	})(0);
@@ -3794,14 +3781,12 @@ function plotInterpretations() {
 				var sample = data[i].name;
 				var color = (inc < 0) ? 'white' : 'rgb(119, 152, 191)';
 				
-				if(group !== undefined) {
-					if(!data[i][coordType][j].group) {
-						data[i][coordType][j].group = 1;
-					}
-					if(data[i][coordType][j].group !== group) {
-						continue;
-					}					
+				if(!data[i][coordType][j].group) {
+					data[i][coordType][j].group = 'None';
 				}
+				if(data[i][coordType][j].group !== group) {
+					continue;
+				}					
 
 				//This interpreted direction is a point and not a pole
 				if(data[i][coordType][j].type === 'dir') {
