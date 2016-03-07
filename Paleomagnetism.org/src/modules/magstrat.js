@@ -383,6 +383,7 @@ var partyLoop;
 function pp() {
 		
 	if(party) {
+		
 		$("#um")[0].pause();	
 		clearInterval(partyLoop);
 		party = false;
@@ -458,7 +459,6 @@ function showStratigraphy(container, title, xRange, plotData) {
         	'yAxis': {
 			'opposite': title === 'Declination' ? false : true,
 			'gridLineDashStyle': 'Dot',
-			'min': 0,
 			'title': {
 				'text': ''
 			}

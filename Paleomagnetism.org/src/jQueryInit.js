@@ -342,8 +342,7 @@ function jQueryInit (page) {
 			} else if (type === 'name') {
 				arr.push({'name': siteName, 'sort': siteName});				
 			} else if (type === 'bogo') {
-				arr.push({'name': siteName, 'sort': Math.random()});								
-
+				arr.push({'name': siteName, 'sort': Math.random()});
 			}
 		}
 		

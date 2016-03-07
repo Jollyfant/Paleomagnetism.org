@@ -387,7 +387,7 @@ $(function() {
 			case 90:
 			case 173:
 			case 109:
-			
+				console.log('ok')
 				e.preventDefault();
 				
 				//If step is not hidden, hide it showing "···" and set step visibility to false
@@ -1722,7 +1722,7 @@ function showData( sample ) {
 function sortBy (type) {
 	if(type === 'stratigraphy') {
 		data = data.sort(function(a,b) {
-			return a.strat - b.strat;
+			return Number(a.strat) - Number(b.strat);
 		});
 		notify('success', 'Specimens have been sorted by stratigraphic level (ascending)');
 	} else if(type === 'bogo') {
@@ -1781,7 +1781,10 @@ var drawInterpretations = function ( sample ) {
 		}
 		
 		//Get the centre of mass
-		var centerMass = data[sample][coordType][i].cm;
+		//Oh my god what have I done
+		var centerMass = data[sample][coordType][i].cm.map(function(x) {
+			return x/10.5;
+		});
 		
 		//Declination and Inclination of the principle component (can be either t1 or t3)
 		var PCADirection = {
@@ -2229,8 +2232,8 @@ function zijderveld ( samples ) {
 			
 			//Declination is x, -y plane
 			decDat.push({
-				'x': carts.x, 
-				'y': -carts.y, 
+				'x': carts.x/10.5, 
+				'y': -carts.y/10.5, 
 				'dec': direction.dec,
 				'inc': direction.inc,
 				'intensity': direction.R/10.5,
@@ -2239,8 +2242,8 @@ function zijderveld ( samples ) {
 			
 			//Inclination is x, -z plane
 			incDat.push({
-				'x': carts.x, 
-				'y': -carts.z,
+				'x': carts.x/10.5, 
+				'y': -carts.z/10.5,
 				'dec': direction.dec,
 				'inc': direction.inc,
 				'intensity': direction.R/10.5,
@@ -2256,8 +2259,8 @@ function zijderveld ( samples ) {
 
 	//Obtain the maximum and minimum values which will be used as the graph boundaries
 	//The Zijderveld diagram will always be a square
-	var maximumX = Math.max.apply(Math, valuesX);
-	var maximumY = Math.max.apply(Math, valuesY);
+	var maximumX = Math.max.apply(Math, valuesX)/10.5;
+	var maximumY = Math.max.apply(Math, valuesY)/10.5;
 
     var chartOptions = {
 		'chart': {
@@ -2306,14 +2309,11 @@ function zijderveld ( samples ) {
             'crossing': 0,
 			'min': -maximumY,
 			'max': maximumY,
-			'tickWidth': 0,
+			'tickWidth': 1,
             'opposite': true,
 			'title': {
                 'enabled': false
-            },
-			'labels': {
-				'enabled': false
-			}
+            }
         },
         'yAxis': {
 			'min': -maximumY,
@@ -2325,10 +2325,7 @@ function zijderveld ( samples ) {
             'crossing': 0,
             'title': {
                 'enabled': false
-            },
-			'labels': {
-				'enabled': false
-			}
+            }
         },
 		'plotOptions': {
 			'series': {
@@ -2376,7 +2373,7 @@ function zijderveld ( samples ) {
 		},{ //Declination Series
 			'type': 'scatter',
 			'id': 'Declination',
-			'name': 'Declination', 
+			'name': 'Projected Declination', 
 			'data': decDat,
 			'color': 'rgb(119, 152, 191)',
 			'marker': {
@@ -2389,7 +2386,7 @@ function zijderveld ( samples ) {
 		}, {	//Inclination Series
 			'type': 'scatter',
 			'id': 'Inclination',
-			'name': 'Inclination',
+			'name': 'Projected Inclination',
 			'data': incDat,
 			'color': 'rgb(119, 152, 191)',
 			'marker': {
@@ -3161,9 +3158,9 @@ function importMunich(applicationData, text) {
 					'visible'	: true, 
 					'include'	: false,
 					'step'		: parameters[0],
-					'x'		: cartesianCoordinates.x,
-					'y'		: cartesianCoordinates.y,
-					'z'		: cartesianCoordinates.z,
+					'x'			: cartesianCoordinates.x,
+					'y'			: cartesianCoordinates.y,
+					'z'			: cartesianCoordinates.z,
 					'a95'		: parameters[4],
 					'info'		: info
 				});			
@@ -3283,9 +3280,9 @@ function importUtrecht(applicationData, text) {
 					'visible'	: true, 
 					'include'	: false,
 					'step'		: parameterPoints[0],
-					'x'		: Number(-parameterPoints[2]),
-					'y'		: Number(parameterPoints[3]),
-					'z'		: Number(-parameterPoints[1]),
+					'x'			: Number(-parameterPoints[2]),
+					'y'			: Number(parameterPoints[3]),
+					'z'			: Number(-parameterPoints[1]),
 					'a95'		: parameterPoints[4],
 					'info'		: parameterPoints[5] + ' at ' + parameterPoints[6]
 				});
@@ -3303,7 +3300,7 @@ function importUtrecht(applicationData, text) {
 			'strat'			: stratLevel,
 			'GEO'			: new Array(),
 			'TECT'			: new Array(),
-			'interpreted'		: false,
+			'interpreted'	: false,
 			'name'			: name,
 			'coreAzi'		: Number(coreAzi),
 			'coreDip'		: Number(coreDip),
