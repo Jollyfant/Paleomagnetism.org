@@ -32,6 +32,7 @@ var exportData = new Array();
 var version = 'vALPHA.1613.5';
 var table;
 var group = 'None';
+var PATCH_NUMBER = 1.1;
 
 /* FUNCTION getSampleIndex
  * Description: gets sample name from specimen scroller and returns it
@@ -3168,8 +3169,9 @@ function importMunich(applicationData, text) {
 	
 		//Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
 		applicationData.push({
-			'info'			: "Munich",
+			'format'			: "Munich",
 			'strat'			: "",
+			'patch'			: PATCH_NUMBER,
 			'GEO'			: new Array(),
 			'TECT'			: new Array(),
 			'interpreted'	: false,
@@ -3228,7 +3230,8 @@ function importUtrecht(applicationData, text) {
 				}
 				
 				var name = parameterPoints[0].replace(/['"]+/g, ''); //Remove quotes (for TH-demag, samples are written as ""SS1.1"". Not very nice.);
-
+				var sampleVolume = Number(parameterPoints[4]) || 10.5;
+				
 				//Check if sample with name exists -> append copy text
 				for(var k = 0; k < applicationData.length; k++) {
 					if(name === applicationData[k].name) {
@@ -3274,9 +3277,9 @@ function importUtrecht(applicationData, text) {
 					'visible'	: true, 
 					'include'	: false,
 					'step'		: parameterPoints[0],
-					'x'			: Number(-parameterPoints[2])/10.5,
-					'y'			: Number(parameterPoints[3])/10.5,
-					'z'			: Number(-parameterPoints[1])/10.5,
+					'x'			: Number(-parameterPoints[2]) / sampleVolume,
+					'y'			: Number(parameterPoints[3]) / sampleVolume,
+					'z'			: Number(-parameterPoints[1]) / sampleVolume,
 					'a95'		: parameterPoints[4],
 					'info'		: parameterPoints[5] + ' at ' + parameterPoints[6]
 				});
@@ -3290,8 +3293,9 @@ function importUtrecht(applicationData, text) {
 		
 		//Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
 		applicationData.push({
-			'info'			: "Utrecht",
+			'format'		: "Utrecht",
 			'strat'			: stratLevel,
+			'patch'			: PATCH_NUMBER,
 			'GEO'			: new Array(),
 			'TECT'			: new Array(),
 			'interpreted'	: false,
@@ -3332,6 +3336,7 @@ function patch () {
 			}
 			for(var j = 0; j < data[i]['GEO'].length; j++) {
 				data[i]['GEO'][j].group = false;
+				data[i]['GEO'][j].format = "";
 				data[i]['GEO'][j].strat = "";
 				data[i]['GEO'][j].cm = data[i]['GEO'][j].cm.map(function(x) {
 					return x/10.5;
@@ -3375,11 +3380,7 @@ function importApplication(applicationData, text) {
 function importSpinner(applicationData, text) {
 
 	var sortedSamples = new Object();
-	var lines = text.split('\n');
-	
-	lines = $.grep(lines, function(n) { 
-		return n;
-	});	
+	var lines = text.split('\n').filter(Boolean);
 	
 	for(var i = 0; i < lines.length; i++) {
 		var lineParameters = lines[i].split(/[,\s\t]+/); //Split by commas
@@ -3455,6 +3456,7 @@ function importSpinner(applicationData, text) {
  * Importing function for PaleoMac
  */
 function importMac (applicationData, text) {
+	
 	var lines = text.split(/[\n\r]/);
 	lines = $.grep(lines, function(n) { 
 		return n;
@@ -3471,7 +3473,9 @@ function importMac (applicationData, text) {
 		var value = parameters[i].match(/[+-]?\d+(\.\d+)?/g);
 		values.push(value);
 	}
-	
+
+	var specimenVolume = 10 * Math.pow(10, Number(values[4][1])) || 10e-6;
+
 	/*
 	 * Their coordinate system
 	 */
@@ -3492,9 +3496,9 @@ function importMac (applicationData, text) {
 			'visible'	: true, 
 			'include'	: false,
 			'step'		: parameters[0],
-			'x'			: 1e6 * Number(parameters[1]) / 10e-6,
-			'y'			: 1e6 * Number(parameters[2]) / 10e-6,
-			'z'			: 1e6 * Number(parameters[3]) / 10e-6,
+			'x'			: 1e6 * Number(parameters[1]) / specimenVolume,
+			'y'			: 1e6 * Number(parameters[2]) / specimenVolume,
+			'z'			: 1e6 * Number(parameters[3]) / specimenVolume,
 			'a95'		: Number(parameters[9]),
 			'info'		: 'No Information'
 		});	
@@ -3502,6 +3506,9 @@ function importMac (applicationData, text) {
 	applicationData.push({
 		'GEO'			: [],
 		'TECT'			: [],
+		'strat'			: "",
+		'format'		: "PaleoMac",
+		'patch'			: PATCH_NUMBER,
 		'interpreted'	: false,
 		'name'			: sampleName,
 		'coreAzi'		: coreAzi,
