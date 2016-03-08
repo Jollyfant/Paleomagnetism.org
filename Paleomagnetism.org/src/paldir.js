@@ -387,7 +387,6 @@ $(function() {
 			case 90:
 			case 173:
 			case 109:
-				console.log('ok')
 				e.preventDefault();
 				
 				//If step is not hidden, hide it showing "···" and set step visibility to false
@@ -849,11 +848,9 @@ $(function() {
 		var dot = 0;
 		P1x = [P1.x, P1.y, P1.z];
 		P2x = [P2.x, P2.y, P2.z];
-		
-		var specimenVolume = 10.5; //cc
-		
+				
 		//The intensity is arbitrary taken as the intensity between the bounding points
-		var intensity = Math.sqrt(Math.pow(P1x[0]-P2x[0], 2) + Math.pow(P1x[1]-P2x[1], 2) + Math.pow(P1x[2]-P2x[2], 2))/specimenVolume;
+		var intensity = Math.sqrt(Math.pow(P1x[0]-P2x[0], 2) + Math.pow(P1x[1]-P2x[1], 2) + Math.pow(P1x[2]-P2x[2], 2));
 	
 		//Get right direction along principle component
 		//Flip direction if dot product is negative between vector and control (begin - end)
@@ -1027,6 +1024,8 @@ function initialize() {
 		notify('failure', 'localStorage is not supported. Please save your data manually.');
 		data = null;
 	}
+	
+	patch();
 	
 	//Check if there is data saved in localStorage, if not, welcome the user
 	if(data !== null) {
@@ -1782,9 +1781,7 @@ var drawInterpretations = function ( sample ) {
 		
 		//Get the centre of mass
 		//Oh my god what have I done
-		var centerMass = data[sample][coordType][i].cm.map(function(x) {
-			return x/10.5;
-		});
+		var centerMass = data[sample][coordType][i].cm
 		
 		//Declination and Inclination of the principle component (can be either t1 or t3)
 		var PCADirection = {
@@ -2232,21 +2229,21 @@ function zijderveld ( samples ) {
 			
 			//Declination is x, -y plane
 			decDat.push({
-				'x': carts.x/10.5, 
-				'y': -carts.y/10.5, 
+				'x': carts.x, 
+				'y': -carts.y, 
 				'dec': direction.dec,
 				'inc': direction.inc,
-				'intensity': direction.R/10.5,
+				'intensity': direction.R,
 				'step': samples.data[i].step
 			});
 			
 			//Inclination is x, -z plane
 			incDat.push({
-				'x': carts.x/10.5, 
-				'y': -carts.z/10.5,
+				'x': carts.x, 
+				'y': -carts.z,
 				'dec': direction.dec,
 				'inc': direction.inc,
-				'intensity': direction.R/10.5,
+				'intensity': direction.R,
 				'step': samples.data[i].step
 			});
 			
@@ -2259,8 +2256,8 @@ function zijderveld ( samples ) {
 
 	//Obtain the maximum and minimum values which will be used as the graph boundaries
 	//The Zijderveld diagram will always be a square
-	var maximumX = Math.max.apply(Math, valuesX)/10.5;
-	var maximumY = Math.max.apply(Math, valuesY)/10.5;
+	var maximumX = Math.max.apply(Math, valuesX);
+	var maximumY = Math.max.apply(Math, valuesY);
 
     var chartOptions = {
 		'chart': {
@@ -2409,10 +2406,7 @@ function zijderveld ( samples ) {
 function intensity ( sample ) {
 
 	"use strict";
-	
-	//Reduce the intensity by diving by the sample volume (default at 10.5cc)
-	var specimenVolume = 10.5;
-	
+		
 	//Construct the data series for Highcharts, only interested in the intensity so use the Pythagorean Thereom.
 	var dataSeries = new Array();
 	var dataSeriesDecay = new Array();
@@ -2425,7 +2419,7 @@ function intensity ( sample ) {
 			var R = Math.sqrt(sample.data[i].x*sample.data[i].x + sample.data[i].y*sample.data[i].y+sample.data[i].z*sample.data[i].z);
 			dataSeries.push({
 				'x': Number(step), 
-				'y': R/specimenVolume
+				'y': R
 			});
 			if(i > 0) {
 				dataDecay.push(Math.sqrt(Math.pow((sample.data[i].x - sample.data[i-1].x),2) + Math.pow((sample.data[i].y - sample.data[i-1].y), 2) + Math.pow((sample.data[i].z - sample.data[i-1].z), 2)));
@@ -2445,7 +2439,7 @@ function intensity ( sample ) {
 			var step = sample.data[i+1].step.replace(/[^0-9.]/g, "");
 			dataSeriesDecay.push({
 				'x': Number(step), 
-				'y': (maxR*(dataDecay[i] + dataDecay[i+1])/maxRdiff)/specimenVolume
+				'y': (maxR*(dataDecay[i] + dataDecay[i+1])/maxRdiff)
 			});
 		}
 	}
@@ -3153,7 +3147,7 @@ function importMunich(applicationData, text) {
 				var info = parameters[5];
 			} else {
 				//Get Cartesian coordinates for specimen coordinates, intensity multiply by 10.5 (volume, this is later reduced) and 1000 from mili to micro
-				var cartesianCoordinates = cart(Number(parameters[3]), Number(parameters[4]), Number(parameters[1])*10.5*1e3);
+				var cartesianCoordinates = cart(Number(parameters[3]), Number(parameters[4]), Number(parameters[1])*1e3);
 				parsedData.push({
 					'visible'	: true, 
 					'include'	: false,
@@ -3280,9 +3274,9 @@ function importUtrecht(applicationData, text) {
 					'visible'	: true, 
 					'include'	: false,
 					'step'		: parameterPoints[0],
-					'x'			: Number(-parameterPoints[2]),
-					'y'			: Number(parameterPoints[3]),
-					'z'			: Number(-parameterPoints[1]),
+					'x'			: Number(-parameterPoints[2])/10.5,
+					'y'			: Number(parameterPoints[3])/10.5,
+					'z'			: Number(-parameterPoints[1])/10.5,
 					'a95'		: parameterPoints[4],
 					'info'		: parameterPoints[5] + ' at ' + parameterPoints[6]
 				});
@@ -3314,10 +3308,54 @@ function importUtrecht(applicationData, text) {
 	
 }
 
+/* Function to patch data and recursively fix mistakes.
+ * The application needs to be backwards compatible so we needs
+ * to update data that is not compatible with recent versions ._.
+ */
+function patch () {
+	
+	if(data.length === 0) return;
+
+	var patched = false;
+	for(var i = 0; i < data.length; i++) {
+		
+		// First Paleomagnetism.org Patch
+		// Set patch attribute, group attribute
+		// Reduce the intensities by 10.5 (this was hardcoded before)
+		// Loop over all specimens
+		if(data[i].patch === undefined) {
+			patched = true;
+			for(var j = 0; j < data[i].data.length; j++) {
+				data[i].data[j].x = data[i].data[j].x/10.5;
+				data[i].data[j].y = data[i].data[j].y/10.5;
+				data[i].data[j].z = data[i].data[j].z/10.5;
+			}
+			for(var j = 0; j < data[i]['GEO'].length; j++) {
+				data[i]['GEO'][j].group = false;
+				data[i]['GEO'][j].strat = "";
+				data[i]['GEO'][j].cm = data[i]['GEO'][j].cm.map(function(x) {
+					return x/10.5;
+				});
+			}
+			
+			// Set patch to 1.1. This is VERY important.
+			// It helps to keep track of the compatibility chain
+			data[i].patch = 1.1; 
+
+		}
+	}
+	
+	setStorage();		
+	
+	if(patched) {
+		notify('success', 'Your data has been patched to match a new version. Please export your data for saving (Keep a backup :))');
+	}
+	
+}
 function importApplication(applicationData, text) {
 
 	importedData = JSON.parse(text);
-	
+
 	for(var i = 0; i < importedData.length; i++) {
 		var skip = false;
 		for(var l = 0; l < applicationData.length; l++) {
@@ -3447,7 +3485,6 @@ function importMac (applicationData, text) {
 	// Skip first two and last line
 	// Intensity is in A/m (V = 10e-6m3) so divide
 	// Display in microamps (1e6)
-	// Scale by 10.5 because I'm dumb -> hardcoded this volume in intensity routine (need to fix this)
 	for(var i = 2; i < lines.length - 1; i++) {
 		var parameters = lines[i].split(/[,\s\t]+/);
 		if(Number(parameters[4]) === 0) continue;
@@ -3455,9 +3492,9 @@ function importMac (applicationData, text) {
 			'visible'	: true, 
 			'include'	: false,
 			'step'		: parameters[0],
-			'x'			: 10.5 * 1e6 * Number(parameters[1]) / 10e-6,
-			'y'			: 10.5 * 1e6 * Number(parameters[2]) / 10e-6,
-			'z'			: 10.5 * 1e6 * Number(parameters[3]) / 10e-6,
+			'x'			: 1e6 * Number(parameters[1]) / 10e-6,
+			'y'			: 1e6 * Number(parameters[2]) / 10e-6,
+			'z'			: 1e6 * Number(parameters[3]) / 10e-6,
 			'a95'		: Number(parameters[9]),
 			'info'		: 'No Information'
 		});	
@@ -3596,6 +3633,7 @@ function importing (event, format)  {
 				data = importUtrecht(data, text);
 			} else if(format === 'APP') {
 				data = importApplication(data, text);
+				patch();
 			} else if(format === 'SPINNER') {
 				notify('failure', 'Spinner input is currently not supported.');
 				return;
