@@ -3334,11 +3334,21 @@ function patch () {
 				data[i].data[j].y = data[i].data[j].y/10.5;
 				data[i].data[j].z = data[i].data[j].z/10.5;
 			}
+			
+			// Reduce the center of mass
 			for(var j = 0; j < data[i]['GEO'].length; j++) {
 				data[i]['GEO'][j].group = false;
 				data[i]['GEO'][j].format = "";
 				data[i]['GEO'][j].strat = "";
 				data[i]['GEO'][j].cm = data[i]['GEO'][j].cm.map(function(x) {
+					return x/10.5;
+				});
+			}
+			for(var j = 0; j < data[i]['TECT'].length; j++) {
+				data[i]['TECT'][j].group = false;
+				data[i]['TECT'][j].format = "";
+				data[i]['TECT'][j].strat = "";
+				data[i]['TECT'][j].cm = data[i]['TECT'][j].cm.map(function(x) {
 					return x/10.5;
 				});
 			}
