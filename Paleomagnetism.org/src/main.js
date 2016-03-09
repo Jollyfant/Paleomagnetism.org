@@ -16,6 +16,7 @@ module = new Object();
 
 module.options = {
 	editing: false,
+	editName: "",
 	update: {
 		dir: false,
 		mean: false,
@@ -255,19 +256,14 @@ var addSite = function ( edit ) {
 		return;	
 	}
 	
-	//Site name error catching (don't catch if editing, we wish to overwrite)
-	if(!edit) {
+	if(edit) {
+		$.extend(metaData, sites[edit].userInput.metaData);
+	} else {
 		if(!checkName(metaData.name)) {
 			return;
-		}
-	}
-
-	if(edit) {
-		$.extend(metaData, sites[metaData.name].userInput.metaData);
+		}		
 	}
 	
-	console.log(metaData);
-
 	//Get site data
 	var type = $('#siteType').val();
 	var siteDat = $('#dropZone').val();
@@ -284,10 +280,12 @@ var addSite = function ( edit ) {
 			delete sites[metaData.name];
 		}
 		sites[metaData.name] = new site(metaData, inputData.data, true);
+		module.options.editName = "";
 		$('#input').dialog("close");
 	}
 	
 	setStorage();
+	
 	
 }
 
@@ -1091,22 +1089,22 @@ var processUserInput = function ( data, type, name ) {
 	//Bucket for output data and sanitization flag
 	var output = new Array();
 	var sanitized = true;
+	var lineNumber = 0;
 	
 	//Split input on new lines and remove blank lines
-	var lines = data.split('\n');
-	lines = $.grep(lines, function(n) { 
-		return(n) 
-	});
+	var lines = data.split('\n').filter(Boolean)
+	
+	//Return if no input or less than 2 directions
+	if(lines.length === 0) {
+		sanitized = false;
+		notify('failure', 'The data input field is empty.');
+	} 
 	
 	//Sanitization for literature (sampled) and magnetic directions is different
 	//Type: magnetic directions (interpreted or default)
 	if(type === 'dir' || type === 'int') {
 	
-		//Return if no input or less than 2 directions
-		if(lines.length === 0) {
-			sanitized = false;
-			notify('failure', 'Data input is empty.');
-		} if(lines.length < 2) {
+		if(lines.length < 2) {
 			sanitized = false;
 			notify('failure', 'A minimum of two magnetic directions are required.');
 		} 
@@ -1114,6 +1112,7 @@ var processUserInput = function ( data, type, name ) {
 		//Start sanity check for all lines
 		for(var i = 0; i < lines.length; i++) {
 		
+			// Get the parameters to include
 			var includeBedding = $('#includeBedding').prop('checked');
 			var includeName = $('#includeName').prop('checked');
 			var includeStrat = $('#includeStrat').prop('checked');
@@ -1121,13 +1120,8 @@ var processUserInput = function ( data, type, name ) {
 			
 			//Regex for splitting on tabs and commas; p becomes an array p[c0, c1, c2, c3, c4] where c represents column
 			//Also remove double spaces
-
-			var p = lines[i].split(/[,\t]+/);
+			var p = lines[i].split(/[,\t]+/).filter(Boolean);
 			var numberInput = p.length;
-
-			p = $.grep(p, function(n) { 
-				return(n) 
-			});
 
 			//Default bedding parameters and sample name
 			var bedOrient = 0, bedDip = 0;
@@ -1138,16 +1132,14 @@ var processUserInput = function ( data, type, name ) {
 			var inclination = Number(p.shift());
 
 			if(includeBedding) {
-				var bedOrient = Number((p.shift() + 360))%360;
+				var bedOrient = (Number(p.shift()) + 360)%360;
 				var bedDip = Number(p.shift());
 				expected += 2;
 			}
-
 			if(includeName) {
-				var sampleName = p.shift();
+				var sampleName = p.shift().trim();
 				expected++;
 			}
-
 			if(includeStrat) {
 				var stratLevel = Number(p.shift());
 				expected++;
@@ -1159,8 +1151,8 @@ var processUserInput = function ( data, type, name ) {
 				break;
 			};
 
-			//Check declination/inclination bounds (0, 360) and (-90, 90)
-			//If we find a problem, break the procedure
+			// Check declination/inclination bounds (0, 360) and (-90, 90)
+			// If we find a problem, break the procedure
 			if( declination >= 0 && declination <= 360 && inclination >= -90 && inclination <= 90 && bedOrient >= 0 && bedOrient <= 360)  {
 				output.push([declination, inclination, bedOrient, bedDip, sampleName, stratLevel]);
 			} else {
@@ -1171,17 +1163,12 @@ var processUserInput = function ( data, type, name ) {
 		//Different sanitization for literature data
 		} else if (type == 'lit') {
 	
-			if(lines.length < 1) {
-				sanitized = false;
-				notify('failure', 'Input field is empty.'); 
-			} 
-			
 			//Iterate over all specified lines
 			for(var j = 0; j < lines.length; j++) {
 				
 				//Bucket to hold directions for a single simulation (iteration)
 				var outputIteration = new Array();
-				var p = lines[j].split(/[,\t]+/);
+				var p = lines[j].split(/[,\t]+/).filter(Boolean);
 				
 				p[0] = ((p[0]+360)%360); //Keep declination within bounds
 				
@@ -1217,9 +1204,9 @@ var processUserInput = function ( data, type, name ) {
 				//Sample a Fisherian distribution with N and Kappa
 				var sampled = sampleFisher(N, K);
 				
-				//Pole longitude, pole latitude, bedding orientation, bedding dip, and name 
+				//Pole longitude, pole latitude, bedding orientation, bedding dip, name, and stratigraphic level
 				for(var i = 0; i < sampled.dec.length; i++) {
-					inputDataSampled.push([sampled.dec[i], sampled.inc[i], 0, 0, name + '.' + (i+1)]);
+					inputDataSampled.push([sampled.dec[i], sampled.inc[i], 0, 0, name + '.' + (i+1), 0]);
 				}
 				
 				//If the user wishes to sample VGPs instead of Fisherian directions
@@ -1232,8 +1219,8 @@ var processUserInput = function ( data, type, name ) {
 					for(var i = 0; i < inputDataSampled.length; i++) {
 						outputIteration.push(invPoles(paleoLatitude, 0, inputDataSampled[i]));
 					}
-				}  else {
-					for( var i = 0; i < inputDataSampled.length; i++) {
+				} else {
+					for(var i = 0; i < inputDataSampled.length; i++) {
 						outputIteration.push(rotat(180, inc, inputDataSampled[i]));
 					}	
 				}
@@ -1245,8 +1232,7 @@ var processUserInput = function ( data, type, name ) {
 					//Push direction to the actual output array
 					output.push(outputIteration[i]);
 				}
-				
-				var i = (j+1);
+				var lineNumber = (j+1);
 			}
 		}
 	
@@ -1261,7 +1247,7 @@ var processUserInput = function ( data, type, name ) {
 	this.output = {
 		data: output,
 		sanitized: sanitized,
-		line: (i+1)
+		line: lineNumber + 1
 	}
 }
 

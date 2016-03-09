@@ -461,12 +461,12 @@ function jQueryInit (page) {
 	
 	// Calls processing on site
 	$('#confirm').click( function () {
-		if(module.options.editing) {
+		if($("#siteName").val() === module.options.editName) {
 			if(!confirm('This action will overwrite the original site data.')) {
 				return;
 			}
-			addSite(true);
-		} else {
+			addSite(module.options.editName)
+		} else {		
 			addSite();
 		}
 		updateSiteSelector();
@@ -578,17 +578,20 @@ function jQueryInit (page) {
 		
 		//Parse the current metadata to the input boxes
 		var metaData = sites[siteName].userInput.metaData; 
-				
+		var siteName = metaData.name;
+		
+		module.options.editName = metaData.name;
+		
 		$("#siteLat").val(metaData.latitude);
 		$("#siteLng").val(metaData.longitude);
 		$("#siteAge").val(metaData.age);
 		$("#siteBoundMin").val(metaData.minAge);
 		$("#siteBoundMax").val(metaData.maxAge);
 		$("#authorID").val(metaData.author);
-		$("#siteDesc").val(metaData.description);
-		$("#siteName").val(metaData.name);
-				
-		$("#cutoffSelector").val(metaData.cutoff);
+		$("#siteDesc").val(metaData.description || "");
+		$("#siteName").val(siteName);
+		
+		$("#cutoffSelector").val(metaData.cutoff || "45");
 		$("#cutoffSelector").multiselect("refresh");
 		
 		$("#siteType").val('dir');
@@ -614,27 +617,6 @@ function jQueryInit (page) {
 		} else {
 			$("#inputOptions").hide();
 		}
-	});
-	
-	//BUTTON: Confirm Edit
-	//Saves the new specified meta data for a site
-	$("#confirmEdit").click ( function () {
-		
-		//Construct updated meta data and extend the existing meta data object
-		var newMetaData = new constructMetaData('edit');
-		var siteName = $("#metaSel").val();
-		$.extend(sites[siteName].userInput.metaData, newMetaData);
-
-		var md = sites[siteName].userInput.metaData;
-		var inputData = new processUserInput($("#editDataList").val(), 'dir', md.name).output;
-		console.log(md, inputData)
-		delete sites[md.name];
-		new site(md, inputData.data, true);
-		setStorage(); //Save application
-		
-		notify('success', 'Meta-data for site ' + siteName + ' was succesfully updated');
-		$("#editInfo").html("The edit has been successfully applied.");
-	
 	});
 
 	// SPINNER: Number of bootstraps (FOLDTEST module)

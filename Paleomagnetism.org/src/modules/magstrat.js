@@ -131,6 +131,7 @@ function plotStrat() {
 	for(var i = 0; i < sites[siteName].data.dir.rejected.length; i++) {
 		parsingData.push(sites[siteName].data.dir.rejected[i]);
 	}
+	console.log(parsingData)
 	parsingData.sort(function(a, b){
 		return a[5] > b[5] ? 1 : (a[5] < b[5] ? -1 : 0);
 	})
