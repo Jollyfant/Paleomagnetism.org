@@ -50,6 +50,8 @@ module.EI.running = false;
 
  	"use strict";
 	
+	var inc = Math.abs(inc);
+	
 	//Polynomial coefficients
 	var coeffs = [ 3.15976125e-06, -3.52459817e-04, -1.46641090e-02, 2.89538539e+00 ];
 	var elongation = coeffs[0]*Math.pow(inc, 3) + coeffs[1]*Math.pow(inc, 2) + coeffs[2]*inc + coeffs[3];
@@ -104,7 +106,7 @@ function lastIndex( array ) {
 	var data = sites[siteNames[0]][coordRef].dir.accepted;
 	
 	//Get the absolute original inclination from the data set
-	var originalInclination = Math.abs(new fisher(data, 'dir', 'simple').mInc);
+	var originalInclination = new fisher(data, 'dir', 'simple').mInc;
 	
 	//Define number of bootstrap attempts and set number of intersections and bootstrap iteration counter to 0
 	var nBootstraps = 5000;
@@ -282,7 +284,7 @@ module.EI.unflattenDirections = function ( data ) {
 		}
 
 		//Calculate mean inclination for unflattenedData and get eigenvalues
-		var meanInc = Math.abs(new fisher(unflattenedData, 'dir', 'simple').mInc);
+		var meanInc = new fisher(unflattenedData, 'dir', 'simple').mInc;
 		var eigenvalues = eigValues(unflattenedData);
 		
 		//Record the flattening factor, elongation (τ2/τ3), and mean inclination
@@ -296,7 +298,7 @@ module.EI.unflattenDirections = function ( data ) {
 		//This simple algorithm finds the line below the TK03.GAD polynomial
 		//Compare expected elongation with elongation from data from TK03.GAD
 		//Only do this is Epoly < Edata
-		if(Math.abs(module.EI.polynomial(meanInc)) <= elongations[elongations.length-1]) {
+		if(module.EI.polynomial(meanInc) <= elongations[elongations.length-1]) {
 
 			//Remember the latest unflattening factor
 			var unflatIndex = flatteningFactors[flatteningFactors.length-1]; 
