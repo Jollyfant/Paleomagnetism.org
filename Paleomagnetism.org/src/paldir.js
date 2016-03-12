@@ -2408,11 +2408,9 @@ function intensity ( sample ) {
 
 	"use strict";
 		
-	//Construct the data series for Highcharts, only interested in the intensity so use the Pythagorean Thereom.
 	var dataSeries = new Array();
-	var dataSeriesDecay = new Array();
-	var dataDecay = new Array();
-	var maxR = 0;
+	var dataSeriesVDS = new Array();
+	var UBS = new Array();
 	for(var i = 0; i < sample.data.length; i++) {
 		if(sample.data[i].visible) {
 			//Remove mT, μT or whatever from step - just take a number (regex)
@@ -2422,27 +2420,22 @@ function intensity ( sample ) {
 				'x': Number(step), 
 				'y': R
 			});
-			if(i > 0) {
-				dataDecay.push(Math.sqrt(Math.pow((sample.data[i].x - sample.data[i-1].x),2) + Math.pow((sample.data[i].y - sample.data[i-1].y), 2) + Math.pow((sample.data[i].z - sample.data[i-1].z), 2)));
-			}
-			if(R > maxR) {
-				maxR = R;
-			}
-		} else {
-			dataDecay.push(null);
 		}
 	}
-		
-	//Implementation test for sum of differences (normalized to absolute intensity)
-	var maxRdiff = Math.max.apply(Math, dataDecay);
-	for(var i = 0; i < (dataDecay.length - 1); i++) {
-		if(dataDecay[i] !== null) {
-			var step = sample.data[i+1].step.replace(/[^0-9.]/g, "");
-			dataSeriesDecay.push({
-				'x': Number(step), 
-				'y': (maxR*(dataDecay[i] + dataDecay[i+1])/maxRdiff)
-			});
+	
+	for(var i = 1; i < dataSeries.length; i++) {
+		var sum = 0;
+		UBS.push({
+			'x': dataSeries[i].x,
+			'y': Math.abs(dataSeries[i-1].y - dataSeries[i].y)		
+		});
+		for(var j = i; j < dataSeries.length; j++) {
+			sum += Math.abs((dataSeries[j-1].y - dataSeries[j].y));
 		}
+		dataSeriesVDS.push({
+			'x': dataSeries[i].x,
+			'y': sum
+		})
 	}
 
 	var chartOptions = {
@@ -2508,14 +2501,23 @@ function intensity ( sample ) {
        	},
         'series': [{
             'name': sample.name,
-            'data': dataSeries
+            'data': dataSeries,
+			'zIndex': 10
         }, {
 			'name': 'Vector Difference Sum (VDS)',
-			'data': dataSeriesDecay,
+			'data': dataSeriesVDS,
 			'marker': {
 				'symbol': 'circle'
-			}
-		}]
+			},
+			'zIndex': 10
+		}, {
+			'type': 'column',
+			'pointWidth': 50,
+            'name': 'Unblocking Spectrum',
+            'data': UBS,
+			'zIndex': 0
+
+        }]
     }
 	new Highcharts.Chart(chartOptions);
 	$("#intensityPlot").show();
