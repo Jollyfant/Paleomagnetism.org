@@ -2423,24 +2423,40 @@ function intensity ( sample ) {
 		}
 	}
 	
-	for(var i = 1; i < dataSeries.length; i++) {
+	for(var i = 1; i < dataSeries.length + 1; i++) {
 		var sum = 0;
+		if(i === dataSeries.length) {
+			var yVal = 0;
+		} else {
+			var yVal = dataSeries[i].y;
+		}
 		UBS.push({
-			'x': dataSeries[i].x,
-			'y': Math.abs(dataSeries[i-1].y - dataSeries[i].y)		
+			'x': dataSeries[i-1].x,
+			'y': Math.abs(dataSeries[i-1].y - yVal)		
 		});
-		for(var j = i; j < dataSeries.length; j++) {
-			sum += Math.abs((dataSeries[j-1].y - dataSeries[j].y));
+		for(var j = i; j < dataSeries.length + 1; j++) {
+			if(j === dataSeries.length) {
+				var yVal2 = 0;
+			} else {
+				var yVal2 = dataSeries[j].y;
+			}
+			sum += Math.abs(dataSeries[j-1].y - yVal2);
 		}
 		dataSeriesVDS.push({
-			'x': dataSeries[i].x,
+			'x': dataSeries[i-1].x,
 			'y': sum
-		})
+		});
 	}
 
+	UBS.push({
+		'x': dataSeries[dataSeries.length-1].x,
+		'y': UBS[UBS.length - 1].y		
+	});
+		
 	var chartOptions = {
 		'chart': {
 			'animation': false,
+			'zoomType': 'xy',
 		    'renderTo': 'intensityPlot', //Container that the chart is rendered to.
 			'id': 'intensity',
 			'events': {
@@ -2511,7 +2527,8 @@ function intensity ( sample ) {
 			},
 			'zIndex': 10
 		}, {
-			'type': 'column',
+			'type': 'area',
+			'step': true,
 			'pointWidth': 50,
             'name': 'Unblocking Spectrum',
             'data': UBS,
