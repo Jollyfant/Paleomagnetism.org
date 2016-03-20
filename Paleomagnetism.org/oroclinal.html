@@ -68,7 +68,6 @@ ga('send', 'pageview');
 		<ul>
 			<li><a href="#introductionTab" title="General information">  Introduction </a></li>
 			<li><a href="#oroclineTab" title="General information"> Oroclinal Test </a></li>
-			<li><a href="#oroclineFoldtestTab" title="Oroclinal Foldtest">  Oroclinal Foldtest  </a></li>
 		</ul>
 		
 		<!-- APP MAIN BODY FOR OROCLINAL TEST -->
@@ -95,71 +94,76 @@ ga('send', 'pageview');
 				<div id="sampleType" title="Sampling method" style="display: inline-block;">
 					<table class="sample"> <thead> <tbody> <tr>
 						<td> Strike </td>
-						<td> <input type="radio" id="radio1S" value="Standard" name="radio1"> <label for="radio1S"> Standard Sampling </label> </td>
-						<td> <input type="radio" id="radio1D" value="Gauss" name="radio1" checked> <label for="radio1D"> Gaussian Sampling </label>
+						<td> <input type="radio" id="radio1S" value="Standard" name="radio1"> <label for="radio1S"> Standard </label> </td>
+						<td> <input type="radio" id="radio1D" value="Gauss" name="radio1" checked> <label for="radio1D"> Gaussian </label>
 					</td> </tr> <tr>
 						<td> Declination </td>
-						<td> <input type="radio" id="radio2S" value="Standard" name="radio2"> <label for="radio2S"> Standard Sampling </label> </td>
-						<td> <input type="radio" id="radio2D" value="Gauss" name="radio2" checked> <label for="radio2D"> Gaussian Sampling </label>					
+						<td> <input type="radio" id="radio2S" value="Standard" name="radio2"> <label for="radio2S"> Standard </label> </td>
+						<td> <input type="radio" id="radio2D" value="Gauss" name="radio2" checked> <label for="radio2D"> Gaussian </label>					
 					</tr></tbody>
 					</table>
 				</div>
 				<div style="display: inline-block;">
-					<button id="initializeOroclinal" style="display: inline-block;"> Initialize Bootstrapped Regression </button><div id="progressBar" title="Progress Bar" style="display: inline-block; vertical-align: middle; width: 200px;"></div>
+					<button id="initializeOroclinal" style="display: inline-block;"> Start Oroclinal Tests </button>
+					<div id="progressBar" title="Progress Bar" style="display: inline-block; vertical-align: middle; width: 200px;"></div>
+					<!-- <button id="weighed"> Weighed Regression </button> -->
 				</div>
-				<p> <button id="weighed"> Non-bootstrapped Weighed Regression </button>
 			</div>
 			
 			<input style="display: none" id="importFile" type="file" size="4" name="file" onChange="importing(event)"/>
 			<p>
-			<div id="showWrapper">
-			<div id="parameterTable" style="display: none; text-align: center; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
-			<div id="initialPlot"></div>
+			
+			<div id="oroclinalBody" style="display: none;">
+			<!-- <div id="parameterTable" style="text-align: center; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div> -->
 			<p>
-			<div style="text-align: center; display: none;" id="showBooty">
-				<h2> Bootstrapped Parameters </h2>
-				<p>
-				<div id="bootTable" style="display: none; text-align: center; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
-				<p>
-				<select id="getCDF">  
-					<option value="intercept">Intercept</option>
-					<option value="slope">Slope</option>
-				</select>
-				<p>
-				<div id="CDFContainer" style="width: 1100px; display: inline-block;"></div>
+			<div style="text-align: center;">
+				<h2> Regression Information </h2>
+			</div>
+			<div id="bootTable" style="text-align: center; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
+			<p>
+			<div id="initialPlot"></div>
+			<div class="caption">
+				<b>Figure 1</b> - Oroclinal test showing the sampled declinations and strikes (blue dots) with measurement uncertainties (black bars). The red line shows the total least squares regression for the data. The surrounding shaded red area illustrates the confidence interval for 1000 bootstrapped regressions. For comparison the average bootstrap shown in green.
+			</div>
+			<br>
+			<div style="text-align: center;" id="showBooty">
+
+				<div id="CDFContainerSlope" style="width: 550px; display: inline-block; margin: 0 auto;"></div>
+				<div id="CDFContainerIntercept" style="width: 550px; display: inline-block;  margin: 0 auto;"></div>
+			</div>
+			<div class="caption">
+				<b>Figure 2a, b</b> - Showing the slope (left) and intercept (right) of the total least squares regression for the data (blue vertical) with shaded blue bootstrapped confidence interval. The green vertical indicates the average bootstrapped value. The black vertical indicates the result from a weighed regression (see text).
+			</div>
+			<br>
+			<div style="text-align: center;">
+			<h2> Residuals to Regression </h2>
+			<br>
+			<select id="residualsWhich" style="display: inline-block;">
+				<option> Declination </option>
+				<option> Strike </option>
+			</select>
 			</div>
 			<div id="pClu"></div>
-			<div id="QQ"></div>
+			<div class="caption">
+				<b>Figure 3 </b> - Illustrating the data residuals in blue dots including lines indicating 1σ, 2σ, and 3σ. The bars are histograms for the data and bootstraps in blue and orange respectively. These should approximate a normal distributed. The length of each bin is represented by a sample (scaled by -1000 for the bootstraps).
 			</div>
-		</div>
-		
-		<div id="oroclineFoldtestTab">
-			<div class="information">
-			<h2> Oroclinal Foldtest <small> Circular Variance </small> </h2>
-			<p>
-			The oroclinal foldtest completes a classical foldtest for declinations using circular statistics with inclinations implicitly set to 0.
-			Choose the type of sampling for your data below.
-				<div id="sampleType2" title="Sampling method" style="display: inline-block;">
-					<table class="sample"> <thead> <tbody> <tr>
-						<td> Strike </td>
-						<td> <input type="radio" id="radio3S" value="Standard" name="radio3"> <label for="radio3S"> Standard Sampling </label> </td>
-						<td> <input type="radio" id="radio3D" value="Gauss" name="radio3" checked> <label for="radio3D"> Gaussian Sampling </label>
-					</td> </tr> <tr>
-						<td> Declination </td>
-						<td> <input type="radio" id="radio4S" value="Standard" name="radio4"> <label for="radio4S"> Standard Sampling </label> </td>
-						<td> <input type="radio" id="radio4D" value="Gauss" name="radio4" checked> <label for="radio4D"> Gaussian Sampling </label>					
-					</tr></tbody>
-					</table>
-					<button id="oroFoldtest">Initialize Oroclinal Foldtest</button>
-				</div>
-			<p>
-			</div>	
-			<p>
-			<div id="foldTable" style="display: none; text-align: center; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
+			<br>
+			<div id="QQ"></div>
+			<div class="caption">
+				<b>Figure 4 </b> - Quantile - Quantile plot for the selected residuals. A normal distribution of residuals would approximate a straight line.
+			</div>
+			<div style="text-align: center;">
+				<h2> Oroclinal Foldtest </h2>
+			</div>
+			<br>
+			<div id="foldTable" style="text-align: center; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
 			<p>
 			<div id="container5"></div>
-			<small> Tip: Click the thick red line to view the declination distribution for that percentage of unfolding. </small> 
-			<div id="danielTest"></div>
+			<div class="caption">
+				<b>Figure 5 </b> - Oroclinal foldtest showing the circular variance as a function of unfolding. A smaller circular variance indicates a tighter clustering of the data. The bolded red line represents the actual data and is surrounded by the first 25 bootstraps shaded in blue.
+			</div>
+			<small> Awesome Tip: Click the thick red line to view the declination distribution for that percentage of unfolding. </small> 
+			</div>		
 			</div>		
 	
 		

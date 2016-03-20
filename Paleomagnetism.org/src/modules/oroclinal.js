@@ -14,11 +14,21 @@ var regressions;
 var slopeAverage = 0, interceptAverage = 0;
 var lower, upper;
 var lr;
+var oldLr;
+
+var weighedParameters;
+var pointCloudBootstrapX, pointCloudBootstrapY;
+var pointCloudX, pointCloudY;
+var SWresidX, SWresidY;
+
+var isRunning = false;
+var nBootstraps = 1000;
 
 //DOM Ready
 //Some jQuery UI initializations
 $(function() {
 
+	/*
 	$("#weighed").button({
 		icons: { 
 			primary: "ui-icon-play" 
@@ -30,33 +40,19 @@ $(function() {
 			notify('failure', 'Found no data in the application. Please load some.');
 		}
 	});
+	*/
 	
-	//Toggle whether we use variance or eigenvalue approach (not implemented)
-	$("#oroFoldtest").click( function () {
-		//initializeFoldtest(); //foldtest using eigenvalues (don't use this: 180 === 0) which is not true for declinations only
-		varianceFoldtest();
-	});
-	
-	$("#oroFoldtest, #initializeOroclinal").button({
-		icons: { 
-			primary: "ui-icon-play" 
-		}
-	});
-	
-		$("#exportAllCsv").button()	
 	$("#initializeOroclinal").button().click( function () {
-		$("#showBooty").hide();
-		$("#showWrapper").hide();
 		initializeSampling();
 	});
 	
-	$("#getCDF").multiselect({
+	$("#residualsWhich").multiselect({
 		multiple: false, 
 		height: 50,
 		noneSelectedText: 'Select a parameter',
 		selectedList: 1,
 		close: function () {
-			getCDF($("#getCDF").val());
+			switchStuff();
 		}
 	});
 	
@@ -75,27 +71,34 @@ $(function() {
 	});
 	
     $('#tabs').tabs();
-	
 
-	
-	$('#importData').button({
-	});
+	$('#importData').button();
 	
 	$("#progressBar").progressbar({ value: 0 });
 	$('#sampleType').buttonset();
 	$('#sampleType2').buttonset();
-	
-	$("#radio1S, #radio1D, #radio2S, #radio2D").click( function () {
-		$('input:radio[name=radio3]').attr('checked', false);
-	})
-	
-	$("#radio4, #radio5").button({
-		icons: {
-			primary: 'ui-icon-gear'
-		}
-	});
+
 });
 
+function getPearsonsPear(x, y) {
+	
+	var N = x.length;
+	
+	var averageX = average(x);
+	var averageY = average(y);
+	var xSum = 0;
+	var ySum = 0;
+	var nSum = 0;
+
+	for(var i = 0; i < N; i++) {
+		xSum += Math.pow(x[i] - averageX, 2)
+		ySum += Math.pow(y[i] - averageY, 2)
+		nSum += (y[i] - averageY) * (x[i] - averageX)
+	}
+	
+	return nSum/Math.sqrt(xSum * ySum);
+	
+}
 /*
  * FUNCTION plotWindRose
  * Description: code for the plotting of a wind rose and sorting of declination in bins of 10 degrees
@@ -157,6 +160,7 @@ function plotWindRose(newDatArray, container) {
     // Parse the data from an inline table using the Highcharts Data plugin
     var chartOptions = {
         'chart': {
+			'backgroundColor': 'transparent',
             'polar': true,
             'type': 'column',
 			'renderTo': container,
@@ -249,23 +253,25 @@ function calcCircularVariance( data ) {
 function varianceFoldtest() {
 
 	if(!applicationHasData) {
-		notify('failure', 'Found no data in the application. Please load some.');
+		notify('failure', 'No data has been loaded to the application.');
 		return;
 	}
 	
 	//(Gaussian or Standard sampling)
-	var typeStrike = $("#sampleType2 input[name='radio3']:checked").val();
-	var typeDec = $("#sampleType2 input[name='radio4']:checked").val();
-	var type = {'strike': typeStrike, 'dec': typeDec}
-	
+	var typeStrike = $("#sampleType input[name='radio1']:checked").val();
+	var typeDec = $("#sampleType input[name='radio2']:checked").val();
+	var type = {
+		'strike': typeStrike,
+		'dec': typeDec
+	}
+
 	var timeInit = Date.now();
 	
-	if(type.dec === undefined || type.dec === undefined) {
-		notify('failure', 'Please select a type.');
+	if(type.dec === undefined || type.strike === undefined) {
+		notify('failure', 'Cannot complete the variance foldtest.');
 		return;
 	}
 	
-	var nBootstraps = 1000;
 	var unfoldingMin = -50;
 	var unfoldingMax = 150;
 
@@ -341,7 +347,8 @@ function varianceFoldtest() {
 				}
 						
 				var variance = calcCircularVariance(tilts);
-					if(variance < max) {
+				
+				if(variance < max) {
 					max = variance;
 					index = (oldIndex+j);
 				}
@@ -350,7 +357,7 @@ function varianceFoldtest() {
 		}
 		
 		if(i === 0) {
-			danielTest(index, sampleDec, sampleStrike);
+			//danielTest(index, sampleDec, sampleStrike);
 			var realMax = index;
 		}	
 		
@@ -382,6 +389,7 @@ function varianceFoldtest() {
 	
 }
 
+/*
 // Index is the minimum variance (%)
 // Dec, strike are arrays of declinations and strikes for which INDEX is the minimum variance
 function danielTest(index, dec, strike) {
@@ -501,6 +509,7 @@ function plotDaniel (cdfData) {
 	new Highcharts.Chart(chartOptions);
 	
 }
+*/
 
 /*
  * FUNCTION initializeFoldtest (deprecated)
@@ -508,7 +517,6 @@ function plotDaniel (cdfData) {
  *            : similir to the foldtest in the statistics portal with unfolding around a vertical axis
  * Input: NULL
  * Output: VOID (calls plotting functions)
- */
 function initializeFoldtest () {
 
 	if(!applicationHasData) {
@@ -639,6 +647,7 @@ function initializeFoldtest () {
 	grfoldtestOro ( cdfData, bootTaus, lower, upper, unfoldingMin, unfoldingMax, sub, data );
 		
 }
+*/
 
 /*
  * FUNCTION grfoldtestOro
@@ -648,9 +657,9 @@ function grfoldtestOro (cdfData, data, lower, upper, begin, end, sub, input, max
 	
 	//Create plotband for 95% bootstrapped confidence interval (upper to lower)
 	var plotBands =  [{
-		color: 'rgba(119, 152, 191,0.25)',
-		from: lower,
-		to: upper
+		'color': 'rgba(119, 152, 191,0.25)',
+		'from': lower,
+		'to': upper
 	}];
 				
 	//Add the series
@@ -709,12 +718,13 @@ function grfoldtestOro (cdfData, data, lower, upper, begin, end, sub, input, max
 	});
 	
     var chartOptions = {
-		chart: {
-			renderTo: 'container5',
-			id: 'foldtest',
-		    events: {
+		'chart': {
+			'renderTo': 'container5',
+			'id': 'foldtest',
+		    'events': {
 				load: function() {
-					var temp = $.extend(this.options.tooltip, this.options.myTooltip);
+					var temp = $.extend({}, this.options.tooltip);
+					$.extend(temp, this.options.myTooltip);
 					this.myTooltip = new Highcharts.Tooltip(this, temp);                    
 				}, 
 				click: function() {
@@ -726,7 +736,7 @@ function grfoldtestOro (cdfData, data, lower, upper, begin, end, sub, input, max
             text: 'Bootstrapped Oroclinal Foldtest',
         },
         subtitle: {
-            text: 'highest τ1 between [' + lower + ', ' + upper + '] % unfolding (' + cdfData.length + ' bootstraps in ' + sub + 'ms)',
+            text: 'Smallest circular variance between [' + lower + ', ' + upper + '] % unfolding (' + cdfData.length + ' bootstraps in ' + sub + 'ms)',
         },
 		exporting: {
 			filename: 'Foldtest',
@@ -758,7 +768,7 @@ function grfoldtestOro (cdfData, data, lower, upper, begin, end, sub, input, max
       
         },
 		credits: {
-			text: "Paleomagnetism.org [Foldtest Module] - <i>after Tauxe et al., 2010 </i>",
+			text: "Paleomagnetism.org [Oroclinal Foldtest]",
 			href: ''
 		},
         tooltip: {
@@ -872,9 +882,6 @@ function grfoldtestOro (cdfData, data, lower, upper, begin, end, sub, input, max
 		
 		notify('failure', 'Data downloading is not supported yet.');
 		return;
-		 
-		
-		return csv;
 		
     };  
 	
@@ -884,14 +891,9 @@ function grfoldtestOro (cdfData, data, lower, upper, begin, end, sub, input, max
 // Code changed after https://github.com/highslide-software/export-csv
 // Original Author: Torstein Honsi (Highcharts)
 Highcharts.getOptions().exporting.buttons.contextButton.menuItems.push({
-
     text: 'Download CSV file',
     onclick: function () {
-	
-		//Parse data to CSV format
 		var csv = this.getCSV(); 
-
-		//Download the parsed CSV
 		dlItem(csv, 'csv');
 	}
 });
@@ -904,21 +906,30 @@ Highcharts.getOptions().exporting.buttons.contextButton.menuItems.push({
  */
 function initializeSampling() {
 
+	// Check if the application has data
 	if(!applicationHasData) {
 		notify('failure', 'Found no data in the application. Please load some.');
 		return;
 	}
 	
-	if(dec.length !== 0) {
-		var typeStrike = $("#sampleType input[name='radio1']:checked").val();
-		var typeDec = $("#sampleType input[name='radio2']:checked").val();
-		var type = {'strike': typeStrike, 'dec': typeDec}
-		
-		if ((type.strike === 'Gauss' || type.strike === 'Standard') && (type.dec === 'Gauss' || type.dec === 'Standard')) {
-			weighedParameters = weighedData(true);
-			bootstrapData(type);
-		}
+	// Return is is already running
+    if(isRunning) {
+		notify('failure', "Oroclinal test is already running.");
 	}
+	isRunning = true;
+	
+	$("#oroclinalBody").hide();
+		
+	// Get the type of sampling 
+	var type = {
+		'strike': $("#sampleType input[name='radio1']:checked").val(),
+		'dec': $("#sampleType input[name='radio2']:checked").val()
+	}
+				
+	// Get the weighed parameters for comparison
+	weighedParameters = weighedData(true);
+	bootstrapData(type);
+		
 }
 
 /* FUNCTION dlItem
@@ -1033,7 +1044,7 @@ function importing(event) {
  * Input: NULL
  * Output: VOID (calls plotting function)
  */
-function weighedData( getParams ) {
+function weighedData(getParams) {
 	
 	var slope = 1;
 	
@@ -1201,6 +1212,52 @@ function weighedData( getParams ) {
 	$("#parameterTable").show();
 }
 
+/* FUNCTION fitTLS2
+ * Description: calculates total least-squares regression for x, y data
+ * 				implemented after a C# routine (written by Mathemagician Kieran)
+ * Input: x@array (x-coordinates of data) y@array (y-coordinates of data)
+ * Output: regression@Object containing slope/intercept properties for total regression
+ */
+function fitTLS2(x, y) {
+	
+	var meanX = 0, meanY = 0;
+	var c0 = 0, c1 = 0, c2 = 0;
+	var solution1 = new Object();
+	var solution2 = new Object();
+
+    for (var i = 0; i < x.length; i++) {
+        meanX += x[i];
+        meanY += y[i];
+    }
+	
+    meanX = meanX/x.length;
+    meanY = meanY/x.length;
+	
+    //calculate the c's
+    for (var i = 0; i < x.length; i++){
+        c2 += (x[i] - meanX) * (y[i] - meanY);
+        c1 += (x[i] - meanX) * (x[i] - meanX) - (y[i] - meanY) * (y[i] - meanY);
+    }
+	
+    c0 = -c2;
+	
+    //calculate the two possible solutions
+    //solution[0] is the slope and solution[1] is the intercept
+    solution1['slope'] = (-c1 + Math.sqrt(c1 * c1 - 4 * c2 * c0)) / (2 * c2);
+    solution1['intercept'] = meanY - solution1['slope'] * meanX;
+    solution2['slope'] = (-c1 - Math.sqrt(c1 * c1 - 4 * c2 * c0)) / (2 * c2);
+    solution2['intercept'] = meanY - solution2['slope'] * meanX;
+	
+    //note the two solutions are perpendicular lines
+    //the correct solution is that with a lower sum squared error
+    var sumsq1 = 0, sumsq2 = 0;
+    for (i = 0; i < x.length; i++) {
+        sumsq1 += (y[i] - (solution1['slope'] * x[i] + solution1['intercept'])) * (y[i] - (solution1['slope'] * x[i] + solution1['intercept']));
+        sumsq2 += (y[i] - (solution2['slope'] * x[i] + solution2['intercept'])) * (y[i] - (solution2['slope'] * x[i] + solution2['intercept']));
+    }
+	return sumsq1 < sumsq2 ? solution1 : solution2    
+}
+
 /* FUNCTION linearRegression
  * Description: calculates least-squares regression for x, y data
  * Input: x@array (x-coordinates of data) y@array (y-coordinates of data)
@@ -1272,23 +1329,17 @@ function getRandom(value, error, type) {
  * Output: VOID (calls plotGraph@function)
  */
 function bootstrapData(type) {
-	
-	if(dec.length === 0) {
-		return;
-	}
-	
-	regressions = new Array();
-	
+
 	//Number of bootstraps
-	var nb = 1000;
 	var i = 0;
 	var bar = $("#progressBar");
-	var sampledStuff = new Array();
+	var sampledBootstraps = new Array();
+	regressions = new Array();
 	
 	//Bootstrap asynchronous implementation
 	(function timed() {
 		
-		if(i < nb) {
+		if(i < nBootstraps) {
 		
 			//Bucket to keep simulated strikes/declinations for single bootstrap
 			var sampleDec = new Array();
@@ -1301,18 +1352,17 @@ function bootstrapData(type) {
 			}
 
 			//Do a linear regression on this data, and save to the regression@array
-			regressions.push(linearRegression(sampleStrike, sampleDec));
+			regressions.push(fitTLS2(sampleStrike, sampleDec));
 			
 			//For 1000 bootstraps save the sampled declinations and strikes (we use this to calculate bootstrapped residuals)
-			if(i < 1000) {
-				sampledStuff.push({dec: sampleDec, strike: sampleStrike});
-			}
+			sampledBootstraps.push({
+				'dec': sampleDec,
+				'strike': sampleStrike
+			});
 			
-			//One bootstrap has been completed
 			i++;
 			
-			bar.progressbar('value', (i/nb) * 100);
-			
+			bar.progressbar('value', (i/nBootstraps) * 100);
 			if(i % 50 === 0) {
 				setTimeout(function() { timed(); }, 1);
 			} else {
@@ -1320,18 +1370,21 @@ function bootstrapData(type) {
 			}
 			
 		} else {
-			callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff);
+			callFunc(sampledBootstraps);
 		}
 	})();
 }
 
+/* fn standardDeviation
+ * Description: Calculates the standard deviation of an array
+ * Input: array of values
+ * Output: standard deviation
+ */
 function standardDeviation(values){
+	
   var avg = average(values);
-  
   var squareDiffs = values.map(function(value){
-    var diff = value - avg;
-    var sqrDiff = diff * diff;
-    return sqrDiff;
+    return Math.pow(value - avg, 2);
   });
   
   var avgSquareDiff = average(squareDiffs);
@@ -1340,32 +1393,125 @@ function standardDeviation(values){
   return stdDev;
 }
 
+/* fn average
+ * Description: Calculates the standard deviation of an array
+ * Input: array of values
+ * Output: standard deviation
+ */
 function average(data){
-  var sum = data.reduce(function(sum, value){
+  return data.reduce(function(sum, value){
     return sum + value;
-  }, 0);
-
-  var avg = sum / data.length;
-  return avg;
+  }, 0) / data.length;
 }
 
+/* fn cdf
+ * Javascript implementation of cdf
+ */
+function cdf (x, mean, std) {
+	return 0.5 * (1 + erf((x - mean) / Math.sqrt(2 * std * std)));
+}
+
+/* fn erf
+ * Javascript implementation of the error function, taken from JSTAT
+ * https://github.com/jstat/jstat
+ */
+function erf(x) {
+	
+  var cof = [-1.3026537197817094, 6.4196979235649026e-1, 1.9476473204185836e-2, -9.561514786808631e-3, -9.46595344482036e-4, 3.66839497852761e-4, 4.2523324806907e-5, -2.0278578112534e-5, -1.624290004647e-6, 1.303655835580e-6, 1.5626441722e-8, -8.5238095915e-8, 6.529054439e-9, 5.059343495e-9, -9.91364156e-10, -2.27365122e-10, 9.6467911e-11, 2.394038e-12, -6.886027e-12, 8.94487e-13, 3.13092e-13, -1.12708e-13, 3.81e-16, 7.106e-15, -1.523e-15, -9.4e-17, 1.21e-16, -2.8e-17];
+	
+  var j = cof.length - 1;
+  var isneg = false;
+  var d = 0;
+  var dd = 0;
+  var t, ty, tmp, res;
+
+  if (x < 0) {
+    x = -x;
+    isneg = true;
+  }
+
+  t = 2 / (2 + x);
+  ty = 4 * t - 2;
+
+  for(; j > 0; j--) {
+    tmp = d;
+    d = ty * d - dd + cof[j];
+    dd = tmp;
+  }
+
+  res = t * Math.exp(-x * x + 0.5 * (cof[0] + ty * d) - dd);
+  return isneg ? res - 1 : 1 - res;
+  
+};
+/* fn getShapWilkie
+ */
+function getShapWilkie(SWresid) {
+	
+	// Magic empirical Shapiro numbers
+	// See: http://esl.eng.ohio-state.edu/~rstheory/iip/shapiro.pdf @ (p. 6 eq. 11, 12)
+	// Do some statistics on the residuals
+	var W = ShapiroWilkW(SWresid);
+	var lnSamples = Math.log(SWresid.length);
+	var mu = 0.0038915 * Math.pow(lnSamples, 3) - 0.083751 * Math.pow(lnSamples, 2) - 0.31082 * lnSamples - 1.5861;
+	var power = 0.0030302 * Math.pow(lnSamples, 2) - 0.082676 * lnSamples - 0.4803;
+	var sigma = Math.pow(Math.E, power);
+	var zValue = (Math.log(1-W) - mu) / sigma;
+	var be = cdf(-Math.abs(zValue), 0, 1);
+	var stdv = standardDeviation(SWresid);
+	var averageRes = average(SWresid);	
+	
+	return {
+		'stdv': stdv,
+		'average': averageRes,
+		'be': be
+	}
+}
+
+function switchStuff() {
+	var type = $('#residualsWhich').val();
+	if(type === 'Declination') {
+		var paramY = getShapWilkie(SWresidY);
+		plotResiduals(pointCloudY, pointCloudBootstrapY, paramY.stdv, paramY.average, 'Data Residuals for Declination');
+		plotQQ(SWresidY, paramY.be, 'Declination');
+	} else if (type === 'Strike') {
+		var paramX = getShapWilkie(SWresidX);
+		plotResiduals(pointCloudX, pointCloudBootstrapX, paramX.stdv, paramX.average, 'Data Residuals for Strike');
+		plotQQ(SWresidX, paramX.be, 'Strike');
+	}
+}
+
+function getAverageBootstrap(regressions) {
+	
+	slopeAverage = 0;
+	interceptAverage = 0;
+	
+	for(var j = 0; j < regressions.length; j++) {
+		slopeAverage += regressions[j].slope;
+		interceptAverage += regressions[j].intercept;
+	}
+	
+	slopeAverage = slopeAverage/regressions.length;
+	interceptAverage = interceptAverage/regressions.length;
+	
+}
+	
 /*
  * FUNCTION callFunc
  * Description: prepares data to be plotted on the oroclinal test (top figure)
  * Input: see parameters
  * Output: VOID (calls graphing function)
  */
-function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) {
+function callFunc(sampledStuff) {
 
 	"use strict";
-	
+		
 	var boundary = new Array();
 	var boundary2 = new Array();
 	var plotArea = new Array();
 	
 	//Upper and lower bound of bootstrap (95%)
-	upper = parseInt(0.975*nb);
-	lower = parseInt(0.025*nb);
+	var upper = parseInt(0.975*nBootstraps);
+	var lower = parseInt(0.025*nBootstraps);
 
 	//For every degree calculate bootstrapped minimum/maximum
 	for(var i = Math.floor(minPlot); i <= Math.ceil(maxPlot); i++) {
@@ -1398,6 +1544,7 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 		plotArea.push([i, min, max]); //[x, yMin, yMax]
 				
 		//Calculate the maximum and minimum possible regressions with 95% confidence
+		/*
 		if(i === minPlot) {
 			var minimumStart = min;
 			var maximumStart = max;
@@ -1405,130 +1552,69 @@ function callFunc(nb, regressions, sampleDec, sampleStrike, type, sampledStuff) 
 			var minimumEnd = min;
 			var maximumEnd = max;
 		}
+		*/
 	}
 	
-	for(var j = 0; j < regressions.length; j++) {
-		slopeAverage += regressions[j].slope;
-		interceptAverage += regressions[j].intercept;
-	}
+	// Get the average bootstraps
+	getAverageBootstrap(regressions);
 	
-	slopeAverage = slopeAverage/regressions.length;
-	interceptAverage = interceptAverage/regressions.length;
+	//Do regression on actual data
+	lr = fitTLS2(strike, dec);
+	oldLr = linearRegression(strike, dec);
 	
-	//Do linear regression on actual data
-	lr = linearRegression(strike, dec);
-
-	var pointCloudBootstrap = new Array();
+	pointCloudBootstrapX = new Array();
+	pointCloudBootstrapY = new Array();
 	for(var i = 0; i < sampledStuff.length; i++) {
 		for(var j = 0; j < sampledStuff[i].strike.length; j++) {
-			var residual = (sampledStuff[i].strike[j] * lr.slope + lr.intercept) - sampledStuff[i].dec[j];
-			pointCloudBootstrap.push({
-				'x': residual, 
+			var y = (sampledStuff[i].strike[j] * lr.slope + lr.intercept) - sampledStuff[i].dec[j];
+			var x = ((sampledStuff[i].dec[j] - lr.intercept) / lr.slope ) - sampledStuff[i].strike[j]
+			pointCloudBootstrapX.push({
+				'x': x, 
+				'y': sampledStuff[i].dec[j]
+			});
+			pointCloudBootstrapY.push({
+				'x': y, 
 				'y': sampledStuff[i].strike[j]
 			});
 		}
 	}
 	
-	var SWresid = new Array();
-	var pointCloud = new Array();
+	pointCloudX = new Array();
+	pointCloudY = new Array();
+	SWresidX = new Array();
+	SWresidY = new Array();
+	
 	for(var i = 0; i < strike.length; i++) {
-		var residual = (strike[i] * lr.slope + lr.intercept) - dec[i];
-		pointCloud.push({
-			'x': residual, 
+		
+		var y = (strike[i] * lr.slope + lr.intercept) - dec[i];
+		var x = ((dec[i] - lr.intercept) / lr.slope) - strike[i];
+		
+		pointCloudX.push({
+			'x': x, 
+			'y': dec[i],
+			'code': codes[i],
+		});
+		pointCloudY.push({
+			'x': y, 
 			'y': strike[i],
 			'code': codes[i],
 		});
-		SWresid.push(residual);
+		
+		SWresidX.push(x);
+		SWresidY.push(y);
+		
 	}
+
+	switchStuff();
+
+	var weighedDat = [{
+		'x': minPlot, 
+		'y': weighedParameters.slope*minPlot + weighedParameters.intercept
+	}, {
+		'x': maxPlot, 
+		'y': weighedParameters.slope*maxPlot + weighedParameters.intercept
+	}];
 	
-/* fn cdf
- * Javascript implementation of cdf
- */
-function cdf (x, mean, std) {
-	return 0.5 * (1 + erf((x - mean) / Math.sqrt(2 * std * std)));
-}
-
-/* fn erf
- * Javascript implementation of the error function, taken from JSTAT
- * https://github.com/jstat/jstat
- */
-function erf(x) {
-	
-	var cof = [
-		-1.3026537197817094,
-		6.4196979235649026e-1,
-		1.9476473204185836e-2,
-        -9.561514786808631e-3,
-		-9.46595344482036e-4,
-		3.66839497852761e-4,
-        4.2523324806907e-5,
-		-2.0278578112534e-5,
-		-1.624290004647e-6,
-        1.303655835580e-6,
-		1.5626441722e-8,
-		-8.5238095915e-8,
-        6.529054439e-9,
-		5.059343495e-9,
-		-9.91364156e-10,
-        -2.27365122e-10,
-		9.6467911e-11,
-		2.394038e-12,
-        -6.886027e-12,
-		8.94487e-13,
-		3.13092e-13,
-        -1.12708e-13,
-		3.81e-16,
-		7.106e-15,
-        -1.523e-15,
-		-9.4e-17,
-		1.21e-16,
-        -2.8e-17
-	];
-	
-  var j = cof.length - 1;
-  var isneg = false;
-  var d = 0;
-  var dd = 0;
-  var t, ty, tmp, res;
-
-  if (x < 0) {
-    x = -x;
-    isneg = true;
-  }
-
-  t = 2 / (2 + x);
-  ty = 4 * t - 2;
-
-  for(; j > 0; j--) {
-    tmp = d;
-    d = ty * d - dd + cof[j];
-    dd = tmp;
-  }
-
-  res = t * Math.exp(-x * x + 0.5 * (cof[0] + ty * d) - dd);
-  return isneg ? res - 1 : 1 - res;
-  
-};
-	
-
-	// Magic empirical Shapiro numbers
-	// See: http://esl.eng.ohio-state.edu/~rstheory/iip/shapiro.pdf @ (p. 6 eq. 11, 12)
-	// Do some statistics on the residuals
-	var W = ShapiroWilkW(SWresid);
-	var lnSamples = Math.log(SWresid.length);
-	var mu = 0.0038915 * Math.pow(lnSamples, 3) - 0.083751 * Math.pow(lnSamples, 2) - 0.31082 * lnSamples - 1.5861;
-	var power = 0.0030302 * Math.pow(lnSamples, 2) - 0.082676 * lnSamples - 0.4803;
-	var sigma = Math.pow(Math.E, power);
-	var zValue = (Math.log(1-W) - mu) / sigma;
-	var be = cdf(-Math.abs(zValue), 0, 1);
-	var stdv = standardDeviation(SWresid);
-	var averageRes = average(SWresid);
-	console.log(be);
-	
-	plotResiduals(pointCloud, pointCloudBootstrap, minPlot, maxPlot, stdv, averageRes);
-	plotQQ(SWresid, be);
-
-
 	var regDat = [{
 		'x': minPlot, 
 		'y': lr.slope*minPlot + lr.intercept
@@ -1641,15 +1727,29 @@ function erf(x) {
 		'marker' : {
 			'enabled': false
 		}
-	}];
+	}, {
+		'name': 'Weighed Regression',
+		'type': 'line',
+		'data': weighedDat,
+		'color': 'rgb(152, 119, 191)',
+		'dashStyle': 'ShortDash',
+		'lineWidth': 2,
+		'enableMouseTracking': false,
+		'marker' : {
+			'enabled': false
+		}
+	}, ];
 	
 	plotGraph(plotSeries, minPlot, maxPlot, true);
-	$("#parameterTable").html('<table class="sample" style="text-align: center"> <thead> <th> Type of Regression </th> <th> Regression Slope </th> <th> Regression Intercept </th> <th> Regression R2 </th> </thead> <tbody> <td> Strike: ' + type.strike + ' <br> Declination: ' + type.dec + ' </td> <td> ' + lr.slope.toFixed(3) + ' </td> <td> ' +	lr.intercept.toFixed(3) + ' </td> <td> ' +	lr.r2.toFixed(3) + ' </td> </tbody> </table>')
-	$("#parameterTable").show();
+	varianceFoldtest();
 	
+	/*
+	$("#parameterTable").html('<table class="sample" style="text-align: center"> <thead> <th> Type of Regression </th> <th> Regression Slope </th> <th> Regression Intercept </th> </thead> <tbody> <td> Strike: ' + type.strike + ' <br> Declination: ' + type.dec + ' </td> <td> ' + lr.slope.toFixed(3) + ' </td> <td> ' +	lr.intercept.toFixed(3) + ' </td> </tbody> </table>')
+	$("#parameterTable").show();
+	*/
 }
 
-function plotQQ(residuals, pVal) {
+function plotQQ(residuals, pVal, title) {
 	
 	var gaussianDistrbution = residuals.map(function(x) {
 		return getRandom(0, 1, 'Gauss');
@@ -1661,25 +1761,22 @@ function plotQQ(residuals, pVal) {
 		return a > b ? 1 : a < b ? -1 : 0;
 	});
 	
-	var QQLr = linearRegression(residuals, gaussianDistrbution);
+	var QQLr = fitTLS2(residuals, gaussianDistrbution);
 	
 	var plotData = new Array();
 	for(var i = 0; i < residuals.length; i++) {
 		plotData.push({'x': residuals[i], 'y': gaussianDistrbution[i]});
 	}
-	createQQChart(plotData, QQLr, pVal);
+	createQQChart(plotData, QQLr, pVal, title);
 }
 	
-function createQQChart(data, QQLr, pVal) {
-	
-	dataLR = [[data[0].x, data[0].x * QQLr.slope + QQLr.intercept], [data[data.length - 1].x, data[data.length - 1].x * QQLr.slope + QQLr.intercept]];
-	
+function createQQChart(data, QQLr, pVal, title) {
 	$("#QQ").highcharts({
 		'chart': {
 			'type': 'scatter',
 		},
 		'title': {
-			'text': 'Quantile-Quantile Plot (Shapiro-Wilk p-val: ' + pVal.toFixed(3) + ')' 
+			'text': 'Quantile-Quantile Plot for ' + title + ' (Shapiro-Wilk p-val: ' + pVal.toFixed(3) + ')' 
 		},
 		credits: {
 			text: "Paleomagnetism.org [Oroclinal Test] - QQ-Plot",
@@ -1692,19 +1789,12 @@ function createQQChart(data, QQLr, pVal) {
 		},
 		'xAxis': {
 			'title': {
-				'text': "Sample Quantiles"
+				'text': "Regression Sample Quantiles"
 			}
 		},
 		series: [{
 			'name': 'Data',
 			'data': data
-		}, {
-			'name': 'Regression (' + QQLr.r2.toFixed(2) + ')',
-			'type': 'line',
-			'marker': {
-				'enabled': false
-			},
-			'data': dataLR
 		}]
 	});
 }
@@ -1731,7 +1821,7 @@ function createStdvLines(avg, stdv) {
 	});
 	return stdvLines;
 }
-function plotResiduals (data, databs, min, max, stdv, average) {
+function plotResiduals (data, databs, stdv, average, title) {
 	
 	var stdvLines = createStdvLines(average, stdv);
 	
@@ -1761,7 +1851,7 @@ function plotResiduals (data, databs, min, max, stdv, average) {
 	for(var key in sortedArrBs) {
 		data2bs.push({
 			'x': Number(key), 
-			'y': -Number(sortedArrBs[key])/1000
+			'y': -0.001*Number(sortedArrBs[key])
 		});
 	}
 	
@@ -1769,15 +1859,13 @@ function plotResiduals (data, databs, min, max, stdv, average) {
         'chart': {
         },
 		'title': {
-			'text': 'Residuals'
+			'text': title
 		},
 		'xAxis': {
 			'plotLines': stdvLines
 		},
 		'yAxis': {
-			'gridLineWidth': 0,
-			'min': min,
-			'max': max
+			'gridLineWidth': 0
 		},
 		credits: {
 			text: "Paleomagnetism.org [Oroclinal Test] - Residuals",
@@ -1820,19 +1908,24 @@ function plotResiduals (data, databs, min, max, stdv, average) {
 }
 
 function getCDF ( type ) {
-
-	if(type === 'slope') {
-		var average = slopeAverage;
-	} else {
-		var average = interceptAverage;	
+	
+	var nSamples = regressions.length;
+	
+	// Get an array of all slopes in the regressions
+	var dataSlope = new Array();
+	var dataIntercept = new Array();
+	for(var i = 0; i < nSamples; i++) {
+		dataSlope.push(regressions[i]['slope']);
+		dataIntercept.push(regressions[i]['intercept']);
 	}
 	
-	var data = new Array();
-	for(var i = 0; i < regressions.length; i++) {
-		data.push(regressions[i][type]);
-	}
+	var upper = parseInt(0.975 * nBootstraps);
+	var lower = parseInt(0.025 * nBootstraps);
 	
-	plotCDF(data, lower, upper, 'CDFContainer', 'Cumulative Distribution Function', lr[type], average, weighedParameters[type], 'Regression ' + type);
+	plotCDF(dataSlope, 'CDFContainerSlope', 'Slope Cumulative Distribution Function', lr['slope'], slopeAverage, weighedParameters['slope'], 'Slope of Regression');
+	plotCDF(dataIntercept, 'CDFContainerIntercept', 'Intercept Cumulative Distribution Function', lr['intercept'], interceptAverage, weighedParameters['intercept'], 'Intercept of Regression');
+	
+	$("#bootTable").html('<table class="sample" style="text-align: center"><thead> <th> Type </th> <th> Total Least Squares Regression </th> <th> Average Bootstrap </th> <th> Bootstrapped Confidence Interval </th> <th> Least Squares </th> <th> Weighed Regression </thead> <tbody> <td> Slope </td> <td> ' + lr.slope.toFixed(3) + ' </td> <td> ' + slopeAverage.toFixed(3) + ' </td> <td> ' + dataSlope[lower].toFixed(3) + ' - ' + dataSlope[upper].toFixed(3) + ' </td> <td> ' + oldLr['slope'].toFixed(3) + ' </td> <td> ' + weighedParameters['slope'].toFixed(3) + ' </td> <tr> <td> Intercept </td> <td> ' + lr.intercept.toFixed(3) + ' </td> <td> ' + interceptAverage.toFixed(3) + ' </td> <td> ' + dataIntercept[lower].toFixed(3) + ' - ' + dataIntercept[upper].toFixed(3) + ' </td> <td> ' + oldLr['intercept'].toFixed(3) + ' </td> <td> ' + weighedParameters['intercept'].toFixed(3) + ' </td> </tr> </tbody> </table>')
 
 }
 
@@ -1854,7 +1947,7 @@ function toggleBands(chart, plotBands) {
     }
 }
 
-function plotCDF (one, lower, upper, container, title, x1, x2, x3, type) {
+function plotCDF (one, container, title, dataR, averageR, weighedR, type) {
 
 	//Sort coordinates for one
 	one.sort(function (a, b) {
@@ -1863,11 +1956,13 @@ function plotCDF (one, lower, upper, container, title, x1, x2, x3, type) {
 
 	//Calculate CDFs
 	var cdfOne = new Array();
-	var nb = one.length;
 	
-	for(var i = 0; i < nb; i++) {
-		cdfOne.push({'x': one[i], 'y': i/(nb-1)});
+	for(var i = 0; i < nBootstraps; i++) {
+		cdfOne.push({'x': one[i], 'y': i/(nBootstraps-1)});
 	}
+	
+	var upper = parseInt(0.975 * nBootstraps);
+	var lower = parseInt(0.025 * nBootstraps);
 	
 	//Define plotbands to represent confidence envelopes
 	var plotBands = [{
@@ -1876,17 +1971,7 @@ function plotCDF (one, lower, upper, container, title, x1, x2, x3, type) {
 		to: one[upper],
 		id: 'confidence'
 	}];
-
-	if(type === 'Regression intercept') {
-		var show = interceptAverage.toFixed(3);
-		var showTitle = 'Average Bootstrapped Intercept';
-	} else if(type === 'Regression slope') {
-		var show = slopeAverage.toFixed(3);
-		var showTitle = 'Average Bootstrapped Slope';		
-	}
-	$("#bootTable").html('<table class="sample" style="text-align: center"> <thead> <th> Type </th> <th> ' + showTitle + ' </th> <th> Confidence Interval </th> </thead> <tbody> <td> ' + type + ' (Bootstrapped) </td> <td> ' + show + ' </td> <td> ' + one[lower].toFixed(3) + ' - ' + one[upper].toFixed(3) + ' </td> </tbody> </table>')
-	$("#bootTable").show();
-	
+		
 	//Define the cumulative distribution function
 	mySeries = [{
 		name: 'Bootstrapped Regression', 
@@ -1905,21 +1990,21 @@ function plotCDF (one, lower, upper, container, title, x1, x2, x3, type) {
 		color: 'rgba(119, 152, 191, 1)'
 	}, {
 		name: 'Data Regression',
-		data: [{x: x1, y: 0}, {x: x1, y: 1}],
-		enableMouseTracking: false,
-		marker: {
-			enabled: false
-		}
-	}, {
-		name: 'Weighted Regression',
-		data: [{x: x3, y: 0}, {x: x3, y: 1}],
+		data: [{'x': dataR, y: 0}, {'x': dataR, y: 1}],
 		enableMouseTracking: false,
 		marker: {
 			enabled: false
 		}
 	}, {
 		name: 'Average Bootstrap',
-		data: [{x: x2, y: 0}, {x: x2, y: 1}],
+		data: [{'x': averageR, y: 0}, {'x': averageR, y: 1}],
+		enableMouseTracking: false,
+		marker: {
+			enabled: false
+		}
+	}, {
+		name: 'Weighted Regression',
+		data: [{x: weighedR, y: 0}, {x: weighedR, y: 1}],
 		enableMouseTracking: false,
 		marker: {
 			enabled: false
@@ -1928,35 +2013,35 @@ function plotCDF (one, lower, upper, container, title, x1, x2, x3, type) {
 		
 	//Chart options	to be used
 	var chartOptions = {
-        title: {
-            text: title,
+        'title': {
+            'text': title,
         },
-		exporting: {
-			filename: 'Regression Bootstrap',
-		    sourceWidth: 1200,
-            sourceHeight: 600,
-            buttons: {
-                contextButton: {
-                    symbolStroke: '#7798BF',
-					align: 'right'
+		'exporting': {
+			'filename': 'Regression Bootstrap',
+		    'sourceWidth': 1200,
+            'sourceHeight': 600,
+            'buttons': {
+                'contextButton': {
+                    'symbolStroke': '#7798BF',
+					'align': 'right'
                 }
             }
         },
-		chart: {
-			id: 'CTMDXYZ',
-			zoomType: 'xy',
-			renderTo: container
+		'chart': {
+			'id': 'CTMDXYZ',
+			'zoomType': 'xy',
+			'renderTo': container
 		},
-        subtitle: {
-			text: nb + ' of bootstraps'
+        'subtitle': {
+			'text': nBootstraps + ' bootstraps'
         },
-		plotOptions: {
-			series: {
-				turboThreshold: 0
+		'plotOptions': {
+			'series': {
+				'turboThreshold': 0
 			},
-			area: {
-				events: {
-					legendItemClick: function (e) {
+			'area': {
+				'events': {
+					'legendItemClick': function (e) {
 						if (this.name == '95% Confidence Intervals') {
 							toggleBands(this.chart, plotBands);
 						}
@@ -1964,31 +2049,30 @@ function plotCDF (one, lower, upper, container, title, x1, x2, x3, type) {
 				}
 			}
 		},
-        xAxis: {
-			title: {
-                text: type
+        'xAxis': {
+			'title': {
+                'text': type
             },
-			plotBands: plotBands,
+			'plotBands': plotBands,
 		},
-		credits: {
-			text: "Paleomagnetism.org [Oroclinal Test] - Parameter Bootstrap",
-			href: ''
+		'credits': {
+			'text': "Paleomagnetism.org [Oroclinal Test] - Parameter Bootstrap",
+			'href': ''
 		},
-        yAxis: {
-			min: 0,
-			max: 1,
-            title: {
-                text: 'Cumulative Distribution'
+        'yAxis': {
+			'min': 0,
+			'max': 1,
+            'title': {
+                'text': 'Cumulative Distribution'
             }
         },
-        tooltip: {
-    		formatter: function() {
+        'tooltip': {
+    		'formatter': function() {
         		return '<b> Cumulative Distribution </b><br><b>' + title + ': </b>' + this.x.toFixed(2) + '<br><b>CDF: </b>' + this.point.y.toFixed(3) //Tooltip on point hover. We convert the projected inclination back to the original inclination using eqAreaInv and display it to the user.
     		}
 		},
-        series: mySeries
+        'series': mySeries
     }
-	
 	new Highcharts.Chart(chartOptions);	
 }
 
@@ -1999,6 +2083,8 @@ function plotCDF (one, lower, upper, container, title, x1, x2, x3, type) {
  */
 function plotGraph(plotSeries, min, max, b) {
 		
+	var pear = getPearsonsPear(dec, strike);
+
 	var chartOptions = {
         chart: {
 			animation: false,
@@ -2007,7 +2093,7 @@ function plotGraph(plotSeries, min, max, b) {
 			zoomType: 'xy',
         },
         title: {
-            text: 'Oroclinal Test'
+            text: 'Oroclinal Test (Pearsons ρ = ' + pear.toFixed(3) + ')'
         },
         subtitle: {
             text: 'Bootstrapped at 95% Confidence Interval'
@@ -2088,14 +2174,19 @@ function plotGraph(plotSeries, min, max, b) {
 		//Redraw the chart with the new chart options
 		var chart = new Highcharts.Chart(chartOptions);
 	}
-	
-	$("#showWrapper").show();
-	
+		
 	if(b) {
 		getCDF($("#getCDF").val());
 		$("#showBooty").show();
 		$("#pClu").show();
 	}
+	
+	$("#oroclinalBody").show();
+		
 	$("#initialPlot").highcharts().reflow();
 	$("#pClu").highcharts().reflow();
+	$("#QQ").highcharts().reflow();
+	
+	isRunning = false;
+
 }

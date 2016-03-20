@@ -2409,8 +2409,6 @@ function intensity ( sample ) {
 	"use strict";
 		
 	var dataSeries = new Array();
-	var dataSeriesVDS = new Array();
-	var UBS = new Array();
 	for(var i = 0; i < sample.data.length; i++) {
 		if(sample.data[i].visible) {
 			//Remove mT, μT or whatever from step - just take a number (regex)
@@ -2422,32 +2420,43 @@ function intensity ( sample ) {
 			});
 		}
 	}
-	
+		
+	// Calcualte the VDS and UBS
+	var dataSeriesVDS = new Array();
+	var UBS = new Array();
 	for(var i = 1; i < dataSeries.length + 1; i++) {
-		var sum = 0;
-		if(i === dataSeries.length) {
-			var yVal = 0;
+
+		if(i === dataSeries.length) {	
+			UBS.push({
+				'x': dataSeries[i-1].x,
+				'y': Math.abs(dataSeries[i-1].y - 0)		
+			});
 		} else {
-			var yVal = dataSeries[i].y;
+			UBS.push({
+				'x': dataSeries[i-1].x,
+				'y': Math.abs(dataSeries[i-1].y - dataSeries[i].y)		
+			});			
 		}
-		UBS.push({
-			'x': dataSeries[i-1].x,
-			'y': Math.abs(dataSeries[i-1].y - yVal)		
-		});
+		
+		var sum = 0;
 		for(var j = i; j < dataSeries.length + 1; j++) {
 			if(j === dataSeries.length) {
-				var yVal2 = 0;
+				sum += Math.abs(dataSeries[j-1].y - 0);
 			} else {
-				var yVal2 = dataSeries[j].y;
+				sum += Math.abs(dataSeries[j-1].y - dataSeries[j].y);
 			}
-			sum += Math.abs(dataSeries[j-1].y - yVal2);
 		}
+		
 		dataSeriesVDS.push({
 			'x': dataSeries[i-1].x,
 			'y': sum
 		});
+		
 	}
 
+	console.log(dataSeriesVDS, dataSeries);
+	
+	// Get the first point
 	UBS.push({
 		'x': dataSeries[dataSeries.length-1].x,
 		'y': UBS[UBS.length - 1].y		
