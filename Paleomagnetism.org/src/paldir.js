@@ -2268,12 +2268,8 @@ function intensity ( sample ) {
 	
 	//Reduce the intensity by diving by the sample volume (default at 10.5cc)
 	var specimenVolume = 10.5;
-	
-	//Construct the data series for Highcharts, only interested in the intensity so use the Pythagorean Thereom.
+			
 	var dataSeries = new Array();
-	var dataSeriesDecay = new Array();
-	var dataDecay = new Array();
-	var maxR = 0;
 	for(var i = 0; i < sample.data.length; i++) {
 		if(sample.data[i].visible) {
 			//Remove mT, μT or whatever from step - just take a number (regex)
@@ -2283,28 +2279,49 @@ function intensity ( sample ) {
 				'x': Number(step), 
 				'y': R/specimenVolume
 			});
-			if(i > 0) {
-				dataDecay.push(Math.sqrt(Math.pow((sample.data[i].x - sample.data[i-1].x),2) + Math.pow((sample.data[i].y - sample.data[i-1].y), 2) + Math.pow((sample.data[i].z - sample.data[i-1].z), 2)));
-			}
-			if(R > maxR) {
-				maxR = R;
-			}
-		} else {
-			dataDecay.push(null);
 		}
 	}
 		
-	//Implementation test for sum of differences (normalized to absolute intensity)
-	var maxRdiff = Math.max.apply(Math, dataDecay);
-	for(var i = 0; i < (dataDecay.length - 1); i++) {
-		if(dataDecay[i] !== null) {
-			var step = sample.data[i+1].step.replace(/[^0-9.]/g, "");
-			dataSeriesDecay.push({
-				'x': Number(step), 
-				'y': (maxR*(dataDecay[i] + dataDecay[i+1])/maxRdiff)/specimenVolume
+	// Calcualte the VDS and UBS
+	var dataSeriesVDS = new Array();
+	var UBS = new Array();
+	for(var i = 1; i < dataSeries.length + 1; i++) {
+
+		if(i === dataSeries.length) {	
+			UBS.push({
+				'x': dataSeries[i-1].x,
+				'y': Math.abs(dataSeries[i-1].y - 0)		
 			});
+		} else {
+			UBS.push({
+				'x': dataSeries[i-1].x,
+				'y': Math.abs(dataSeries[i-1].y - dataSeries[i].y)		
+			});			
 		}
+		
+		var sum = 0;
+		for(var j = i; j < dataSeries.length + 1; j++) {
+			if(j === dataSeries.length) {
+				sum += Math.abs(dataSeries[j-1].y - 0);
+			} else {
+				sum += Math.abs(dataSeries[j-1].y - dataSeries[j].y);
+			}
+		}
+		
+		dataSeriesVDS.push({
+			'x': dataSeries[i-1].x,
+			'y': sum
+		});
+		
 	}
+
+	console.log(dataSeriesVDS, dataSeries);
+	
+	// Get the first point
+	UBS.push({
+		'x': dataSeries[dataSeries.length-1].x,
+		'y': UBS[UBS.length - 1].y		
+	});
 
 	var chartOptions = {
 		'chart': {
@@ -2371,12 +2388,21 @@ function intensity ( sample ) {
             'name': sample.name,
             'data': dataSeries
         }, {
-			'name': 'Sum of Difference Vector',
-			'data': dataSeriesDecay,
+			'name': 'Vector Difference Sum (VDS)',
+			'data': dataSeriesVDS,
 			'marker': {
 				'symbol': 'circle'
-			}
-		}]
+			},
+			'zIndex': 10
+		}, {
+			'type': 'area',
+			'step': true,
+			'pointWidth': 50,
+            'name': 'Unblocking Spectrum',
+            'data': UBS,
+			'zIndex': 0
+
+        }]
     }
 	new Highcharts.Chart(chartOptions);
 	$("#intensityPlot").show();
