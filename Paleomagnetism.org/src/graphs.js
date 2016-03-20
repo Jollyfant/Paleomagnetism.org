@@ -1232,7 +1232,7 @@ function EIbootstraps (data, time, nb, input, name) {
 	//Data bucket for TK03.GAD polynomial [x, y] data
 	//Get the expected elongation from inclination 0 to 90
 	var TK03Poly = new Array();
-	for(var i = 0; i <= 90; i++){
+	for(var i = -90; i <= 90; i++){
 		TK03Poly.push({
 			'x': i, 
 			'y': module.EI.polynomial(i)
@@ -1315,7 +1315,7 @@ function EIbootstraps (data, time, nb, input, name) {
             }
         },
         'xAxis': {
-			'min': 0,
+			'min': -90,
 			'max': 90,
 			'title': {
                 'text': 'Inclination (°)'
@@ -1323,7 +1323,7 @@ function EIbootstraps (data, time, nb, input, name) {
 		},
         yAxis: {
 			'floor': 1,
-			'ceiling': 2.5,	
+			'ceiling': 3,	
             'title': {
                 'text': 'Elongation (τ2/τ3)'
             },
@@ -2049,7 +2049,7 @@ function EICDF (data, orig, inc, incAv, lower, upper) {
 			}	
 		},
         'xAxis': {
-			'min': 0,
+			'min': -90,
 			'max': 90,
 			'plotBands': plotBands,
 			'title': {

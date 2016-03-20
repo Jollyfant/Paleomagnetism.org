@@ -2407,7 +2407,7 @@ function zijderveld ( samples ) {
 function intensity ( sample ) {
 
 	"use strict";
-		
+
 	var dataSeries = new Array();
 	for(var i = 0; i < sample.data.length; i++) {
 		if(sample.data[i].visible) {
@@ -2435,7 +2435,7 @@ function intensity ( sample ) {
 			UBS.push({
 				'x': dataSeries[i-1].x,
 				'y': Math.abs(dataSeries[i-1].y - dataSeries[i].y)		
-			});			
+			});	
 		}
 		
 		var sum = 0;
@@ -2461,7 +2461,7 @@ function intensity ( sample ) {
 		'x': dataSeries[dataSeries.length-1].x,
 		'y': UBS[UBS.length - 1].y		
 	});
-		
+
 	var chartOptions = {
 		'chart': {
 			'animation': false,
