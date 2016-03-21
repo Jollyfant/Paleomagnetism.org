@@ -2228,6 +2228,7 @@ function zijderveld ( samples ) {
 				var projectionInformation = 'Up/West';				
 			}
 			
+			console.log(carts.x, carts.y, carts.z)
 			//Declination is x, -y plane
 			decDat.push({
 				'x': carts.x, 
@@ -2453,15 +2454,13 @@ function intensity ( sample ) {
 		});
 		
 	}
-
-	console.log(dataSeriesVDS, dataSeries);
 	
 	// Get the first point
 	UBS.push({
 		'x': dataSeries[dataSeries.length-1].x,
-		'y': UBS[UBS.length - 1].y		
+		'y': UBS[UBS.length - 1].y
 	});
-
+	
 	var chartOptions = {
 		'chart': {
 			'animation': false,
@@ -2525,7 +2524,7 @@ function intensity ( sample ) {
 			}
        	},
         'series': [{
-            'name': sample.name,
+            'name': 'Resultant Intensity',
             'data': dataSeries,
 			'zIndex': 10
         }, {
