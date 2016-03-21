@@ -2268,20 +2268,24 @@ function intensity ( sample ) {
 	
 	//Reduce the intensity by diving by the sample volume (default at 10.5cc)
 	var specimenVolume = 10.5;
-			
+	
+	var intensities = new Array();
 	var dataSeries = new Array();
 	for(var i = 0; i < sample.data.length; i++) {
 		if(sample.data[i].visible) {
 			//Remove mT, μT or whatever from step - just take a number (regex)
 			var step = sample.data[i].step.replace(/[^0-9.]/g, "");
 			var R = Math.sqrt(sample.data[i].x*sample.data[i].x + sample.data[i].y*sample.data[i].y+sample.data[i].z*sample.data[i].z);
+			intensities.push(R/specimenVolume);
 			dataSeries.push({
 				'x': Number(step), 
 				'y': R/specimenVolume
 			});
 		}
 	}
-		
+	
+	var normalizationFactor = Math.max.apply(null, intensities);
+	
 	// Calcualte the VDS and UBS
 	var dataSeriesVDS = new Array();
 	var UBS = new Array();
@@ -2315,13 +2319,28 @@ function intensity ( sample ) {
 		
 	}
 
-	console.log(dataSeriesVDS, dataSeries);
-	
 	// Get the first point
 	UBS.push({
 		'x': dataSeries[dataSeries.length-1].x,
 		'y': UBS[UBS.length - 1].y		
 	});
+	
+	if($('#normalizeFlag').prop('checked')) {
+		dataSeries = dataSeries.map(function(x){
+			x.y = x.y/normalizationFactor
+			return x;
+		});
+		dataSeriesVDS = dataSeriesVDS.map(function(x) {
+			x.y = x.y/normalizationFactor
+			return x;
+		});	
+		UBS = UBS.map(function(x) {
+			x.y = x.y/normalizationFactor
+			return x;			
+		});
+	}
+	
+
 
 	var chartOptions = {
 		'chart': {
