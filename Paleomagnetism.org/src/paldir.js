@@ -674,7 +674,7 @@ $(function() {
 	//The close method is triggered if a user selects a sample from the specimen scroller without using the < or > buttons.
 	$('#specimens').multiselect({	
 		'minHeight': 100,
-		'noneSelectedText': 'Select a site',
+		'noneSelectedText': 'Select a specimen',
 		'multiple': false,
 		'selectedList': 1,
 		'close': function () {
@@ -1827,7 +1827,7 @@ var drawInterpretations = function ( sample ) {
 			}];
 			
 			$("#zijderveldPlot").highcharts().addSeries({
-				'name': 'Declination (PCA) #' + (i+1),
+				'name': 'Horizontal (PCA) #' + (i+1),
 				'data': lineFit,
 				'enableMouseTracking': false,
 				'lineWidth': 1,
@@ -1847,7 +1847,7 @@ var drawInterpretations = function ( sample ) {
 			}];
 			
 			$("#zijderveldPlot").highcharts().addSeries({
-				'name': 'Inclination (PCA) #' + (i+1),
+				'name': 'Vertical (PCA) #' + (i+1),
 				'data': lineFit,
 				'lineWidth': 1,
 				'enableMouseTracking': false,
@@ -2309,6 +2309,7 @@ function zijderveld ( samples ) {
 			'min': -maximumY,
 			'max': maximumY,
 			'tickWidth': 1,
+			'tickWidth': 0,
             'opposite': true,
 			'title': {
                 'enabled': false
@@ -2351,7 +2352,7 @@ function zijderveld ( samples ) {
 		},
         'series': [{ //Declination Series
 			'type': 'line',
-			'linkedTo': 'Declination',
+			'linkedTo': 'Horizontal Projection',
 			'name': 'Declination', 
 			'enableMouseTracking': false,
 			'data': decDat,
@@ -2360,9 +2361,9 @@ function zijderveld ( samples ) {
 				'enabled': false
 			}
 		},{	//Inclination Series
-			'name': 'Inclination',
+			'name': 'Vertical Projection',
 			'type': 'line',
-			'linkedTo': 'Inclination',
+			'linkedTo': 'Projected Inclination',
 			'enableMouseTracking': false,
 			'data': incDat,
 			'color': 'rgb(119, 152, 191)',
@@ -2372,7 +2373,7 @@ function zijderveld ( samples ) {
 		},{ //Declination Series
 			'type': 'scatter',
 			'id': 'Declination',
-			'name': 'Projected Declination', 
+			'name': 'Horizontal Projection', 
 			'data': decDat,
 			'color': 'rgb(119, 152, 191)',
 			'marker': {
@@ -2385,7 +2386,7 @@ function zijderveld ( samples ) {
 		}, {	//Inclination Series
 			'type': 'scatter',
 			'id': 'Inclination',
-			'name': 'Projected Inclination',
+			'name': 'Vertical Projection',
 			'data': incDat,
 			'color': 'rgb(119, 152, 191)',
 			'marker': {
@@ -2547,7 +2548,7 @@ function intensity ( sample ) {
             'data': dataSeries,
 			'zIndex': 10
         }, {
-			'name': 'Vector Difference Sum (VDS)',
+			'name': 'Vector Difference Sum',
 			'data': dataSeriesVDS,
 			'marker': {
 				'symbol': 'circle'

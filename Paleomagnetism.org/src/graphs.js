@@ -1415,6 +1415,18 @@ function EIbootstraps (data, time, nb, input, name) {
 	}
 }
 
+function translateToSite(direction, from, to) {
+
+	var polePosition = poles(from.lat, from.lon, [direction.dec, direction.inc]);
+	var siteDirectionsTransformed = invPoles(to.lat, to.lon, [polePosition[0], polePosition[1]]);
+	var expectedDec = siteDirectionsTransformed[0];
+	var expectedInc = siteDirectionsTransformed[1];
+	var expectedPalat = diPalat(expectedInc);
+
+  	return {'dec': expectedDec, 'inc': expectedInc, 'palat': expectedPalat}
+
+}
+
 /*
  * FUNCTION plotSiteDataExpected
  * Description: prepares site data for expected declination, inclination, and paleolatitude plots.
@@ -1425,6 +1437,12 @@ function plotSiteDataExpected ( type ) {
 
 	"use strict";
 	
+        // Do not plot if no reference site is specified
+	var requestedLoc = {'lat': $("#palatLat").val(), 'lon': $("#palatLon").val()}
+        if(!requestedLoc.lat || !requestedLoc.lon) {
+		return new Array();
+	}
+
 	//See if inversion flag is checked
 	var inversionFlag = $('#invFlag').prop('checked');
 	
@@ -1555,29 +1573,35 @@ function plotSiteDataExpected ( type ) {
 	for(var i = 0; i < siteNames.length; i++) {
 	
 		//Get site meta-data from global sites object
-		var name 		= sites[siteNames[i]].userInput.metaData.name;
-		var age 		= sites[siteNames[i]].userInput.metaData.age;
-		var maxAge 		= sites[siteNames[i]].userInput.metaData.maxAge;
-		var minAge 		= sites[siteNames[i]].userInput.metaData.minAge;
-		var markerColor = sites[siteNames[i]].userInput.metaData.markerColor;	
+		var name = sites[siteNames[i]].userInput.metaData.name;
+		var age = sites[siteNames[i]].userInput.metaData.age;
+		var maxAge = sites[siteNames[i]].userInput.metaData.maxAge;
+		var minAge = sites[siteNames[i]].userInput.metaData.minAge;
+		var markerColor = sites[siteNames[i]].userInput.metaData.markerColor;
+		var latitude = sites[siteNames[i]].userInput.metaData.latitude;
+		var longitude = sites[siteNames[i]].userInput.metaData.longitude;
+
+		var siteParameters = sites[siteNames[i]][coordRef].params;
 
 		//Skip site if age is not specified
-		if(age === null) {
+		if(latitude === null || longitude === null || age === null || siteParameters.N === 1) {
 			continue;
 		}
-			
-		//Capture
-		var siteParameters = sites[siteNames[i]][coordRef].params;
 		
+		// Translate the sites to the selected location
+		var fromLoc = {'lat': latitude, 'lon': longitude}
+		var translatedDirection = translateToSite({'dec': siteParameters.mDec, 'inc': siteParameters.mInc}, fromLoc, requestedLoc);
+		var translatedButler = butler(translatedDirection.palat, siteParameters.A95, translatedDirection.inc);
+
 		//For the paleolatitude the errors are non-symmetrical
 		//We have recorded the minimum and maximum paleolatitude in the main processing routine and it can be extracted from the parameter object
 		//Same type of routine for declination and inclination -- should speak for itself
-		if (type == 'Paleolatitude') {
-			
+		if (type === 'Paleolatitude') {
+	
 			//Get the parameter from the sites object
-			var parameter = Number(siteParameters.palat);
-			var parameterMin = Number(siteParameters.minPalat);
-			var parameterMax = Number(siteParameters.maxPalat);
+			var parameter = Number(translatedDirection.palat);
+			var parameterMin = Number(translatedButler.minPalat);
+			var parameterMax = Number(translatedButler.maxPalat);
 			
 			//If the user checked the inversion flag, take the absolute values
 			if(inversionFlag) {
@@ -1586,21 +1610,21 @@ function plotSiteDataExpected ( type ) {
 				var parameterMin = Math.abs(parameterMin);
 			}
 			
-		} else if (type == 'Inclination') {
+		} else if (type === 'Inclination') {
 			
-			var parameter = Number(siteParameters.mInc);
+			var parameter = Number(translatedDirection.inc);
 			
 			if(inversionFlag) {
 				var parameter = Math.abs(parameter);
 			}
 			
 			//Calculate the minimum and maximum from the error on inclination (Butler, 1992) and inclination
-			var parameterMin = parameter - Number(siteParameters.dIx);
-			var parameterMax = parameter + Number(siteParameters.dIx);
+			var parameterMin = parameter - Number(translatedButler.dIx);
+			var parameterMax = parameter + Number(translatedButler.dIx);
 			
-		} else if (type == 'Declination') {
+		} else if (type === 'Declination') {
 			
-			var parameter = Number(siteParameters.mDec);
+			var parameter = Number(translatedDirection.dec);
 			
 			//Do the normalization on the declination and put the declination between -180 and 180
 			if(inversionFlag && Number(siteParameters.mInc) < 0) {	
@@ -1609,13 +1633,14 @@ function plotSiteDataExpected ( type ) {
 			if(parameter > 180) {
 				parameter = parameter - 360;
 			}
-			var parameterMin = parameter - Number(siteParameters.dDx);			
-			var parameterMax = parameter + Number(siteParameters.dDx);
+			var parameterMin = parameter - Number(translatedButler.dDx);			
+			var parameterMax = parameter + Number(translatedButler.dDx);
 		
 		}
 
 		//Put the actual recorded point (mean inclination, declination, or paleolatitude) in a Highcharts data object
 		//Keep the marker color for that particular site
+
 		parameterData.push({
 			'x': Number(age), 
 			'y': parameter,
@@ -1637,25 +1662,27 @@ function plotSiteDataExpected ( type ) {
 		//Define the x and y error bars as a line connecting two points
 		//We need the horizontal (minAge - maxAge) and vertical error bar (parameterMin - parameterMax)
 		//Between these series, add null so a line is only drawn between two consecutive points and not between horizontal and vertical error bars
-		parameterConfidence.push({
-			'x': Number(age), 
-			'y': parameterMax
-		}, {
-			'x': Number(age), 
-			'y': parameterMin
-		});
+		if(!isNaN(parameterMin) && !isNaN(parameterMax)) {
+			parameterConfidence.push({
+				'x': Number(age), 
+				'y': parameterMax
+			}, {
+				'x': Number(age), 
+				'y': parameterMin
+			});
 		
-		parameterConfidence.push(null);
+			parameterConfidence.push(null);
 		
-		parameterConfidence.push({
-			'x': Number(minAge),
-			'y': parameter
-		}, {
-			'x': Number(maxAge), 
-			'y': parameter
-		});
+			parameterConfidence.push({
+				'x': Number(minAge),
+				'y': parameter
+			}, {
+				'x': Number(maxAge), 
+				'y': parameter
+			});
 		
-		parameterConfidence.push(null);
+			parameterConfidence.push(null);
+		}
 	}
 
 	//Return the data in a data format for Highcharts
