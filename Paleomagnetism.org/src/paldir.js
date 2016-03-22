@@ -1679,7 +1679,7 @@ var drawInterpretations = function ( sample ) {
 			}];
 			
 			$("#zijderveldPlot").highcharts().addSeries({
-				'name': 'Declination (PCA) #' + (i+1),
+				'name': 'Horizontal (PCA) #' + (i+1),
 				'data': lineFit,
 				'enableMouseTracking': false,
 				'lineWidth': 1,
@@ -1699,7 +1699,7 @@ var drawInterpretations = function ( sample ) {
 			}];
 			
 			$("#zijderveldPlot").highcharts().addSeries({
-				'name': 'Inclination (PCA) #' + (i+1),
+				'name': 'Vertical (PCA) #' + (i+1),
 				'data': lineFit,
 				'lineWidth': 1,
 				'enableMouseTracking': false,
@@ -2208,7 +2208,7 @@ function zijderveld ( samples ) {
 		},
         'series': [{ //Declination Series
 			'type': 'line',
-			'linkedTo': 'Declination',
+			'linkedTo': 'Horizontal Projection',
 			'name': 'Declination', 
 			'enableMouseTracking': false,
 			'data': decDat,
@@ -2217,9 +2217,9 @@ function zijderveld ( samples ) {
 				'enabled': false
 			}
 		},{	//Inclination Series
-			'name': 'Inclination',
+			'name': 'Vertical Projection',
 			'type': 'line',
-			'linkedTo': 'Inclination',
+			'linkedTo': 'Projected Inclination',
 			'enableMouseTracking': false,
 			'data': incDat,
 			'color': 'rgb(119, 152, 191)',
@@ -2229,7 +2229,7 @@ function zijderveld ( samples ) {
 		},{ //Declination Series
 			'type': 'scatter',
 			'id': 'Declination',
-			'name': 'Declination', 
+			'name': 'Horizontal Projection', 
 			'data': decDat,
 			'color': 'rgb(119, 152, 191)',
 			'marker': {
@@ -2242,7 +2242,7 @@ function zijderveld ( samples ) {
 		}, {	//Inclination Series
 			'type': 'scatter',
 			'id': 'Inclination',
-			'name': 'Inclination',
+			'name': 'Vertical Projection',
 			'data': incDat,
 			'color': 'rgb(119, 152, 191)',
 			'marker': {
