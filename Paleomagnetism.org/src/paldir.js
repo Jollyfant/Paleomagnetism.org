@@ -2340,8 +2340,6 @@ function intensity ( sample ) {
 		});
 	}
 	
-
-
 	var chartOptions = {
 		'chart': {
 			'animation': false,
@@ -2404,10 +2402,10 @@ function intensity ( sample ) {
 			}
        	},
         'series': [{
-            'name': sample.name,
+            'name': 'Resultant Intensity',
             'data': dataSeries
         }, {
-			'name': 'Vector Difference Sum (VDS)',
+			'name': 'Vector Difference Sum',
 			'data': dataSeriesVDS,
 			'marker': {
 				'symbol': 'circle'
