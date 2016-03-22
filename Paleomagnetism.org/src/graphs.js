@@ -1422,6 +1422,12 @@ function plotSiteDataExpected ( type ) {
 
 	"use strict";
 	
+        // Do not plot if no reference site is specified
+	var requestedLoc = {'lat': $("#palatLat").val(), 'lon': $("#palatLon").val()}
+        if(!requestedLoc.lat || !requestedLoc.lon) {
+		return new Array();
+	}
+
 	//See if inversion flag is checked
 	var inversionFlag = $('#invFlag').prop('checked');
 	
@@ -1569,7 +1575,6 @@ function plotSiteDataExpected ( type ) {
 		
 		// Translate the sites to the selected location
 		var fromLoc = {'lat': latitude, 'lon': longitude}
-		var requestedLoc = {'lat': $("#palatLat").val(), 'lon': $("#palatLon").val()}
 		var translatedDirection = translateToSite({'dec': siteParameters.mDec, 'inc': siteParameters.mInc}, fromLoc, requestedLoc);
 		var translatedButler = butler(translatedDirection.palat, siteParameters.A95, translatedDirection.inc);
 
