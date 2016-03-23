@@ -431,61 +431,57 @@ var removeInterpretations = function () {
  */
 var addInterpretations = function () {
 
-	"use strict";
+  "use strict";
 	
-	var name = $("#interpretedSites").val();
-	if(name != null) {
-		var name = $("#interpretedSites").val()[0];
-		var interpretations = JSON.parse(localStorage.getItem('savedInt'));
-	
-		var index = $("#interpretedSites option:selected").index();
+  var name = $("#interpretedSites").val();
 
-		var input = '';
-		var capture = interpretations[index].data;
-		
-		var coordType = interpretations[index].coordType;		
-		if(coordType == 'TECT') {
-			var coordinateReadable = 'Tectonic';
-		} else {
-			var coordinateReadable = 'Geographic';
-		}
-		
-		var overRide = $("#override").prop('checked');
+  if(name === null) {
+    return;
+  }
 
-		//Generate line from dec, inc, bedding, and sample name
-		//Only put the bedding if the site has been interpreted in GEOGRAPHIC coordinates WITHOUT fitted great circles
-		//Otherwise, just put directions without beddings
-		if(interpretations[index].type == 'directions' && coordType == 'GEO') {
-			for(var i = 0; i < capture.length; i++) {
-				input += capture[i].dec + ', ' + capture[i].inc + ', ' + capture[i].bedStrike + ', ' + capture[i].bedDip + ', ' + capture[i].sample;
-				if(capture[i].strat) {
-					input += ', ' + capture[i].strat;
-				}
-				input += '\n';
-			}
-		} else {
-			for(var i = 0; i < capture.length; i++) {
-				input += capture[i].dec + ', ' + capture[i].inc + ', ' + capture[i].sample;
-				if(capture[i].strat) {
-					input += ', ' + capture[i].strat;
-				}
-				input += '\n';
-			}				
-		}
-		
-		//Put data in the textarea and name in name-area
-		$("#dropZone").val(input); 
-		$("#siteName").val($('#interpretedSites option[value="'+name+'"]').text());
-		
-		//Give user some feedback on the coordinate reference frame to avoid confusion
-		$("#interpretationInfo").html('<b> Note: </b> Site has been interpreted in ' + coordinateReadable + ' Coordinates.');
-		
-		//Alert that the site has been fitted with great circles and therefore bedding is unavailable
-		if(interpretations[index].type == 'great circles') {
-			$("#interpretationInfo").append(' Site has been fitted with great circles.');
-		}
-	}
+  var interpretations = JSON.parse(localStorage.getItem('savedInt'));
+  var index = $("#interpretedSites option:selected").index();
+
+  var input = '';
+  var capture = interpretations[index].data;
+
+  $("#interpretationInfo").html('Directions in ' + interpretations[index].coordType + ' coordinates.');
 	
+  //Generate line from dec, inc, bedding, sample name, and stratigraphy
+  //Only put the bedding if the site has been interpreted in GEOGRAPHIC coordinates WITHOUT fitted great circles
+  //Otherwise, just put directions without beddings
+  if(interpretations[index].unique || interpretations[index].type === 'directions') {
+
+    for(var i = 0; i < capture.length; i++) {
+      input += [capture[i].dec, capture[i].inc, capture[i].bedStrike, capture[i].bedDip, capture[i].sample].join(", ");
+      if(capture[i].strat !== null) {
+        input += ', ' + capture[i].strat;
+      }
+      input += '\n';
+    }
+  } else {
+    for(var i = 0; i < capture.length; i++) {
+      input += [capture[i].dec, capture[i].inc, capture[i].sample].join(", ");
+      if(capture[i].strat !== null) {
+        input += ', ' + capture[i].strat;
+      }
+      input += '\n';
+    }
+  }
+		
+  // Put data in the textarea and name in name-area
+  $("#dropZone").val(input); 
+  $("#siteName").val($('#interpretedSites option[value="' + name[0] + '"]').text());
+		
+  // Put a note that the site has been fitted with great circles
+  // If the bedding was not unique, inform the user it has been omitted
+  if(interpretations[index].type === 'great circles') {
+    $("#interpretationInfo").append(' Site has been fitted with great circles.');
+    if(!interpretations[index].unique) {
+      $("#interpretationInfo").append(' Omitted non-unique bedding.');		
+    }
+  }
+
 }
 
 /*
@@ -494,32 +490,33 @@ var addInterpretations = function () {
  * Input: Site name (string)
  * Output: BOOLEAN TRUE/FALSE
  */ 
-var checkName = function ( name ) {
+var checkName = function(name) {
 
-	"use strict";
+  "use strict";
 	
-	//Name is empty
-	if(name == '') {
-		inputError($("#nameDiv"));
-		notify('failure', 'Cannot add site because site name is empty.');
-		return false;
-	}
+  //Name is empty
+  if(name === '') {
+    inputError($("#nameDiv"));
+    notify('failure', 'Cannot add site because site name is empty.');
+    return false;
+  }
 	
-	//Site already exists in GLOBAL sites object
-	if(sites.hasOwnProperty(name)) {
-		inputError($("#nameDiv"));
-		notify('failure', 'A site with the name ' + name + ' already exists.');
-		return false;
-	}
+  //Site already exists in GLOBAL sites object
+  if(sites.hasOwnProperty(name)) {
+    inputError($("#nameDiv"));
+    notify('failure', 'A site with the name ' + name + ' already exists.');
+    return false;
+  }
 	
-	//I decided to limit the name length to 15 characters
-	//Otherwise the name might overflow the text-areas
-	if(name.length > 25) {
-		inputError($("#nameDiv"));
-		notify('failure', 'Site name is too long (15 characters maximum).');
-		return false;
-	}
-	return true;
+  //Limit site name length to 25 characters
+  if(name.length > 25) {
+    inputError($("#nameDiv"));
+    notify('failure', 'Site name is too long (25 characters maximum).');
+    return false;
+  }
+
+  return true;
+
 }
 
 /* 

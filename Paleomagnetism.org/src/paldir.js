@@ -30,7 +30,7 @@ var data = new Array();
 var globalSticky = new Array();
 var exportData = new Array();
 var version = 'vALPHA.1613.5';
-var table;
+
 var group = 'None';
 var PATCH_NUMBER = 1.1;
 
@@ -177,22 +177,15 @@ $(function() {
 	});
 	
 	//Tabs initialization and functions
-    $('#tabs').tabs({
-		activate: function(event, ui) {
-			if(data.length !== 0) {
-				if(ui.newPanel.selector === '#fittingTab') {
-					//Redraw the interpretations to the equal area projection
-					$("#eqAreaFitted").hide();
-					exportData = new Array();
-					plotInterpretations();
-				} else if(ui.newPanel.selector === '#interpretationTab') {
-					if($("#intensityPlot").highcharts()) {
-						$("#intensityPlot").highcharts().reflow();
-					}
-				}
-			}
-		}
-    });
+  $('#tabs').tabs({
+    'activate': function(event, ui) {
+      if(data.length !== 0) {
+        if(ui.newPanel.selector === '#fittingTab') {
+	  plotInterpretations();
+	}
+      }
+    }
+  });
 
 	$('#input').dialog({
 		'width': 500,
@@ -268,11 +261,9 @@ $(function() {
 	$( "#coordinates" ).buttonset();
 
 	$("#coordinates").change( function () {
-		exportData = new Array();
 		plotInterpretations();
 		$("#saveInterpretation").text('Save Interpreted Directions');
 		$("#eqAreaFitted").hide();
-		$("#beddingSameDiv").hide();
 	});
 
 	//Fix for blurring tab after click (interferes with arrow key movement)
@@ -503,100 +494,99 @@ $(function() {
 	$("#fitCircles").click( function () {
 		fitCirclesToDirections();
 		$("#saveInterpretation").text('Save Interpreted Directions and fitted Great Circles');
-		$("#beddingSameDiv").show();
 	});
 	
-	//Function to save interpretations to the statistics portal through localStorage
-	$("#saveInterpretation").click( function () {
+  //Function to save interpretations to the statistics portal through localStorage
+  $("#saveInterpretation").click( function () {
 	
-		//Check if localStorage is supported
-		if(!localStorage) {
-			notify('failure', 'localStorage is not supported. Cannot add interpretations to localStorage.');			
-			return;
-		}
+  //Check if localStorage is supported
+  if(!localStorage) {
+    notify('failure', 'localStorage is not supported. Cannot add interpretations to localStorage.');			
+    return;
+  }
 		
-		var coordType = $("#coordinates input[type='radio']:checked").val();
-		var saveObj = localStorage.getItem('savedInt');
+  var coordType = $("#coordinates input[type='radio']:checked").val();
+  var saveObj = localStorage.getItem('savedInt');
 		
-		//Previously saved, get the save and 
-		if(saveObj !== null) {
-			var parsedObj = JSON.parse(saveObj);
-		} else {
-			var parsedObj = new Array();
-		}
+  //Previously saved, get the save and 
+  if(saveObj !== null) {
+    var parsedObj = JSON.parse(saveObj);
+  } else {
+    var parsedObj = new Array();
+  }
 				
-		//Has not been fitted
-		if(exportData.length === 0) {
-			var type = 'directions';
-			for(var i = 0; i < data.length; i++) {
-				if(data[i].interpreted) {
-					//Loop over all interpreted components
-					for(var j = 0; j < data[i][coordType].length; j++) {
-						
-						if(!data[i][coordType][j].group) {
-							data[i][coordType][j].group = 'None';
-						}
-						if(data[i][coordType][j].group !== group) {
-							continue;
-						}
-				
-						if(data[i][coordType][j].type === 'dir') {
-							exportData.push({
-								'dec': data[i][coordType][j].dec,
-								'inc': data[i][coordType][j].inc,
-								'bedStrike': data[i].bedStrike,
-								'bedDip': data[i].bedDip,
-								'sample': data[i].name,
-								'strat': data[i].strat || ""
-							});
-						}
-					}
-				}
-			}
-		} else {
-			var type = 'great circles';
-		}
-		
-		if($("#beddingSame").prop('checked')) {
-			type = 'directions';
-		}
-		
-		var name = prompt('Please enter a name below:');
-		
-		//On empty name
-		if(name === "") {
-			notify('failure', 'Site name is empty.');
-			return;
-		} else if(name === null) {
-			return;
-		}
-		
-		//Check if the site name already exists, if so, ask if the user wishes to overwrite the data.
-		//Then splice the site from the array and add a new one, otherwise return
-		for(var i = 0; i < parsedObj.length; i++) {
-			if(name === parsedObj[i].name) {
-				if(confirm('A site with this name already exists. Do you wish to overwrite?')) {
-					parsedObj.splice(i, 1);
-				} else {
-					notify('failure', 'Site has not been saved.');
-					return;
-				}
-			}
-		}
-				
-		parsedObj.push({
-			'name': name, 
-			'data': exportData, 
-			'type': type,
-			'coordType': coordType
-		});
+  //Has not been fitted
+  if(exportData.length === 0) {
+    var type = 'directions';
+    for(var i = 0; i < data.length; i++) {
+      if(data[i].interpreted) {
+        for(var j = 0; j < data[i][coordType].length; j++) {
 
-		localStorage.setItem('savedInt', JSON.stringify(parsedObj));
-		notify('success', 'Site ' + name + ' has been added to interpreted directions (' + type + ', ' + coordType + ')');	
-			
-		exportData = new Array();
+          if(data[i][coordType][j].group !== group) {
+            continue;
+          }
+				
+          if(data[i][coordType][j].type === 'dir') {
+            exportData.push({
+              'sample': data[i].name,
+	      'dec': data[i][coordType][j].dec,
+	      'inc': data[i][coordType][j].inc,
+              'bedStrike': data[i].bedStrike,
+              'bedDip': data[i].bedDip,
+	      'strat': data[i].strat,
+              'type': data[i][coordType][j].type
+            });
+          }
+        }
+      }
+    }
+  } else {
+    var type = 'great circles';
+  }
 		
-	});
+  var name = prompt('Enter a site name.');
+		
+  if(name === "") {
+    notify('failure', 'Site name is empty.');
+    return;
+  } else if(name === null) {
+    return;
+  }
+		
+  //Check if the site name already exists, if so, ask if the user wishes to overwrite the data.
+  //Then splice the site from the array and add a new one, otherwise return
+  for(var i = 0; i < parsedObj.length; i++) {
+    if(name === parsedObj[i].name) {
+      if(confirm('A site with this name already exists. Do you wish to overwrite?')) {
+        parsedObj.splice(i, 1);
+      } else {
+        notify('failure', 'Aborted: site has not been saved.');
+        return;
+      }
+    }
+  }
+
+  var beddings = exportData.map(function(x) {
+    return x.bedStrike + '/' + x.bedDip;
+  });
+  var unique = (beddings.filter(function(value, index, self) {
+    return self.indexOf(value) === index;
+  }).length === 1);
+
+  parsedObj.push({
+    'name': name,
+    'data': exportData, 
+    'type': type,
+    'coordType': coordType === 'GEO' ? "geographic" : "tectonic",
+    'unique': unique
+  });
+
+  localStorage.setItem('savedInt', JSON.stringify(parsedObj));
+  notify('success', 'Site ' + name + ' has been forwarded to the statistics portal.');	
+			
+  exportData = new Array();
+		
+});
 	
 	//Button handler for left-handed scrolling through specimens
 	$("#left").click( function () {
@@ -1051,436 +1041,421 @@ function initialize() {
  */
 function fitCirclesToDirections() {
 
-	"use strict";
+  "use strict";
 
-	// Reset the exporting data to newly fitted circles and directions
-	exportData = new Array();
-	
-	//Get coordinate reference frame; fitting great circles must be done in tectonic coordinates and geographic coordinates separated
-	var coordType = $("#coordinates input[type='radio']:checked").val();
-	var coordinateNice = coordType === 'GEO' ? 'Geographic Coordinates' : 'Tectonic Coordinates';
-	
-	var fitData = new Array()
-	var pointsSet = new Array();
-	var isSet = false;
+  $("#fitCircles").hide();
 
-	//Loop over all interpreted components and parse to Palfit format
-	for(var i = 0; i < data.length; i++) {
-		if(data[i].interpreted) {
-		
-			//Get declination/inclination and sample name
-			for(var j = 0; j < data[i][coordType].length; j++) {
+  // Reset the exporting data to newly fitted circles and directions
+  exportData = new Array();
+	
+  //Get coordinate reference frame; fitting great circles must be done in tectonic coordinates and geographic coordinates separated
+  var coordType = $("#coordinates input[type='radio']:checked").val();
+  var coordinateNice = coordType === 'GEO' ? 'Geographic Coordinates' : 'Tectonic Coordinates';
+	
+  var fitData = new Array()
+  var pointsSet = new Array();
+  var isSet = false;
+
+  for(var i = 0; i < data.length; i++) {
+    if(data[i].interpreted) {
+      for(var j = 0; j < data[i][coordType].length; j++) {
+
+        // Skip samples not in active group		
+        if(data[i][coordType][j].group !== group) {
+          continue;
+        }					
 				
-				if(!data[i][coordType][j].group) {
-					data[i][coordType][j].group = 'None';
-				}
-				if(data[i][coordType][j].group !== group) {
-					continue;
-				}					
-				
-				var dec = data[i][coordType][j].dec;
-				var inc = data[i][coordType][j].inc;
-				var bedStrike = data[i].bedStrike;
-				var bedDip = data[i].bedDip;
-				var sample = data[i].name;
-				var strat = data[i].strat || ""
+        var dec = data[i][coordType][j].dec;
+	var inc = data[i][coordType][j].inc;
+	var bedStrike = data[i].bedStrike;
+	var bedDip = data[i].bedDip;
+	var sample = data[i].name;
+	var strat = data[i].strat;
 
-				var row = {
-					'name': sample,
-					'strat': strat,
-					'dec': dec,
-					'inc': inc
-				}
+	// Collect the declination, inclinations (poles for great circles) and pass the type
+        var row = {
+          'sample': sample,
+          'dec': dec,
+          'inc': inc,
+          'bedStrike': bedStrike,
+          'bedDip': bedDip,
+          'strat': strat,
+          'type': data[i][coordType][j].type
+        }
+        fitData.push(row);
 
-				//Now check if it is a direction or a great circle and sort them to respective arrays
-				//@pointsSet for directions and @fitData for great circles
-				if(data[i][coordType][j].type == 'dir') {
+        //Now check if it is a direction or a great circle and sort them to respective arrays
+        //@pointsSet for directions and @fitData for great circles
+        if(data[i][coordType][j].type == 'dir') {
 
-					isSet = true;
+          isSet = true;
+
+	  exportData.push(row);
 	
-					exportData.push({
-						'dec': dec, 
-						'inc': inc,
-						'sample': sample,
-						'strat': strat,
-						'type': 'dir'
-					});
-	
-					//Highcharts data array for plotting the set points, these can be used directly
-					pointsSet.push({
-						'x': dec,
-						'y': eqArea(inc),
-						'inc': inc,
-						'sample': sample,
-						'marker': {
-							'fillColor' : inc < 0 ? 'white' : 'rgb(119, 152, 191)',
-							'lineColor' : 'rgb(119, 152, 191)',
-							'lineWidth' : 1,
-						}
-					});
-				}
-				row.type = data[i][coordType][j].type;
-				fitData.push(row);
-			}
-		}
-	}
+	  //Highcharts data array for plotting the set points, these can be used directly
+	  pointsSet.push({
+            'x': dec,
+	    'y': eqArea(inc),
+	    'inc': inc,
+	    'sample': sample,
+	    'marker': {
+	      'fillColor' : inc < 0 ? 'white' : 'rgb(119, 152, 191)',
+	      'lineColor' : 'rgb(119, 152, 191)',
+	      'lineWidth' : 1,
+	    }
+          });
+        }
+      }
+    }
+  }
 
-	//No set points, ask user for a guess to fit circles on;
-	//This helps the procedure to know which intersection of great circles to use (180 degrees apart)
-	if(!isSet) {
-		var getSuggestion = prompt('No set points, give a suggestion for directional fit (dec, inc).');
-		if(getSuggestion !== null) {
-
-			var getSuggestion = getSuggestion.split(/[,\s\t]+/); //Split by commas
-			if(getSuggestion.length != 2) {
-				notify('failure', 'Unexpected input, please give declination and inclination seperated by a comma');
-				return;
-			}
+  //No set points, ask user for a guess to fit circles on;
+  //This helps the procedure to know which intersection of great circles to use (180 degrees apart)
+  if(!isSet) {
+    var getSuggestion = prompt('No set points, give a suggestion for directional fit (dec, inc).');
+    if(getSuggestion !== null) {
+      var getSuggestion = getSuggestion.split(/[,\s\t]+/); //Split by commas
+      if(getSuggestion.length != 2) {
+        notify('failure', 'Unexpected input, please give declination and inclination seperated by a comma');
+        return;
+      }
 			
-			//Get declination and inclination from user
-			var declination = Number(getSuggestion[0]);
-			var inclination = Number(getSuggestion[1]);
+      //Get declination and inclination from user
+      var declination = Number(getSuggestion[0]);
+      var inclination = Number(getSuggestion[1]);
 			
-			fitData.push({
-				'name': 'FORCED',
-				'strat': "",
-				'dec': declination,
-				'inc': inclination,
-				'type': 'fake'
-			});
-		} else {
-			notify('failure', 'Adding your suggestion has failed. Breaking fitting procedure.');
-			return;
-		}
-	}
+      fitData.push({
+        'sample': 'FORCED',
+        'dec': declination,
+	'inc': inclination,
+        'bedStrike': null,
+        'bedDip': null,
+        'strat': null,
+        'type': 'fake'
+      });
+
+    } else {
+      notify('failure', 'Adding your suggestion has failed. Breaking fitting procedure.');
+      return;
+    }
+  }
 	
-	//@Circle is an array containing Cartesian coordinates of pole to great circle
-	var xCircle = new Array(), yCircle = new Array(), zCircle = new Array();
-	var circleInfo = new Array();
+  // Circle is an array containing Cartesian coordinates of pole to great circle
+  var xCircle = new Array(), yCircle = new Array(), zCircle = new Array();
+  var circleInfo = new Array();
 	
-	//Number of set points and great circles
-	var nPoints = 0, nCircles = 0;
-	var xSum = 0, ySum = 0, zSum = 0;
+  //Number of set points and great circles
+  var nPoints = 0, nCircles = 0;
+  var xSum = 0, ySum = 0, zSum = 0;
 
-	//Loop over data and sort great circles from set points
-	for(var i = 0; i < fitData.length; i++) {
+  //Loop over data and sort great circles from set points
+  for(var i = 0; i < fitData.length; i++) {
 	
-		// Set initial anchoring to fake point as mean vector
-		if(fitData[i].type === 'fake') { 
+    // Set initial anchoring to fake point as mean vector
+    if(fitData[i].type === 'fake') { 
 
-			var anchorCoordinates = cart(fitData[i].dec, fitData[i].inc);
-			var unitMeanVector = {
-				'x': anchorCoordinates.x, 
-				'y': anchorCoordinates.y, 
-				'z': anchorCoordinates.z
-			};	
+      var anchorCoordinates = cart(fitData[i].dec, fitData[i].inc);
+      var unitMeanVector = {
+        'x': anchorCoordinates.x, 
+        'y': anchorCoordinates.y, 
+        'z': anchorCoordinates.z
+      };	
 
-		} else if(fitData[i].type === 'dir') {
+    } else if(fitData[i].type === 'dir') {
 
-			nPoints++
+      nPoints++
 			
-			//Sum Cartesian coordinates for mean vector from directional set points			
-			var coordinates = cart(fitData[i].dec, fitData[i].inc);
-			xSum += coordinates.x;
-			ySum += coordinates.y;
-			zSum += coordinates.z;
+      //Sum Cartesian coordinates for mean vector from directional set points			
+      var coordinates = cart(fitData[i].dec, fitData[i].inc);
+      xSum += coordinates.x;
+      ySum += coordinates.y;
+      zSum += coordinates.z;
 			
-		} else if(fitData[i].type === 'GC') {
+    } else if(fitData[i].type === 'GC') {
 
-			nCircles++;
+      nCircles++;
 			
-			//Dec and inc pair to Cartesian coordinates
-			var circleCoordinates = cart(fitData[i].dec, fitData[i].inc);
-			xCircle.push(circleCoordinates.x)
-			yCircle.push(circleCoordinates.y)
-			zCircle.push(circleCoordinates.z);
-			circleInfo.push(fitData[i]);
+      var circleCoordinates = cart(fitData[i].dec, fitData[i].inc);
+      xCircle.push(circleCoordinates.x)
+      yCircle.push(circleCoordinates.y)
+      zCircle.push(circleCoordinates.z);
+      circleInfo.push(fitData[i]);
 	
-		} else {
-			notify('failure', 'Unfamiliar fitting type; expected "fake", "dir", or "gc"');
-		}
-	}
+    } else {
 
-	//At least one set point, calculate the mean coordinates to start fitting circles
-	//This v vector represents the first 'guess'
-	//If no set points are specified we take the anchor that is specified above under 'fake' as the mean vector
-	if(nPoints > 0) {
-		var R = Math.sqrt(xSum*xSum + ySum*ySum + zSum*zSum);
-		var unitMeanVector = {
-			'x': xSum/R, 
-			'y': ySum/R, 
-			'z': zSum/R
-		};
-	}
+      notify('failure', 'Unfamiliar fitting type; expected "fake", "dir", or "gc"');
+      return;
 
-	var meanVector = {
-		'x': xSum,
-		'y': ySum,
-		'z': zSum
-	};
+    }
 
-	//Bucket to contain x, y, z coordinates of the fitted points respectively
-	var fittedCircleCoordinates = new Array();
+  }
+
+  //At least one set point, calculate the mean coordinates to start fitting circles
+  //This v vector represents the first 'guess'
+  //If no set points are specified we take the anchor that is specified above under 'fake' as the mean vector
+  if(nPoints > 0) {
+    var R = Math.sqrt(xSum*xSum + ySum*ySum + zSum*zSum);
+    var unitMeanVector = {
+      'x': xSum/R, 
+      'y': ySum/R, 
+      'z': zSum/R
+    }
+  }
+
+  var meanVector = {
+    'x': xSum,
+    'y': ySum,
+    'z': zSum
+  };
+
+  //Bucket to contain x, y, z coordinates of the fitted points respectively
+  var fittedCircleCoordinates = new Array();
 	
-	//Initially, for all circles, find the closest point on the great circle (through vClose routine) to the mean vector
-	for(var i = 0; i < nCircles; i++) {
-		var fittedCoordinates = vClose(xCircle[i], yCircle[i], zCircle[i], unitMeanVector);
+  //Initially, for all circles, find the closest point on the great circle (through vClose routine) to the mean vector
+  for(var i = 0; i < nCircles; i++) {
+    var fittedCoordinates = vClose(xCircle[i], yCircle[i], zCircle[i], unitMeanVector);
 
-		meanVector.x += fittedCoordinates.x;
-		meanVector.y += fittedCoordinates.y;
-		meanVector.z += fittedCoordinates.z;
+    meanVector.x += fittedCoordinates.x;
+    meanVector.y += fittedCoordinates.y;
+    meanVector.z += fittedCoordinates.z;
 
-		fittedCircleCoordinates.push({
-			'x': fittedCoordinates.x,
-			'y': fittedCoordinates.y,
-			'z': fittedCoordinates.z
-		});
-	}
+    fittedCircleCoordinates.push({
+      'x': fittedCoordinates.x,
+      'y': fittedCoordinates.y,
+      'z': fittedCoordinates.z
+    });
+  }
 
-	var nIterations = 0;
+  var nIterations = 0;
 	
-	//Iterative procedure start
-	while(true) {
+  //Iterative procedure start
+  while(true) {
+
+    nIterations++;
+    var angles = new Array();
+
+    //Procedure for one iteration
+    for( var i = 0; i < nCircles; i++) {
+			
+      //Subtract the fitted point from the mean
+      meanVector.x -= fittedCircleCoordinates[i].x;
+      meanVector.y -= fittedCircleCoordinates[i].y;
+      meanVector.z -= fittedCircleCoordinates[i].z;
+
+      //Recalculate the the new mean vector (unit length)
+      var R = Math.sqrt(meanVector.x*meanVector.x + meanVector.y*meanVector.y + meanVector.z*meanVector.z);
+      var unitMeanVector = {
+        'x': meanVector.x/R,
+        'y': meanVector.y/R,
+        'z': meanVector.z/R
+      };
+			
+      //Calculate the new closest point for the great circle Gi to new mean vector
+      var newClose = vClose(xCircle[i], yCircle[i], zCircle[i], unitMeanVector);
+
+      //Dot product to find the angle between the newly fitted point and the old fitted point this will determine whether the procedure is broken
+      var dotProduct = Math.min(1, newClose.x * fittedCircleCoordinates[i].x + newClose.y * fittedCircleCoordinates[i].y + newClose.z * fittedCircleCoordinates[i].z);
+      angles.push(Math.acos(dotProduct)/rad);
+			
+      //Add the new closest direction back to the mean vector
+      meanVector.x += newClose.x, meanVector.y += newClose.y, meanVector.z += newClose.z;
+
+      //Set the new fitted point as the old fitted point for the next iteration
+      fittedCircleCoordinates[i] = {'x': newClose.x, 'y': newClose.y, 'z': newClose.z};
+
+    }
 		
-		var angles = new Array();
+    //Get the maximum angle between a new and an old fitted direction (this should be lower than 0.1 for the procedure to continue); else break
+    if(Math.max.apply(null, angles) < 0.01) {
+      break;
+    }
 
-		//Procedure for one iteration
-		for( var i = 0; i < nCircles; i++) {
-			
-			//Subtract the fitted point from the mean
-			meanVector.x -= fittedCircleCoordinates[i].x;
-			meanVector.y -= fittedCircleCoordinates[i].y;
-			meanVector.z -= fittedCircleCoordinates[i].z;
+  }
 
-			//Recalculate the the new mean vector (unit length)
-			var R = Math.sqrt(meanVector.x*meanVector.x + meanVector.y*meanVector.y + meanVector.z*meanVector.z);
-			var unitMeanVector = {
-				'x': meanVector.x/R,
-				'y': meanVector.y/R,
-				'z': meanVector.z/R
-			};
-			
-			//Calculate the new closest point for the great circle Gi to new mean vector
-			var newClose = vClose(xCircle[i], yCircle[i], zCircle[i], unitMeanVector);
+    // Start with the sum of all set points and add all the iteratively fitted directions to the mean vector
+    // Calculate the mean direction for all fitted directions and set points together
+    meanVector = {
+      'x': xSum,
+      'y': ySum,
+      'z': zSum
+    };
 
-			//Dot product to find the angle between the newly fitted point and the old fitted point this will determine whether the procedure is broken
-			var dotProduct = newClose.x * fittedCircleCoordinates[i].x + newClose.y * fittedCircleCoordinates[i].y + newClose.z * fittedCircleCoordinates[i].z;
-			if(dotProduct > 1) {
-				dotProduct = 1;
-			}
-			angles.push(Math.acos(dotProduct)/rad);
-			
-			//Add the new closest direction back to the mean vector
-			meanVector.x += newClose.x, meanVector.y += newClose.y, meanVector.z += newClose.z;
-			
-			//Set the new fitted point as the old fitted point for the next iteration
-			fittedCircleCoordinates[i] = {'x': newClose.x, 'y': newClose.y, 'z': newClose.z};
-		}
+    for(var i = 0; i < nCircles; i++) {
+      meanVector.x += fittedCircleCoordinates[i].x
+      meanVector.y += fittedCircleCoordinates[i].y
+      meanVector.z += fittedCircleCoordinates[i].z;
+    }
+
+    var newMean = dir(meanVector.x, meanVector.y, meanVector.z);
+    var pointsCircle = new Array();
+
+    //Loop over all great circles and get fitted directions in Highcharts data array
+    for(var i = 0; i < nCircles; i++) {
+
+      var direction = new dir(fittedCircleCoordinates[i].x, fittedCircleCoordinates[i].y, fittedCircleCoordinates[i].z);
+      exportData.push({
+        'sample': circleInfo[i].sample,
+	'dec': direction.dec, 
+	'inc': direction.inc,
+	'bedStrike': circleInfo[i].bedStrike,
+	'bedDip': circleInfo[i].bedDip,
+	'strat': circleInfo[i].strat,
+	'type': 'gc'
+      });
+
+      //Data array for points fitted on great circle
+      pointsCircle.push({
+        'x': direction.dec, 
+	'sample': circleInfo[i].sample,
+	'y': eqArea(direction.inc), 
+	'inc': direction.inc,
+	'marker': {
+	  'fillColor': (direction.inc < 0) ? 'white' : 'rgb(191, 119, 152)',
+	  'lineColor': 'rgb(191, 119, 152)',
+          'lineWidth': 1,
+	}
+      });
+    }
+
+    //Get plane data for great circles themselves
+    var greatCircleDataPos = new Array();	
+    var greatCircleDataNeg = new Array();	
+    for(var i = 0; i < nCircles; i++) {
+
+      var direction = new dir(xCircle[i], yCircle[i], zCircle[i]);
 		
-		nIterations++;
-		
-		//Get the maximum angle between a new and an old fitted direction (this should be lower than 0.1 for the procedure to continue); else break
-		var maxAngle = 0;
-		for(var i = 0; i < nCircles; i++) {
-			if(angles[i] > maxAngle) {
-				maxAngle = angles[i];
-			}
-		}
-		if(maxAngle < 0.01) {
-			break;
-		}
-	}
-
-	//Start with the sum of all set points and add all the iteratively fitted directions to the mean vector
-	//Calculate the mean direction for all fitted directions and set points together
-	meanVector = {
-		'x': xSum,
-		'y': ySum,
-		'z': zSum
-	};
-
-	for(var i = 0; i < nCircles; i++) {
-		meanVector.x += fittedCircleCoordinates[i].x
-		meanVector.y += fittedCircleCoordinates[i].y
-		meanVector.z += fittedCircleCoordinates[i].z;
-	}
-
-	var newMean = new dir(meanVector.x, meanVector.y, meanVector.z);
-
-	var pointsCircle = new Array();
-
-	//Loop over all great circles and get fitted directions in Highcharts data array
-	for(var i = 0; i < nCircles; i++) {
+      //Get the appropriate negative or positive plane, and save it
+      var greatCircles = getPlaneData({'dec': direction.dec, 'inc': direction.inc}, 'GC', null, pointsCircle[i].inc);
+      if(pointsCircle[i].inc > 0) {
+        var greatCircleDataPos = greatCircleDataPos.concat(greatCircles.one);
+      } else {
+        var greatCircleDataNeg = greatCircleDataNeg.concat(greatCircles.one);
+      }
+    }
 	
-		var direction = new dir(fittedCircleCoordinates[i].x, fittedCircleCoordinates[i].y, fittedCircleCoordinates[i].z);
-		exportData.push({
-			'dec': direction.dec, 
-			'inc': direction.inc,
-			'sample': circleInfo[i].name,
-			'strat': circleInfo[i].strat,
-			'type': 'gc'
-		});
+    //Modified Fisher statistics /McFadden and McElhinny (1988)
+    var nTotal = nPoints + nCircles; //Total N
+    var nPrime = Math.max(1.1, nPoints + nCircles/2);
 
-		//Data array for points fitted on great circle
-		pointsCircle.push({
-			'x': direction.dec, 
-			'sample': circleInfo[i].name,
-			'y': eqArea(direction.inc), 
-			'inc': direction.inc,
-			'marker': {
-				'fillColor' : (direction.inc < 0) ? 'white' : 'rgb(191, 119, 152)',
-				'lineColor' : 'rgb(191, 119, 152)',
-				'lineWidth' : 1,
-			}
-		});
-	}
+    //Other statistical parameters (McFadden & McElhinny, 1988)
+    var k = (2*nPoints + nCircles - 2)/(2*(nPoints + nCircles - R));
+    var t95 = Math.acos(1 - ((nPrime - 1)/k) * (Math.pow(20, (1/(nPrime - 1))) - 1))/rad;
+	
+    //Standard Fisher parameters (k, a95);
+    var k = (nTotal - 1) / (nTotal - R);
+    var a95 = Math.acos(1 - ((nTotal - R)/R) * (Math.pow(20, (1/(nTotal - 1))) - 1))/rad;
 
-	//Get plane data for great circles themselves
-	var greatCircleDataPos = new Array();	
-	var greatCircleDataNeg = new Array();	
-	for(var i = 0; i < nCircles; i++) {
-	
-		var direction = new dir(xCircle[i], yCircle[i], zCircle[i]);
-		
-		//Get the appropriate negative or positive plane, and save it
-		var greatCircles = getPlaneData({'dec': direction.dec, 'inc': direction.inc}, 'GC', null, pointsCircle[i].inc);
-		if(pointsCircle[i].inc > 0) {
-			var greatCircleDataPos = greatCircleDataPos.concat(greatCircles.one);
-		} else {
-			var greatCircleDataNeg = greatCircleDataNeg.concat(greatCircles.one);
-		}
-	}
-	
-	//Modified Fisher statistics /McFadden and McElhinny (1988)
-	var nTotal = nPoints + nCircles; //Total N
-	var nPrime = nPoints + nCircles/2;
+    //Get confidence envelope data around newMean with a95, t95
+    var ellipse = getPlaneData({'dec': newMean.dec, 'inc': newMean.inc}, 'MAD', a95);
+    var ellipse2 = getPlaneData({'dec': newMean.dec, 'inc': newMean.inc}, 'MAD', t95);
 
-	//Don't go below 1.1
-	if(nPrime < 1.1) {
-		nPrime = 1.1 
-	}
+    //Get color for mean direction (if neg make white)
+    var color = (newMean.inc < 0) ? 'white' : 'rgb(119, 191, 152)';
 	
-	//Other statistical parameters (McFadden & McElhinny, 1988)
-	var k = (2*nPoints + nCircles - 2)/(2*(nPoints + nCircles - R));
-	var a95 = ((nPrime - 1)/k) * (Math.pow(20, (1/(nPrime - 1))) - 1);
-	var am95 = Math.acos(1 - a95/R)/rad;
-	var t95 = Math.acos(1 - a95)/rad;
+    //Set up data for Highcharts:
+    //Directions, Fitted directions, Mean direction, Great circles, Confidence Ellipses..
+    var plotData = [{
+      name: 'Directions',
+      type: 'scatter',
+      color: 'rgb(119, 152, 191)',
+      data: pointsSet,
+      zIndex: 100,
+    }, {
+      name: 'Fitted Directions',
+      type: 'scatter',
+      color: 'rgb(191, 119, 152)',
+      data: pointsCircle,
+      zIndex: 100,
+      marker: {
+      symbol: 'circle'
+    }
+  }, {
+    name: 'Great Circles',
+    id: 'GCs',
+    type: 'line',
+    data: greatCircleDataPos,
+    dashStyle: 'ShortDash',
+    turboThreshold: 0,
+    enableMouseTracking: false,
+    marker: {
+      enabled: false,
+    }
+  }, {
+    name: 'Great Circles',
+    linkedTo: 'GCs',
+    type: 'line',
+    data: greatCircleDataNeg,
+    turboThreshold: 0,
+    enableMouseTracking: false,
+    marker: {
+      enabled: false,
+    }
+  },  {
+    name: 'Mean',
+    type: 'scatter',
+    data: [{
+      'sample': 'Direction Mean',
+      'x': newMean.dec,
+      'y': eqArea(newMean.inc),
+      'inc': newMean.inc,
+      'info': 'Direction Mean'
+    }],
+    color: 'rgb(119, 191, 152)',
+    marker: {
+      symbol: 'circle',
+      radius: 6,
+      fillColor: color,
+      lineColor: 'rgb(119, 191, 152)',
+      lineWidth: 1
+    }
+  }, {
+    name: 'α95 Fitted Confidence',
+    id: 'confidence',
+    type: 'line',
+    color: 'red',
+    enableMouseTracking: false,
+    data: ellipse.two,
+    marker: {
+      enabled: false
+    }
+  }, {
+    linkedTo: 'confidence',
+    type: 'line',
+    color: 'red',
+    enableMouseTracking: false,
+    data: ellipse.one,
+    marker: {
+      enabled: false
+    }	
+  }, {
+    name: 'α95 Full Confidence',
+    id: 'confidence2',
+    type: 'line',
+    color: 'red',
+    enableMouseTracking: false,
+    data: ellipse2.two,
+    marker: {
+      enabled: false
+    }
+  }, {
+    linkedTo: 'confidence2',
+    type: 'line',
+    color: 'red',
+    enableMouseTracking: false,
+    data: ellipse2.one,
+    marker: {
+      enabled: false
+    }	
+  }];
 	
-	//Standard Fisher parameters (k, a95);
-	var k = (nTotal - 1) / (nTotal - R);
-	var a95 = Math.acos(1 - ((nTotal - R)/R) * (Math.pow(20, (1/(nTotal - 1))) - 1))/rad;
-
-	//Get confidence envelope data around newMean with a95, t95
-	var ellipse = getPlaneData({'dec': newMean.dec, 'inc': newMean.inc}, 'MAD', a95);
-	var ellipse2 = getPlaneData({'dec': newMean.dec, 'inc': newMean.inc}, 'MAD', t95);
-
-	//Get color for mean direction (if neg make white)
-	var color = (newMean.inc < 0) ? 'white' : 'rgb(119, 191, 152)';
+  //Plot graph with the data, and provide user with information on the fit in a table
+  plotInterpretationsGraph( plotData, nCircles, 'eqAreaFitted', 'Interpreted Directions and Fitted Great Circles', coordinateNice );
+  $("#eqAreaFitted").css('display', 'inline-block');
+  $("#fitCirclesDivText").html('<b>Great circle solutions have been fitted in ' + nIterations + ' iteration(s).</b>');
 	
-	//Set up data for Highcharts:
-	//Directions, Fitted directions, Mean direction, Great circles, Confidence Ellipses..
-	var plotData = [{
-		name: 'Directions',
-		type: 'scatter',
-		color: 'rgb(119, 152, 191)',
-		data: pointsSet,
-		zIndex: 100,
-	}, {
-		name: 'Fitted Directions',
-		type: 'scatter',
-		color: 'rgb(191, 119, 152)',
-		data: pointsCircle,
-		zIndex: 100,
-		marker: {
-			symbol: 'circle'
-		}
-	}, {
-		name: 'Great Circles',
-		id: 'GCs',
-		type: 'line',
-		data: greatCircleDataPos,
-		dashStyle: 'ShortDash',
-		turboThreshold: 0,
-		enableMouseTracking: false,
-		marker: {
-			enabled: false,
-		}
-	}, {
-		name: 'Great Circles',
-		linkedTo: 'GCs',
-		type: 'line',
-		data: greatCircleDataNeg,
-		turboThreshold: 0,
-		enableMouseTracking: false,
-		marker: {
-			enabled: false,
-		}
-	},  {
-		name: 'Mean',
-		type: 'scatter',
-		data: [{
-			'sample': 'Direction Mean',
-			'x': newMean.dec,
-			'y': eqArea(newMean.inc),
-			'inc': newMean.inc,
-			'info': 'Direction Mean'
-		}],
-		color: 'rgb(119, 191, 152)',
-		marker: {
-			symbol: 'circle',
-			radius: 6,
-			fillColor: color,
-			lineColor: 'rgb(119, 191, 152)',
-			lineWidth: 1
-		}
-	}, {
-		name: 'Confidence',
-		id: 'confidence',
-		type: 'line',
-		color: 'red',
-		enableMouseTracking: false,
-		data: ellipse.two,
-		marker: {
-			enabled: false
-		}
-	}, {
-		linkedTo: 'confidence',
-		type: 'line',
-		color: 'red',
-		enableMouseTracking: false,
-		data: ellipse.one,
-		marker: {
-			enabled: false
-		}	
-	}, {
-		name: 'Confidence T',
-		id: 'confidence2',
-		type: 'line',
-		color: 'red',
-		enableMouseTracking: false,
-		data: ellipse2.two,
-		marker: {
-			enabled: false
-		}
-	}, {
-		linkedTo: 'confidence2',
-		type: 'line',
-		color: 'red',
-		enableMouseTracking: false,
-		data: ellipse2.one,
-		marker: {
-			enabled: false
-		}	
-	}];
-	
-	//Plot graph with the data, and provide user with information on the fit in a table
-	plotInterpretationsGraph( plotData, nCircles, 'eqAreaFitted', 'Interpreted Directions and Fitted Great Circles', coordinateNice );
-	$("#eqAreaFitted").css('display', 'inline-block');
-	$("#fitCirclesDivText").html('<b>Great circle solutions have been fitted in ' + nIterations + ' iteration(s).</b>');
-	
-	$("#fittingTable").html('<table class="sample" id="fittingTableInfo"><tr><th> N<small> (setpoints) </small> </th> <th> N<small> (great circle solutions) </small> </th> <th> N<small> (total) </small> </th> <th>Mean Declination </th> <th>Mean Inclination </th>  </tr>');
-	$("#fittingTableInfo").append('<tr> <td> ' + nPoints + ' </td> <td> ' + nCircles + '<td> ' + (nPoints + nCircles) + ' </td> <td> ' + newMean.dec.toFixed(1) + ' </td> <td> ' + newMean.inc.toFixed(1) + ' </td> </tr> </table>');
-	$("#fittingTable").show();
+  $("#fittingTable").html('<table class="sample" id="fittingTableInfo"><tr><th> N<small> (setpoints) </small> </th> <th> N<small> (great circle solutions) </small> </th> <th> N<small> (total) </small> </th> <th>Mean Declination </th> <th>Mean Inclination </th>  </tr>');
+  $("#fittingTableInfo").append('<tr> <td> ' + nPoints + ' </td> <td> ' + nCircles + '<td> ' + (nPoints + nCircles) + ' </td> <td> ' + newMean.dec.toFixed(1) + ' </td> <td> ' + newMean.inc.toFixed(1) + ' </td> </tr> </table>');
+  $("#fittingTable").show();
 
 }
 
@@ -2165,6 +2140,20 @@ var rotateTectonic = function(str, he, data){
 	return [temp.dec, temp.inc];
 }
 
+/* function generateZijderveldTooltip
+ * Description: generates the tooltip used in the Zijderveld diagram
+ */
+function generateZijderveldTooltip(self) {
+
+  return [
+    '<b>Demagnetization Step: </b>' + self.point.step,
+    '<b>Declination: </b>' + self.point.dec.toFixed(1),
+    '<b>Inclination: </b>' + self.point.inc.toFixed(1),
+    '<b>Intensity: </b>' + self.point.intensity.toFixed(2) + 'µA/m'
+  ].join("<br>");
+
+}
+
 /*
  * FUNCTION zijderveld
  * Description: handles graphing for zijderveld plot
@@ -2173,232 +2162,296 @@ var rotateTectonic = function(str, he, data){
  */
 function zijderveld ( samples ) {
 
-	"use strict";
+  "use strict";
 	
-	//Specimen metadata (core and bedding orientations)
-	var coreBedding = samples.coreAzi;
-	var coreDip = samples.coreDip - 90;
-	var beddingStrike = samples.bedStrike;
-	var beddingDip = samples.bedDip;
+  //Specimen metadata (core and bedding orientations)
+  var coreBedding = samples.coreAzi;
+  var coreDip = samples.coreDip - 90;
+  var beddingStrike = samples.bedStrike;
+  var beddingDip = samples.bedDip;
 	
-	//Get the Boolean flags
-	var nFlag = $('#nFlag').prop('checked');
-	var tcFlag = $('#tcViewFlag').prop('checked');
-	var enableLabels = $('#labelFlag').prop('checked');
-	var specFlag = $('#specFlag').prop('checked');
+  // Get the flag options
+  var nFlag = $('#nFlag').prop('checked');
+  var tcFlag = $('#tcViewFlag').prop('checked');
+  var enableLabels = $('#labelFlag').prop('checked');
+  var specFlag = $('#specFlag').prop('checked');
 	
-	//Check if user wants to view in specimen coordinates, put the core bedding to 0 and core azimuth to 90;
-	if(specFlag) {
-		var coreBedding = 0;
-		var coreDip = 0;
-		var coordinateInformation = '(Specimen)';
-	} else {
-		var coordinateInformation = '(Geographic)';
-	}
+  //Check if user wants to view in specimen coordinates, put the core bedding to 0 and core azimuth to 90;
+  if(specFlag) {
+    var coreBedding = 0;
+    var coreDip = 0;
+    var coordinateInformation = '(Specimen)';
+  } else {
+    var coordinateInformation = '(Geographic)';
+  }
 	
-	//Data buckets for inclination/declination lines
-	var decDat = new Array();
-	var incDat = new Array();
+  //Data buckets for inclination/declination lines
+  var decDat = new Array();
+  var incDat = new Array();
 	
-	//Parameters to scale axes (min, max)
-	var valuesX = new Array();
-	var valuesY = new Array();	
+  //Parameters to scale axes (min, max)
+  var valuesX = new Array();
+  var valuesY = new Array();	
 	
-	//Loop over all points and do rotations if requested (e.g. Specimen, Geographic, or Tectonic coordinates in N/Up or W/Up projection)
-	for(var i = 0; i < samples.data.length; i++) {
-		if(samples.data[i].visible) {
+  //Loop over all points and do rotations if requested (e.g. Specimen, Geographic, or Tectonic coordinates in N/Up or W/Up projection)
+  for(var i = 0; i < samples.data.length; i++) {
+    if(samples.data[i].visible) {
 			
-			//Rotate to geographic coordinates
-			var direction = rotateGeographic(coreBedding, coreDip, [samples.data[i].x, samples.data[i].y, samples.data[i].z]);
+      //Rotate to geographic coordinates
+      var direction = rotateGeographic(coreBedding, coreDip, [samples.data[i].x, samples.data[i].y, samples.data[i].z]);
 
-			//Rotate to tectonic coordinates if requested and not viewing in specimen coordinates
-			if(tcFlag && !specFlag) {
-				var coordinateInformation = '(Tectonic)';
-				var directionTectonic = rotateTectonic(beddingStrike+90, beddingDip+90, [direction.dec, direction.inc]);
-				direction.dec = directionTectonic[0];
-				direction.inc = directionTectonic[1];
-			}
-			
-			//Check the projection flag, if we wish to show Up/North subtract 90 from the declination
-			if(nFlag) {
-				var carts = new cart(direction.dec-90, direction.inc, direction.R);
-				var projectionInformation = 'Up/North';	
-			} else {
-				var carts = new cart(direction.dec, direction.inc, direction.R);	
-				var projectionInformation = 'Up/West';				
-			}
-			
-			console.log(carts.x, carts.y, carts.z)
-			//Declination is x, -y plane
-			decDat.push({
-				'x': carts.x, 
-				'y': -carts.y, 
-				'dec': direction.dec,
-				'inc': direction.inc,
-				'intensity': direction.R,
-				'step': samples.data[i].step
-			});
-			
-			//Inclination is x, -z plane
-			incDat.push({
-				'x': carts.x, 
-				'y': -carts.z,
-				'dec': direction.dec,
-				'inc': direction.inc,
-				'intensity': direction.R,
-				'step': samples.data[i].step
-			});
-			
-			//Push the values for x and (y, z) to arrays. At the end we determine the maximum/minimum from these arrays. 
-			valuesX.push(Math.abs(carts.x));
-			valuesY.push(Math.abs(carts.x), Math.abs(carts.y), Math.abs(carts.z));
-			
-		}
-	}
+      //Rotate to tectonic coordinates if requested and not viewing in specimen coordinates
+      if(tcFlag && !specFlag) {
+        var coordinateInformation = '(Tectonic)';
+        var directionTectonic = rotateTectonic(beddingStrike+90, beddingDip+90, [direction.dec, direction.inc]);
+        direction.dec = directionTectonic[0];
+        direction.inc = directionTectonic[1];
+      }
 
-	//Obtain the maximum and minimum values which will be used as the graph boundaries
-	//The Zijderveld diagram will always be a square
-	var maximumX = Math.max.apply(Math, valuesX);
-	var maximumY = Math.max.apply(Math, valuesY);
+      //Check the projection flag, if we wish to show Up/North subtract 90 from the declination
+      // x and y axes are swapped in Highcharts (to our Cartesian definition [see core.cart])
+      if(nFlag) {
+        var carts = new cart(direction.dec, direction.inc, direction.R);
+        var projectionInformation = 'Up/North';	
+      } else {
+        var carts = new cart(direction.dec+90, direction.inc, direction.R);	
+        var projectionInformation = 'Up/West';				
+      }
 
-    var chartOptions = {
-		'chart': {
-			'animation': false,
-			'zoomType': 'xy',
-			'id': 'Zijderveld',
-			'renderTo': 'zijderveldPlot',
-			'events': {			//Work around to resize markers on exporting from radius 2 (tiny preview) to 4 (normalized)
-                'load': function () {
-                    if (this.options.chart.forExport) {
-						for(var i = 0; i < this.series[0].data.length; i++) {
-							this.series[2].data[i].update({marker: {radius: 2}}, false);
-							this.series[3].data[i].update({marker: {radius: 2}}, false);
-						}
-					}
-					this.redraw();
-				}
-			}
-		},
-		'exporting': {
-			'filename': 'Zijderveld',
-            'sourceWidth': 600,
-            'sourceHeight': 600,
-            'buttons': {
-                'contextButton': {
-                    'symbolStroke': '#7798BF',
-					'align': 'right'
-                }
-            }
-        },
-		'title': {
-			'text': 'Zijderveld Diagram (' + samples.name + ')'
-		},
-		'tooltip': {
-			'useHTML': true,
-			'formatter': function () {
-				return '<b>Demagnetization Step: </b>' + this.point.step + '<br> <b>Declination: </b>' + this.point.dec.toFixed(1) + '<br> <b>Inclination: </b>' + this.point.inc.toFixed(1) + '<br> <b>Intensity: </b>' + this.point.intensity.toFixed(2) + 'µA/m';
-			}
-		},
-		'subtitle': {
-			'text': '<b>' + coordinateInformation + '</b><br>' + projectionInformation
-		},
-        'xAxis': {
-            'gridLineWidth': 0,
-            'lineColor': 'black',
-            'crossing': 0,
-			'min': -maximumY,
-			'max': maximumY,
-			'tickWidth': 1,
-			'tickWidth': 0,
-            'opposite': true,
-			'title': {
-                'enabled': false
-            }
-        },
-        'yAxis': {
-			'min': -maximumY,
-			'max': maximumY,
-		    'gridLineWidth': 0,
-			'lineWidth': 1,
-			'minRange': 10,
-            'lineColor': 'black',
-            'crossing': 0,
-            'title': {
-                'enabled': false
-            }
-        },
-		'plotOptions': {
-			'series': {
-				'animation': false,
-				'dataLabels': {
-					'color': 'grey',
-                    'enabled': enableLabels,
-					'style': {
-						'fontSize': '10px'
-					},
-					'formatter': function () {
-						return this.point.step;
-					}
-				},
-			},
-			'line': {
-				'lineWidth': 1,
-			}
-		},
-		'credits': {
-			'enabled': true,
-			'text': "Paleomagnetism.org (Zijderveld Diagram)",
-			'href': ''
-		},
-        'series': [{ //Declination Series
-			'type': 'line',
-			'linkedTo': 'Horizontal Projection',
-			'name': 'Declination', 
-			'enableMouseTracking': false,
-			'data': decDat,
-			'color': 'rgb(119, 152, 191)',
-			'marker': {
-				'enabled': false
-			}
-		},{	//Inclination Series
-			'name': 'Vertical Projection',
-			'type': 'line',
-			'linkedTo': 'Projected Inclination',
-			'enableMouseTracking': false,
-			'data': incDat,
-			'color': 'rgb(119, 152, 191)',
-			'marker': {
-				'enabled': false
-			}
-		},{ //Declination Series
-			'type': 'scatter',
-			'id': 'Declination',
-			'name': 'Horizontal Projection', 
-			'data': decDat,
-			'color': 'rgb(119, 152, 191)',
-			'marker': {
-				'lineWidth': 1,
-				'symbol': 'circle',
-				'radius': 2,
-				'lineColor': 'rgb(119, 152, 191)',
-				'fillColor': 'rgb(119, 152, 191)'
-			}
-		}, {	//Inclination Series
-			'type': 'scatter',
-			'id': 'Inclination',
-			'name': 'Vertical Projection',
-			'data': incDat,
-			'color': 'rgb(119, 152, 191)',
-			'marker': {
-				'symbol': 'circle',
-				'lineWidth': 1,
-				'radius': 2,
-				'lineColor': 'rgb(119, 152, 191)',
-				'fillColor': 'white'
-			}
-		}]
+      //Declination is x, y plane (switched) because of conventions
+      decDat.push({
+        'x': carts.y, 
+        'y': carts.x, 
+        'dec': direction.dec,
+        'inc': direction.inc,
+        'intensity': direction.R,
+        'step': samples.data[i].step
+      });
+			
+      // Up is positive, so -z
+      //Inclination is y (x), -z plane
+      incDat.push({
+        'x': carts.y, 
+        'y': -carts.z,
+        'dec': direction.dec,
+        'inc': direction.inc,
+        'intensity': direction.R,
+        'step': samples.data[i].step
+      });
+
+      //Push the values for x and (y, z) to arrays. At the end we determine the maximum/minimum from these arrays. 
+      valuesY.push(Math.abs(carts.x), Math.abs(carts.y), Math.abs(carts.z));
+
     }
-	new Highcharts.Chart(chartOptions); //Call Highcharts constructor
+  }
+
+  //Obtain the maximum and minimum values which will be used as the graph boundaries
+  //The Zijderveld diagram will always be a square
+  var maximumY = Math.max.apply(Math, valuesY);
+
+  var chartOptions = {
+    'chart': {
+    'animation': false,
+    'zoomType': 'xy',
+    'id': 'Zijderveld',
+    'renderTo': 'zijderveldPlot',
+    'events': {
+      'load': function () {
+        if (this.options.chart.forExport) {
+          for(var i = 0; i < this.series[0].data.length; i++) {
+            this.series[2].data[i].update({marker: {radius: 2}}, false);
+            this.series[3].data[i].update({marker: {radius: 2}}, false);
+          }
+        }
+        this.redraw();
+      }
+    }
+  },
+  'exporting': {
+    'filename': 'Zijderveld',
+    'sourceWidth': 600,
+    'sourceHeight': 600,
+    'buttons': {
+      'contextButton': {
+        'symbolStroke': '#7798BF',
+        'align': 'right'
+      }
+    }
+  },
+  'title': {
+    'text': 'Zijderveld Diagram (' + samples.name + ')'
+  },
+  'tooltip': {
+    'useHTML': true,
+      'formatter': function () {
+        return generateZijderveldTooltip(this);
+      }
+    },
+    'subtitle': {
+      'text': '<b>' + coordinateInformation + '</b><br>' + projectionInformation
+    },
+    'xAxis': {
+      'gridLineWidth': 0,
+      'lineColor': 'black',
+      'crossing': 0,
+      'min': -maximumY,
+      'max': maximumY,
+      'gridLineWidth': 0,
+      'tickWidth': 1,
+      'lineWidth': 1,
+      'opposite': true,
+      'title': {
+        'enabled': false
+      },
+      'labels': {
+        'formatter': function () {
+          if(this.value === 0) return '';
+          else return this.value;
+        }
+      }
+    },
+    'yAxis': {
+      'min': -maximumY,
+      'max': maximumY,
+      'gridLineWidth': 0,
+      'lineWidth': 1,
+      'tickWidth': 1,
+      'minRange': 10,
+      'lineColor': 'black',
+      'crossing': 0,
+      'title': {
+        'enabled': false
+      },
+      'labels': {
+        'formatter': function () {
+          if(this.value === 0) return '';
+          else return this.value;
+        }
+      }
+    },
+    'plotOptions': {
+      'series': {
+        'animation': false,
+        'dataLabels': {
+          'color': 'grey',
+          'enabled': enableLabels,
+          'style': {
+            'fontSize': '10px'
+          },
+          'formatter': function () {
+            return this.point.step;
+          }
+        }
+      },
+      'line': {
+        'lineWidth': 1,
+      }
+    },
+    'credits': {
+      'enabled': true,
+      'text': "Paleomagnetism.org (Zijderveld Diagram)",
+      'href': ''
+    },
+    'series': [{
+      'type': 'line',
+      'linkedTo': 'Horizontal Projection',
+      'name': 'Declination', 
+      'enableMouseTracking': false,
+      'data': decDat,
+      'color': 'rgb(119, 152, 191)',
+      'marker': {
+        'enabled': false
+      }
+    }, {
+      'name': 'Vertical Projection',
+      'type': 'line',
+      'linkedTo': 'Projected Inclination',
+      'enableMouseTracking': false,
+      'data': incDat,
+      'color': 'rgb(119, 152, 191)',
+      'marker': {
+        'enabled': false
+      }
+    }, {
+      'type': 'scatter',
+      'id': 'Declination',
+      'name': 'Horizontal Projection', 
+      'data': decDat,
+      'color': 'rgb(119, 152, 191)',
+      'marker': {
+        'lineWidth': 1,
+        'symbol': 'circle',
+        'radius': 2,
+	'lineColor': 'rgb(119, 152, 191)',
+	'fillColor': 'rgb(119, 152, 191)'
+      }
+    }, {
+      'type': 'scatter',
+      'id': 'Inclination',
+      'name': 'Vertical Projection',
+      'data': incDat,
+      'color': 'rgb(119, 152, 191)',
+      'marker': {
+        'symbol': 'circle',
+        'lineWidth': 1,
+        'radius': 2,
+        'lineColor': 'rgb(119, 152, 191)',
+        'fillColor': 'white'
+      }
+    }]
+  }
+
+  new Highcharts.Chart(chartOptions);
+
+}
+
+function vectorLength(x, y, z) {
+  return (x*x + y*y + z*z);
+}
+
+function unblockingSpectrum(data) {
+
+  // Determine the unblocking spectrum
+  var UBS = new Array();
+  for(var i = 1; i < data.length + 1; i++) {
+    if(i !== data.length) {	
+      UBS.push({
+        'x': data[i-1].x,
+	'y': Math.abs(data[i-1].y - data[i].y)
+      });	
+    }
+  }
+
+  // Add the first point
+  UBS.push({
+    'x': data[data.length-1].x,
+    'y': UBS[UBS.length - 1].y
+  });
+
+  return UBS;
+
+}
+
+function vectorDifferenceSum(data) {
+
+ // Get the vector difference sum
+  var dataSeriesVDS = new Array();
+  for(var i = 1; i < data.length + 1; i++) {
+    var sum = 0;
+    for(var j = i; j < data.length + 1; j++) {
+      if(j === data.length) {
+        sum += Math.abs(data[j-1].y);
+      } else {
+        sum += Math.abs(data[j-1].y - data[j].y);
+      }
+    }	
+    dataSeriesVDS.push({
+      'x': data[i-1].x,
+      'y': sum
+    });
+  }
+
+  return dataSeriesVDS;
 }
 
 /* FUNCTION intensity
@@ -2408,78 +2461,52 @@ function zijderveld ( samples ) {
  */
 function intensity ( sample ) {
 
-	"use strict";
+  "use strict";
 
-	var intensities = new Array();
-	var dataSeries = new Array();
-	for(var i = 0; i < sample.data.length; i++) {
-		if(sample.data[i].visible) {
-			//Remove mT, μT or whatever from step - just take a number (regex)
-			var step = sample.data[i].step.replace(/[^0-9.]/g, "");
-			var R = Math.sqrt(sample.data[i].x*sample.data[i].x + sample.data[i].y*sample.data[i].y+sample.data[i].z*sample.data[i].z);
-			intensities.push(R);
-			dataSeries.push({
-				'x': Number(step), 
-				'y': R
-			});
-		}
-	}
-	
-	var normalizationFactor = Math.max.apply(null, intensities);
-	
-	// Calcualte the VDS and UBS
-	var dataSeriesVDS = new Array();
-	var UBS = new Array();
-	for(var i = 1; i < dataSeries.length + 1; i++) {
+  var intensities = new Array();
+  var dataSeries = new Array();
+  for(var i = 0; i < sample.data.length; i++) {
 
-		if(i === dataSeries.length) {	
-			UBS.push({
-				'x': dataSeries[i-1].x,
-				'y': Math.abs(dataSeries[i-1].y - 0)		
-			});
-		} else {
-			UBS.push({
-				'x': dataSeries[i-1].x,
-				'y': Math.abs(dataSeries[i-1].y - dataSeries[i].y)		
-			});	
-		}
-		
-		var sum = 0;
-		for(var j = i; j < dataSeries.length + 1; j++) {
-			if(j === dataSeries.length) {
-				sum += Math.abs(dataSeries[j-1].y - 0);
-			} else {
-				sum += Math.abs(dataSeries[j-1].y - dataSeries[j].y);
-			}
-		}
-		
-		dataSeriesVDS.push({
-			'x': dataSeries[i-1].x,
-			'y': sum
-		});
-		
-	}
+    var step = sample.data[i];
 
-	// Get the first point
-	UBS.push({
-		'x': dataSeries[dataSeries.length-1].x,
-		'y': UBS[UBS.length - 1].y
-	});
+    // On show steps that are visible
+    //Remove mT, μT or whatever from step - just take a number (regex)
+    if(step.visible) {
 
-	if($('#normalizeFlag').prop('checked')) {
-		dataSeries = dataSeries.map(function(x){
-			x.y = x.y/normalizationFactor
-			return x;
-		});
-		dataSeriesVDS = dataSeriesVDS.map(function(x) {
-			x.y = x.y/normalizationFactor
-			return x;
-		});	
-		UBS = UBS.map(function(x) {
-			x.y = x.y/normalizationFactor
-			return x;			
-		});
-	}
+      var treatmentStep = step.step.replace(/[^0-9.]/g, "");
+      var R = Math.sqrt(vectorLength(step.x, step.y, step.z));
+
+      intensities.push(R);
+      dataSeries.push({
+        'x': Number(treatmentStep), 
+        'y': R
+      });
+
+    }
+  }
+
+  // Get the maximum resultant intensity that will serve
+  // as the normalization factor if requested
+  var normalizationFactor = Math.max.apply(null, intensities);
+
+  // Get the unblocking spectrum and VDS
+  var UBS = unblockingSpectrum(dataSeries);
+  var dataSeriesVDS = vectorDifferenceSum(dataSeries);
+
+  if($('#normalizeFlag').prop('checked')) {
+    dataSeries = dataSeries.map(function(x){
+      x.y = x.y/normalizationFactor
+      return x;
+    });
+    dataSeriesVDS = dataSeriesVDS.map(function(x) {
+      x.y = x.y/normalizationFactor
+      return x;
+    });	
+    UBS = UBS.map(function(x) {
+      x.y = x.y/normalizationFactor
+      return x;			
+    });
+  }
 	
 	var chartOptions = {
 		'chart': {
@@ -2893,7 +2920,7 @@ function exporting() {
 		return;
 	}
 
-	var exportData = data.map(function (x) {
+	var downloadingData = data.map(function (x) {
 		return $.extend({
 			'version': version,
 			'strat': 0,
@@ -2903,7 +2930,7 @@ function exporting() {
 
 	//Try to parse our data JSON object to a string and download it to a custom .dir file
 	try {
-		dlItem(JSON.stringify(exportData), 'dir');
+		dlItem(JSON.stringify(downloadingData), 'dir');
 	} catch (err) {
 		notify('failure', 'A critical error has occured when exporting the data: ' + err);
 	}
@@ -3340,18 +3367,18 @@ function importUtrecht(applicationData, text) {
 		
 		//Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
 		applicationData.push({
-			'format'		: "Utrecht",
-			'strat'			: stratLevel,
-			'patch'			: PATCH_NUMBER,
-			'GEO'			: new Array(),
-			'TECT'			: new Array(),
-			'interpreted'	: false,
-			'name'			: name,
-			'coreAzi'		: Number(coreAzi),
-			'coreDip'		: Number(coreDip),
-			'bedStrike'		: Number(bedStrike),
-			'bedDip'		: Number(bedDip),
-			'data'			: parsedData
+			'format': "Utrecht",
+			'strat': stratLevel,
+			'patch': PATCH_NUMBER,
+			'GEO': new Array(),
+			'TECT': new Array(),
+			'interpreted': false,
+			'name': name,
+			'coreAzi': Number(coreAzi),
+			'coreDip': Number(coreDip),
+			'bedStrike': Number(bedStrike),
+			'bedDip': Number(bedDip),
+			'data': parsedData
 		})
 	}
 		
@@ -3365,55 +3392,54 @@ function importUtrecht(applicationData, text) {
  */
 function patch () {
 	
-	if(data.length === 0) return;
+  if(!data || data.length === 0) return;
 
-	var patched = false;
-	for(var i = 0; i < data.length; i++) {
+  var patched = false;
+  for(var i = 0; i < data.length; i++) {
 		
-		// First Paleomagnetism.org Patch
-		// Set patch attribute, group attribute
-		// Reduce the intensities by 10.5 (this was hardcoded before)
-		// Loop over all specimens
-		if(data[i].patch === undefined) {
-			patched = true;
-			for(var j = 0; j < data[i].data.length; j++) {
-				data[i].data[j].x = data[i].data[j].x/10.5;
-				data[i].data[j].y = data[i].data[j].y/10.5;
-				data[i].data[j].z = data[i].data[j].z/10.5;
-			}
+  // First Paleomagnetism.org Patch
+  // Set patch attribute, group attribute
+  // Reduce the intensities by 10.5 (this was hardcoded before)
+  // Loop over all specimens
+  if(data[i].patch === undefined) {
+    patched = true;
+    for(var j = 0; j < data[i].data.length; j++) {
+      data[i].data[j].x = data[i].data[j].x/10.5;
+      data[i].data[j].y = data[i].data[j].y/10.5;
+      data[i].data[j].z = data[i].data[j].z/10.5;
+    }
 			
-			// Reduce the center of mass
-			for(var j = 0; j < data[i]['GEO'].length; j++) {
-				data[i]['GEO'][j].group = false;
-				data[i]['GEO'][j].format = "";
-				data[i]['GEO'][j].strat = "";
-				data[i]['GEO'][j].cm = data[i]['GEO'][j].cm.map(function(x) {
-					return x/10.5;
-				});
-			}
-			for(var j = 0; j < data[i]['TECT'].length; j++) {
-				data[i]['TECT'][j].group = false;
-				data[i]['TECT'][j].format = "";
-				data[i]['TECT'][j].strat = "";
-				data[i]['TECT'][j].cm = data[i]['TECT'][j].cm.map(function(x) {
-					return x/10.5;
-				});
-			}
+    // Reduce the center of mass of interpreted directions and circles
+    for(var j = 0; j < data[i]['GEO'].length; j++) {
+      data[i]['GEO'][j].group = "None";
+      data[i]['GEO'][j].cm = data[i]['GEO'][j].cm.map(function(x) {
+        return x/10.5;
+      });
+    }
+    for(var j = 0; j < data[i]['TECT'].length; j++) {
+      data[i]['TECT'][j].group = "None";
+      data[i]['TECT'][j].cm = data[i]['TECT'][j].cm.map(function(x) {
+        return x/10.5;
+      });
+    }
 			
-			// Set patch to 1.1. This is VERY important.
-			// It helps to keep track of the compatibility chain
-			data[i].patch = 1.1; 
+    // Set patch to 1.1. This is VERY important.
+    // It helps to keep track of the compatibility chain
+    data[i].patch = 1.1;
+    data[i].format = 'Unknown';
+    data[i].strat = null;
 
-		}
-	}
+    }
+  }
 	
-	setStorage();		
+  setStorage();		
 	
-	if(patched) {
-		notify('success', 'Your data has been patched to match a new version. Please export your data for saving (Keep a backup :))');
-	}
+  if(patched) {
+    notify('success', 'Your data has been patched to match a new version. Please export your data for saving (Keep a backup :))');
+  }
 	
 }
+
 function importApplication(applicationData, text) {
 
 	importedData = JSON.parse(text);
@@ -3855,151 +3881,165 @@ var plotInterpretationsGraph = function ( dataBucket, nCircles, container, title
 	}
 }
 
+/* function plotInterpretions
+ * puts the interpreted directions and planes on an equal area projection
+ */
 function plotInterpretations() {
-	
-	var plotDataDir = [];
-	var plotDataCircle = [];
-	var plotDataCircle2 = [];
 
-	var dataFisher = [];
-	var circlePoles = [];
-	
-	var coordType =  $("#coordinates input[type='radio']:checked").val();
-	var coordinateNice = (coordType == 'GEO') ? 'Geographic Coordinates' : 'Tectonic Coordinates';
+  $("#eqAreaFitted").hide();
 
-	var nCircles = 0;
-	var nPoints = 0;
-	
-	//Loop over all interpreted specimens
-	for(var i = 0; i < data.length; i++) {
-		if(data[i].interpreted) { 
-			for(var j = 0; j < data[i][coordType].length; j++) {
-			
-				var dec = data[i][coordType][j].dec;
-				var inc = data[i][coordType][j].inc;
-				var sample = data[i].name;
-				var color = (inc < 0) ? 'white' : 'rgb(119, 152, 191)';
-				
-				if(!data[i][coordType][j].group) {
-					data[i][coordType][j].group = 'None';
-				}
-				if(data[i][coordType][j].group !== group) {
-					continue;
-				}					
+  exportData = new Array();
 
-				//This interpreted direction is a point and not a pole
-				if(data[i][coordType][j].type === 'dir') {
+  var plotDataDir = new Array();
+  var plotDataCircle = new Array();
+  var plotDataCircle2 = new Array();
+
+  var dataFisher = new Array();
+  var circlePoles = new Array();
+	
+  var coordType =  $("#coordinates input[type='radio']:checked").val();
+  var coordinateNice = (coordType === 'GEO') ? 'Geographic Coordinates' : 'Tectonic Coordinates';
+
+  var nCircles = 0;
+  var nPoints = 0;
+	
+  //Loop over all the interpreted specimens
+  for(var i = 0; i < data.length; i++) {
+    if(data[i].interpreted) { 
+      for(var j = 0; j < data[i][coordType].length; j++) {
+        var dec = data[i][coordType][j].dec;
+        var inc = data[i][coordType][j].inc;
+        var sample = data[i].name;
+        var color = (inc < 0) ? 'white' : 'rgb(119, 152, 191)';
+
+	// Skip if this interpretation is not in the selected group		
+        if(data[i][coordType][j].group !== group) {
+          continue;
+        }					
+
+	//This interpreted direction is a direction (setpoint)
+	if(data[i][coordType][j].type === 'dir') {
+
+	  nPoints++;
+	  dataFisher.push([dec, inc]);
 				
-					nPoints++;
-					dataFisher.push([dec, inc]);
-				
-					//Push to Highcharts formatted data array
-					plotDataDir.push({
-						'info': data[i].info ? data[i].info : "",
-						'x': dec, 
-						'sample': sample,
-						'y': eqArea(inc),
-						'inc': inc,
-						'marker': {
-							'fillColor' : color,
-							'lineColor' : 'rgb(119, 152, 191)',
-							'lineWidth' : 1,
-						}
-					});
+	  //Push to Highcharts formatted data array
+	  plotDataDir.push({
+	    'info': data[i].info ? data[i].info : "",
+	    'x': dec, 
+            'sample': sample,
+	    'y': eqArea(inc),
+	    'inc': inc,
+	    'marker': {
+	      'fillColor' : color,
+	      'lineColor' : 'rgb(119, 152, 191)',
+	      'lineWidth' : 1,
+	    }
+	  });
+
+        } else if (data[i][coordType][j].type === 'GC') {
+
+	  nCircles++;
 					
-				} else if (data[i][coordType][j].type == 'GC') {
-				
-					nCircles++;
-					
-					var k = getPlaneData({'dec': dec, 'inc': inc}, 'GC');
-					plotDataCircle = plotDataCircle.concat(k.one);
-					plotDataCircle.push({x: null, y: null});
-					plotDataCircle2 = plotDataCircle2.concat(k.two);
-					plotDataCircle2.push({x: null, y: null});
-					circlePoles.push({'dec': dec, 'inc': inc});
-				}
-			}
-		}
-	}
+          var k = getPlaneData({'dec': dec, 'inc': inc}, 'GC');
+	  plotDataCircle = plotDataCircle.concat(k.one);
+	  plotDataCircle.push({x: null, y: null});
+	  plotDataCircle2 = plotDataCircle2.concat(k.two);
+	  plotDataCircle2.push({x: null, y: null});
+	  circlePoles.push({'dec': dec, 'inc': inc});
+        }
+      }
+    }
+  }
 
-	//Get the fisher parameters for the set points and request the 95% confidence Fisher ellipse
-	var parameters = new fisher(dataFisher, 'dir', 'full');
-	var ellipse = getPlaneData({'dec': parameters.mDec, 'inc': parameters.mInc}, 'MAD', parameters.a95);
+  // Get the fisher parameters for the set points and request the 95% confidence Fisher ellipse
+  var parameters = new fisher(dataFisher, 'dir', 'full');
+  var ellipse = getPlaneData({
+    'dec': parameters.mDec, 
+    'inc': parameters.mInc
+  }, 'MAD', parameters.a95);
 	
-	//Get fillColor (white if reversed)
-	var color = (parameters.mInc < 0) ? 'white' : 'rgb(119, 191, 152)';
+  // Get fillColor for the mean direction (white if reversed)
+  var color = (parameters.mInc < 0) ? 'white' : 'rgb(119, 191, 152)';
 	
-	//Construct data for plotting
-	var plotData = [{
-		'name'	: 'Interpreted Directions', 
-		'data'	: plotDataDir,
-		'type'	: 'scatter',
-		'zIndex' : 100
-	}, {
-		'name'	: 'Interpreted Great Circles',
-		'id'	: 'gc',
-		'dashStyle': 'ShortDash',
-		'data'	: plotDataCircle,
-		'poles'	: circlePoles,
-		'enableMouseTracking': false,
-		'turboThreshold': 0,
-		'marker' : {
-			'enabled': false
-		}
-	}, {
-		'name'	: 'Interpreted Great Circles',
-		'linkedTo'	: 'gc',
-		'data'	: plotDataCircle2,
-		'enableMouseTracking': false,
-		'turboThreshold': 0,
-		'marker' : {
-			'enabled': false
-		}	
-	}, {
-		'name': 'Mean',
-		'type': 'scatter',
-		'data': [{'sample': 'Direction Mean', 'x': parameters.mDec, 'y': eqArea(parameters.mInc), 'inc': parameters.mInc, 'info': 'Direction Mean'}],
-		'color': 'rgb(119, 191, 152)',
-		'marker': {
-			'symbol': 'circle',
-			'radius': 6,
-			'fillColor': color,
-			'lineColor': 'rgb(119, 191, 152)',
-			'lineWidth': 1
-		}
-	}, {
-		'name': 'α95 Confidence Interval',
-		'id': 'confidence',
-		'type': 'line',
-		'color': 'red',
-		'enableMouseTracking': false,
-		'data': ellipse.two,
-		'marker': {
-			'enabled': false
-		}
-	}, {
-		'linkedTo': 'confidence',
-		'type': 'line',
-		'color': 'red',
-		'enableMouseTracking': false,
-		'data': ellipse.one,
-		'marker': {
-			'enabled': false
-		}	
-	}];
+  // Construct data for plotting
+  var plotData = [{
+    'name': 'Interpreted Directions', 
+    'data': plotDataDir,
+    'type': 'scatter',
+    'zIndex': 100
+  }, {
+    'name': 'Interpreted Great Circles',
+    'id': 'gc',
+    'dashStyle': 'ShortDash',
+    'data': plotDataCircle,
+    'poles': circlePoles,
+    'enableMouseTracking': false,
+    'turboThreshold': 0,
+    'marker': {
+      'enabled': false
+    }
+  }, {
+    'name': 'Interpreted Great Circles',
+    'linkedTo': 'gc',
+    'data': plotDataCircle2,
+    'enableMouseTracking': false,
+    'turboThreshold': 0,
+    'marker': {
+      'enabled': false
+    }	
+  }, {
+    'name': 'Mean',
+    'type': 'scatter',
+    'data': [{
+      'sample': 'Direction Mean',
+      'x': parameters.mDec,
+      'y': eqArea(parameters.mInc),
+      'inc': parameters.mInc,
+      'info': 'Direction Mean'
+    }],
+    'color': 'rgb(119, 191, 152)',
+    'marker': {
+      'symbol': 'circle',
+      'radius': 6,
+      'fillColor': color,
+      'lineColor': 'rgb(119, 191, 152)',
+      'lineWidth': 1
+    }
+  }, {
+    'name': 'α95 Confidence Interval',
+    'id': 'confidence',
+    'type': 'line',
+    'color': 'red',
+    'enableMouseTracking': false,
+    'data': ellipse.two,
+    'marker': {
+      'enabled': false
+    }
+  }, {
+    'linkedTo': 'confidence',
+    'type': 'line',
+    'color': 'red',
+    'enableMouseTracking': false,
+    'data': ellipse.one,
+    'marker': {
+      'enabled': false
+    }	
+  }];
 
-	plotInterpretationsGraph( plotData, nCircles, 'eqAreaInterpretations', 'Interpreted Directions and Great Circles', coordinateNice);
-	$("#fittingTable").html('<table class="sample" id="fittingTableInfo"><tr><th> N <small> (setpoints) </small> </th> <th>Mean Declination </th> <th>Mean Inclination </th> </tr>');
-	$("#fittingTableInfo").append('<tr> <td> ' + nPoints + ' </td> <td> ' + parameters.mDec.toFixed(1) + ' </td> <td> ' + parameters.mInc.toFixed(1) + ' </td> </tr> </table>');
-	$("#fittingTable").show();
-	
-	if(nCircles > 0) {
-		$("#fitCirclesDiv").show();
-		$("#fitCirclesDivText").html('<b> Note: </b> Found great circles in the interpretation. Click the button below to fit the circles on set points.')
-	} else {
-		$("#fitCirclesDiv").hide();
-		$("#fitCirclesDivText").html('')
-	}
+  plotInterpretationsGraph( plotData, nCircles, 'eqAreaInterpretations', 'Interpreted Directions and Great Circles', coordinateNice);
+  $("#fittingTable").html('<table class="sample" id="fittingTableInfo"><tr><th> N <small> (setpoints) </small> </th> <th>Mean Declination </th> <th>Mean Inclination </th> </tr>');
+  $("#fittingTableInfo").append('<tr> <td> ' + nPoints + ' </td> <td> ' + parameters.mDec.toFixed(1) + ' </td> <td> ' + parameters.mInc.toFixed(1) + ' </td> </tr> </table>');
+  $("#fittingTable").show();
+
+  // If there are great circles, suggest the fitting routine to the user
+  if(nCircles > 0) {
+    $("#fitCircles").show();
+    $("#fitCirclesDivText").html('<b>Click to fit the circles on the set points.</b>')
+  } else {
+    $("#fitCircles").hide();
+    $("#fitCirclesDivText").html('')
+  }
 
 }
 
