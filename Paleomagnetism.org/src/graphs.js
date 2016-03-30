@@ -11,35 +11,38 @@
  * This open-source application is licensed under the GNU General Public License v3.0 and may be used, modified, and shared freely
  */
 
- /* FUNCTION formatDirections
-  * Description: parses data in to Highcharts readable data format
-  *			   : our polar chart has a linear y-axis; we use the projected inclination as 'y' and keep the actual inclination in the 'inc' method
-  *			   : marker fillColor is dependent on inclination (negative will be white)
-  * Input: data object to be parsed, color for data series
-  * Output: Highcharts formatted data series
-  */
- var formatDirections = function (object, color) {
- 
-	"use strict";
+/* FUNCTION formatDirections
+ * Description: parses data in to Highcharts readable data format
+ *   our polar chart has a linear y-axis; we use the projected inclination 
+ *   as 'y' and keep the actual inclination in the 'inc' method
+ * Input: data object to be parsed, color for data series
+ * Output: Highcharts formatted data series
+ */
+var formatDirections = function (object, color) {
+
+  "use strict";
 	
-	var formattedDirections = new Array();
+  var formattedDirections = new Array();
 	
-	//Parse the data to Highcharts series (x, y, and some other options)
-	//'y' is the projected inclination through the eqArea routine
-	for(var i = 0; i < object.length; i++) {
-		formattedDirections.push({
-			'x': object[i][0],
-			'y': eqArea(object[i][1]),
-			'inc': object[i][1],
-			'sample': object[i][4],
-			'marker': {
-				'fillColor': object[i][1] < 0 ? 'white' : color,
-				'lineColor': color
-			}
-		});
-	}
-	return formattedDirections;
- }
+  // Parse the data to Highcharts series (x, y, and some other options)
+  // 'y' is the projected inclination through the eqArea routine
+  // while inc remains the actual inclination
+  for(var i = 0; i < object.length; i++) {
+    formattedDirections.push({
+      'x': object[i][0],
+      'y': eqArea(object[i][1]),
+      'inc': object[i][1],
+      'sample': object[i][4],
+      'marker': {
+      'fillColor': object[i][1] < 0 ? 'white' : color,
+        'lineColor': color
+      }
+    });
+  }
+
+  return formattedDirections;
+
+}
  
 /* FUNCTION eqAreaDirections
  * Description: creates equal area projection for magnetic direction table
