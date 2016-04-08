@@ -1,7 +1,7 @@
 /* PALEOMAGNETISM.ORG INTERPRETATION PORTAL
  * 
  * VERSION: ALPHA.1603
- * LAST UPDATED: 03/25/2016
+ * LAST UPDATED: 04/08/2016
  *
  * Description: Application that allows for the interpretation of laboratory obtained demagnetization data
  * Components (great circles and directions) can be interpreted following the principle component analysis of Kirschvink, 1981
