@@ -50,7 +50,7 @@ font-family: monospace;
 font-size: 14px;
 }
 
-#infoTable {
+#infoTable, #specimenTable {
 	text-align: left;
 	border: 1px dashed rgb(119, 152, 191);
 	table-layout: fixed;

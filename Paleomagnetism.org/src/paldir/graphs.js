@@ -1,24 +1,9 @@
-/* PALEOMAGNETISM.ORG INTERPRETATION PORTAL
+/* PALEOMAGNETISM.ORG INTERPRETATION PORTAL [GRAPHING MODULE]
  * 
- * VERSION: ALPHA.1603
- * LAST UPDATED: 03/25/2016
+ * VERSION: ALPHA.1604
+ * LAST UPDATED: 04/07/2016
  *
- * Description: Application that allows for the interpretation of laboratory obtained demagnetization data
- * Components (great circles and directions) can be interpreted following the principle component analysis of Kirschvink, 1981
- * Great circles may be fitted to set points following the iterative procedure after McFadden and McElhinny, 1992
- * Application output is a list of declination/inclination pairs that can be used in the Paleomagnetism.org statistics portal
- *
- *   > Related Scientific Literature: 
- *
- *  McFadden, P.L., McElhinny, M.W.  
- *  The combined analysis of remagnetization circles and direct observations in palaeomagnetism
- *  Earth and Planetary Science Letters 87 (1-2), pp. 161-17241 
- *  1988
- *
- *  Kirschvink, J.L.
- *  The least-squares line and plane and the analysis of palaeomagnetic data.
- *  Geophysical Journal, Royal Astronomical Society 62 (3), pp. 699-718
- *  1980
+ * Description: Graphing module for the interpretation portal. Powered by Highcharts.
  *
  * This open-source application is licensed under the GNU General Public License v3.0 and may be used, modified, and shared freely
  */
@@ -48,7 +33,7 @@ function generateZijderveldTooltip(self) {
  */
 function plotZijderveldDiagram() {
 
-  samples = data[getSampleIndex()];
+  var samples = data[getSampleIndex()];
 	
   //Specimen metadata (core and bedding orientations)
   var coreBedding = samples.coreAzi;
@@ -61,6 +46,7 @@ function plotZijderveldDiagram() {
   var tcFlag = $('#tcViewFlag').prop('checked');
   var enableLabels = $('#labelFlag').prop('checked');
   var specFlag = $('#specFlag').prop('checked');
+  var tickFlag = $('#tickFlag').prop('checked');
 	
   // Check if user wants to view in specimen coordinates, put the core bedding to 0 and core azimuth to 90;
   if(specFlag) {
@@ -181,13 +167,14 @@ function plotZijderveldDiagram() {
       'min': -graphScale,
       'max': graphScale,
       'gridLineWidth': 0,
-      'tickWidth': 1,
+      'tickWidth': tickFlag ? 1 : 0,
       'lineWidth': 1,
       'opposite': true,
       'title': {
         'enabled': false
       },
       'labels': {
+        'enabled': tickFlag,
         'formatter': function () {
           if(this.value === 0) return '';
           else return this.value;
@@ -200,7 +187,7 @@ function plotZijderveldDiagram() {
       'max': graphScale,
       'gridLineWidth': 0,
       'lineWidth': 1,
-      'tickWidth': 1,
+      'tickWidth': tickFlag ? 1 : 0,
       'minRange': 10,
       'lineColor': 'black',
       'crossing': 0,
@@ -208,6 +195,7 @@ function plotZijderveldDiagram() {
         'enabled': false
       },
       'labels': {
+        'enabled': tickFlag,
         'formatter': function () {
           if(this.value === 0) return '';
           else return this.value;
@@ -238,8 +226,17 @@ function plotZijderveldDiagram() {
       'href': ''
     },
     'series': [{
+      'type': 'line',
+      'linkedTo': 'horizontal',
+      'enableMouseTracking': false,
+      'data': decDat,
+      'color': 'rgb(119, 152, 191)',
+      'marker': {
+        'enabled': false
+      }
+    }, {
       'type': 'scatter',
-      'id': 'Declination',
+      'id': 'horizontal',
       'name': 'Horizontal Projection', 
       'data': decDat,
       'color': 'rgb(119, 152, 191)',
@@ -251,18 +248,18 @@ function plotZijderveldDiagram() {
 	'fillColor': 'rgb(119, 152, 191)'
       }
     }, {
+      'name': 'Vertical Projection',
       'type': 'line',
-      'linkedTo': ':previous',
-      'name': 'Declination', 
+      'linkedTo': 'vertical',
       'enableMouseTracking': false,
-      'data': decDat,
+      'data': incDat,
       'color': 'rgb(119, 152, 191)',
       'marker': {
         'enabled': false
       }
     }, {
       'type': 'scatter',
-      'id': 'Inclination',
+      'id': 'vertical',
       'name': 'Vertical Projection',
       'data': incDat,
       'color': 'rgb(119, 152, 191)',
@@ -272,16 +269,6 @@ function plotZijderveldDiagram() {
         'radius': 2,
         'lineColor': 'rgb(119, 152, 191)',
         'fillColor': 'white'
-      }
-    }, {
-      'name': 'Vertical Projection',
-      'type': 'line',
-      'linkedTo': ':previous',
-      'enableMouseTracking': false,
-      'data': incDat,
-      'color': 'rgb(119, 152, 191)',
-      'marker': {
-        'enabled': false
       }
     }]
   }

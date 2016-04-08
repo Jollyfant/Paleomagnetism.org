@@ -186,7 +186,7 @@ $(function() {
 			
     // Redraw the equal area projection and set hover after redraw
     eqAreaProjection();
-    drawInterpretations(sample);
+    drawInterpretations();
     setHoverRadius();
 
   });
@@ -410,7 +410,7 @@ $(function() {
       plotZijderveldDiagram();
       plotIntensityDiagram();
       eqAreaProjection();
-      drawInterpretations( sample );
+      drawInterpretations();
 
       // Move step down for convenience
       moveDemagnetizationStep("down");
@@ -646,7 +646,7 @@ $(function() {
    * CHANGE EVENT: all flags trigger a change
    * Description: We need to redraw the charts in the proper projection and coordinate reference frame after a change is made
    */
-  $("#tcViewFlag, #nFlag, #labelFlag, #specFlag").change( function () {
+  $("#tcViewFlag, #nFlag, #labelFlag, #specFlag, #tickFlag").change( function () {
 	
     if(!data || data.length === 0) return;
 
@@ -657,7 +657,7 @@ $(function() {
     // Redraw Zijderveld and eqArea projection (Intensity diagram is identical for all frames)
     plotZijderveldDiagram();
     eqAreaProjection();		
-    drawInterpretations(sample);
+    drawInterpretations();
 
     setHoverRadius();
 
@@ -755,7 +755,7 @@ $(function() {
     if(nSteps < 2) {
       if(tcFlag) {
         notify('failure', 'A minimum of two points are required. Select points by pressing + or x.');
-        drawInterpretations(sample);
+        drawInterpretations();
       }
       return;
     }
@@ -846,8 +846,8 @@ $(function() {
     var P2 = cart(fdata[nSteps-1][0], fdata[nSteps-1][1], fdata[nSteps-1][2]);
 
     // To array for easy summing
-    P1x = [P1.x, P1.y, P1.z];
-    P2x = [P2.x, P2.y, P2.z];
+    var P1x = [P1.x, P1.y, P1.z];
+    var P2x = [P2.x, P2.y, P2.z];
 				
     // The intensity is taken as the intensity between the bounding points
     var intensity = vectorLength(P1x[0] - P2x[0], P1x[1] - P2x[1], P1x[2] - P2x[2]);
@@ -971,7 +971,7 @@ $(function() {
     // Only redraw once (this function is automatically called in both Geographic and Tectonic coordinates)
     // So reduce to just firing when interpreting in Tectonic coordinates
    if(tcFlag) {
-      drawInterpretations( sample );
+      drawInterpretations();
       setHoverRadius();
     }
   });
@@ -1490,17 +1490,17 @@ function vClose (p, q, r, meanVector) {
  */
 function getPlaneData(direction, type, MAD) {
 
-  'use strict';
-
   // Pad the arrays that collect discrete points with null
   // Otherwise Highcharts might connect lower & upper hemi
   var lowerHemisphere = new Array(null);
   var upperHemisphere = new Array(null);
+  var once = true;
+  var once2 = true;
 
   // Define the number of discrete points on an ellipse
   var nPoints = 251;
   var iPoint = ((nPoints - 1) / 2);
-
+  var once = true;
   var pointVector = [0, 0, 0];
   for(var i = 0; i < nPoints; i++){
 
@@ -1525,16 +1525,28 @@ function getPlaneData(direction, type, MAD) {
     // Rotate the discrete point vector with the requested dec/inc
     var coords = rotateTo(direction.dec, -direction.inc, pointVector);
 
+    if(type === 'MAD' && coords.inc < 0) {
+      coords.dec += 180;
+    }
+
     var discretePointPosition = {
-        'x': coords.dec,
-        'y': eqArea(coords.inc), 
-        'inc': coords.inc
-      }
+      'x': coords.dec % 360,
+      'y': eqArea(coords.inc), 
+      'inc': coords.inc
+    }
 
     if(coords.inc < 0) {
       upperHemisphere.push(discretePointPosition);
+      if(once) {
+        lowerHemisphere.push(null);
+        once = false;
+      }
     } else {
       lowerHemisphere.push(discretePointPosition);
+      if(once2) {
+        upperHemisphere.push(null);
+        once2 = false;
+      }
     }
 	
   }
@@ -1567,7 +1579,7 @@ function showDataInformation() {
     }
   }
 
-  var information = [specimen.data[step].step, direction.dec, direction.inc, direction.R, specimen.bedDip, specimen.bedStrike, specimen.coreAzi, specimen.coreDip, specimen.strat, specimen.format];
+  var information = [specimen.data[step].step, direction.dec, direction.inc, direction.R, specimen.coreAzi, specimen.coreDip, specimen.bedStrike, specimen.bedDip, specimen.strat, specimen.format];
 
   // Reduce numbers to decimals
   var information = information.map(function(x) {
@@ -1576,8 +1588,8 @@ function showDataInformation() {
   });
 
   // Update the parameter table
-  var tableHeader = '<table class="sample" id="specimenTable"><tr><th style="text-align: left;" colspan="4">Demagnetization</th><th style="text-align: left;" colspan="6"> Specimen Information </th></tr><tr><th>'
-  tableHeader += ['Step', 'Declination', 'Inclination', 'Intensity', 'Bedding Dip', 'Bedding Strike', 'Core Azimuth', 'Core Plunge', 'Stratigraphic Level', 'Format'].join("</th><th>");
+  var tableHeader = '<table class="sample" id="specimenTable"><tr><th>'
+  tableHeader += ['Step', 'Declination', 'Inclination', 'Intensity', 'Core Azimuth', 'Core Plunge', 'Bedding Strike', 'Bedding Dip', 'Strat Level', 'Format'].join("</th><th>");
 
   $("#specimenInformation").html(tableHeader + "</th></tr><td>" + information.join('</td><td>') + "</td></tr></table>");
 
@@ -1637,7 +1649,7 @@ function showData() {
   //Check if the sample has been previously interpreted
   if(data[sample].interpreted) {
     $('.ui-multiselect').css('color', 'rgb(119, 191, 152)'); //Set the specimen scroller color to green
-    drawInterpretations( sample ) //Draw interpreted directions
+    drawInterpretations()
   } else {
     showNotInterpretedBox();
   }
@@ -1683,9 +1695,9 @@ function sortBy (type) {
  * Input: sample index (specimen)
  * Output: VOID (Adds series to existing charts)
  */
-var drawInterpretations = function ( sample ) {
+var drawInterpretations = function () {
 
-  "use strict";
+  var sample = getSampleIndex();
 
   // Get display flags
   var tcFlag = $('#tcViewFlag').prop('checked');
@@ -1822,6 +1834,7 @@ var drawInterpretations = function ( sample ) {
           'fillColor': PCADirection.inc < 0 ? 'white' : 'rgb(191, 119, 152)',
         }
       });
+    }
 
     // Add the plane defined by t3 to the equal area projection
     if(type === 'GC') {
@@ -1918,21 +1931,19 @@ var drawInterpretations = function ( sample ) {
 
   }
 
-  var noteText = "the MAD and intensity are not reliable for forced directions. For great circles, the specified direction is the pole to the requested plane."
+  var noteText = "the MAD and intensity are not reliable for forced directions. For great circles, the specified direction is the negative pole to the requested plane."
   $("#update").append('</table><small><b>Note:</b> ' + noteText + '</small>');
-}
+
 }
 
 /* 
  * FUNCTION removeInterpretation
  * Description: removes interpreted component from memory
- *            : triggered by clicking DELETE 
+ *   triggered by clicking DELETE 
  * Input: button press event (tracks which component is pressed)
  * Output: VOID
  */
 var removeInterpretation = function (event) {
-	
-  "use strict";
 	
   // Get the index of the component (passed through comp attribute of button)
   var index = $(event.target).attr("comp") - 1;
@@ -1947,7 +1958,7 @@ var removeInterpretation = function (event) {
   // Redraw equal area projection and Zijderveld charts and add remaining components
   plotZijderveldDiagram();
   eqAreaProjection();
-  drawInterpretations(sample);
+  drawInterpretations();
 
   setHoverRadius(); 
 	
@@ -2003,7 +2014,7 @@ var changeRemark = function (event) {
     data[sample]['GEO'][index].remark = text;
     data[sample]['TECT'][index].remark = text;
   } else {
-    event.target.innerHTML = 'Click to Change';
+    event.target.innerHTML = 'Click to add';
     data[sample]['GEO'][index].remark = '';
     data[sample]['TECT'][index].remark = '';
   }
@@ -2504,7 +2515,7 @@ function dlItem (string, extension) {
   "use strict";
 	
   // Check if supported
-  downloadAttrSupported = document.createElement('a').download !== undefined;
+  var downloadAttrSupported = document.createElement('a').download !== undefined;
 	
   var blob = new Blob([string], {'type': 'data:text/csv;charset=utf-8'});
   var csvUrl = URL.createObjectURL(blob);
@@ -2714,7 +2725,7 @@ function getEqualAreaFittedCSV(self) {
  */
 (function (Highcharts) {
 
-  downloadAttrSupported = document.createElement('a').download !== undefined;
+  var downloadAttrSupported = document.createElement('a').download !== undefined;
 		
   var itemDelimiter = '","';
   var lineDelimiter = '\n';
@@ -2764,8 +2775,6 @@ Highcharts.getOptions().exporting.buttons.contextButton.menuItems.push({
  * Output: VOID (calls dlItem to start download of formatted CSV)
  */
 function exportInterpretation () {
-
-  "use strict";
 		
   var csv = '';
   var noData = true;
@@ -2961,7 +2970,7 @@ function importing (event, format) {
  * Remove all previous options from the specimen scroller
  * Add all the specimens to the specimen scroller
  */
-var refreshSpecimenScroller = function () {
+function refreshSpecimenScroller() {
 
   var scroller = $("#specimens");
 	
@@ -2975,7 +2984,7 @@ var refreshSpecimenScroller = function () {
 
 }
 
-var clearStorage = function () {
+function clearStorage() {
 
   if(confirm("Are you sure you wish to delete this instance and reset the application? This will also delete all saved interpretations.")){
     if(localStorage) {
@@ -2987,7 +2996,7 @@ var clearStorage = function () {
 
 }
 
-var setStorage = function() {
+function setStorage() {
 
   if(localStorage) {
     try {
@@ -3000,7 +3009,7 @@ var setStorage = function() {
   }
 }
 
-var plotInterpretationsGraph = function ( dataBucket, nCircles, container, title, coordinates ) {
+function plotInterpretationsGraph(dataBucket, nCircles, container, title, coordinates) {
 
   var chartOptions = {
     'chart': {
@@ -3167,7 +3176,7 @@ function plotInterpretations() {
     'dec': parameters.mDec, 
     'inc': parameters.mInc
   }, 'MAD', parameters.a95);
-	
+
   // Get fillColor for the mean direction (white if reversed)
   var color = (parameters.mInc < 0) ? 'white' : 'rgb(119, 191, 152)';
 	

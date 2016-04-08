@@ -26,10 +26,11 @@
 	<script src="./src/libs/numeric-1.2.6.js"></script> <!-- Numeric JS to calculate principle components -->
 	<script src="./src/libs/jQuery/jquery.multiselect.js"></script> <!-- jQuery plugin for multiselect -->
 	
-	<!-- Paleomagnetism.org functions -->
+	<!-- Paleomagnetism.org Interpretation Portal functions -->
 	<script src="./src/core.js"></script> <!-- Paleomagnetism.org Core Functions -->
-	<script src="./src/paldir.js"></script> <!-- Main Script for Interpretation Portal -->
-	<script src="./src/paldir_graphs.js"></script> <!-- Main Script for Interpretation Portal -->
+	<script src="./src/paldir/core.js"></script> <!-- Main Script for Interpretation Portal -->
+	<script src="./src/paldir/graphs.js"></script> <!-- Graphing module for Interpretation Portal -->
+	<script src="./src/paldir/importing.js"></script> <!-- Format importing module for Interpretation Portal -->
 
 	<link rel="shortcut icon" type="image/x-icon" href="images/icon.ico" />
 	<title> Paleomagnetism.org - Interpretation Portal </title>
@@ -117,7 +118,7 @@
 					</div>
 				</div>
 				<br>
-				<div id="stratLevelText" style="margin: 0 auto; text-align: center;"></div>
+				<div id="specimenInformation" style="margin: 0 auto; text-align: center;"></div>
 				<input multiple style="display: none" id="file-type" type="file" size="4" name="file" onChange="importing(event)"/>
 				<input style="display: none" id="file-type2" type="file" size="4" name="file" onChange="importing(event, 'APP')"/>
 				<p>
@@ -134,7 +135,7 @@
 					<!-- MAIN BODY FOR INTERPRETATION -->
 					<div id="appBody" style="display: none; text-align: center; margin: 0 auto;">
 						<div id="stepWalk" style="height: 550px; width: 100px; display: inline-block; padding: 2px; vertical-align: top; margin-left: 10px; border: 1px dotted rgb(119, 152, 191);"><p><h2>Steps</h2>
-						<select id='demagType' style="height: 20px; width: 60px; padding: 0px; margin: 0 auto;">
+						<select id='demagType' style="height: 20px; width: 80px; padding: 0px; margin: 0 auto;">
 							<option value='UNKNOWN'> --- </option>
 							<option value='TH'>TH</option>
 							<option value='AF'>AF</option>
@@ -200,11 +201,12 @@
 					<h2> Other Options </h2>
 					<p><button id="addSticky">Add Sticky</button><button id="removeSticky">Remove Stickies</button>
 					<p> Click here to add a sticky component to the equal area projection. This component will be visible for all specimens and can be used to indicate a present day field component.
-					<p> <input type="checkbox" id="labelFlag"><label for="labelFlag"><b> Show data labels for demagnetization steps</b> </label>
+					<p> <input type="checkbox" id="labelFlag"><label for="labelFlag"><b> Show demagnetization step labels</b> </label>
+					<p> <input type="checkbox" id="tickFlag"><label for="tickFlag"><b> Show ticks and labels for Zijderveld diagram</b> </label>
+
 					<p> <input type="checkbox" id="originFlag"><label for="originFlag"><b> Include origin as point</b> </label>
-					<p> <input type="checkbox" id="showStrat"><label for="showStrat"><b> Show stratigraphic Level</b> </label>
 					<p> <input type="checkbox" id="normalizeFlag"><label for="normalizeFlag"><b> Normalize Intensities </b> </label>
-					<p> <button id="showControls"> Show Controls </button>
+					<p> <button id="showControls"> Open Controls </button>
 					
 					<h2> Sorting Options </h2>
 					<p>
