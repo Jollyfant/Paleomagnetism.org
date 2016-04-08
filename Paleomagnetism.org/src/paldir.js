@@ -1,6 +1,6 @@
 /* PALEOMAGNETISM.ORG INTERPRETATION PORTAL
  * 
- * VERSION: ALPHA.1603
+ * VERSION: ALPHA.1604
  * LAST UPDATED: 04/08/2016
  *
  * Description: Application that allows for the interpretation of laboratory obtained demagnetization data
