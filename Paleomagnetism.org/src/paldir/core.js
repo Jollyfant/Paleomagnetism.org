@@ -389,13 +389,13 @@ $(function() {
 				
       // If step is not hidden, hide it showing "···" and set step visibility to false
       // If it is hidden, replace the dots with the default text (demagnetization step)
-      if(!$(liSelected).hasClass('show')) {
-        liSelected.addClass('show');
+      if(!$(liSelected).hasClass('hidden')) {
+        liSelected.addClass('hidden');
         $(liSelected).text('···');
         data[sample].data[index].visible = false;
       } else {
         var defaultText = $(liSelected).attr('value');
-        liSelected.removeClass('show');
+        liSelected.removeClass('hidden');
         $(liSelected).text(defaultText);
         data[sample].data[index].visible = true;
       }
@@ -411,7 +411,7 @@ $(function() {
       plotIntensityDiagram();
       eqAreaProjection();
       drawInterpretations();
-
+	console.log('down')
       // Move step down for convenience
       moveDemagnetizationStep("down");
       setStorage();
@@ -428,7 +428,7 @@ $(function() {
       // Step currently not included and is not hidden, add a star (*) to the step and set include to true
       // If the step is currently included, remove the star by resetting to the default value and set include to false
       if(!$(liSelected).hasClass('use')) {
-        if(!$(liSelected).hasClass('show')) {
+        if(!$(liSelected).hasClass('hidden')) {
           liSelected.addClass('use').append('*');
           data[sample].data[index].include = true;
         }
@@ -953,17 +953,18 @@ $(function() {
         'version': version
       }
     }
-		
+	
     // Check if component already exists
     var sanitized = true;
     for(var i = 0; i < sampleData[coordType].length; i++) {
-      if(JSON.stringify(dataObj) === JSON.stringify(sampleData[coordType][i])) {
+      if(JSON.stringify(steps) === JSON.stringify(sampleData[coordType][i].steps) && anchor === sampleData[coordType][i].forced) {
         if(tcFlag) {
           notify('failure', 'This direction has already been interpreted.');
         }
         var sanitized = false;
       }
     }
+
     if(sanitized) {
       sampleData[coordType].push(dataObj);
     }
@@ -974,6 +975,7 @@ $(function() {
       drawInterpretations();
       setHoverRadius();
     }
+
   });
 	
   /*
@@ -1009,8 +1011,6 @@ $(function() {
 });
 
 function initialize() {
-
-  "use strict";
 	
   // Get data from the local storage
   if(localStorage) {
@@ -1038,13 +1038,11 @@ function initialize() {
 /* 
  * FUNCTION fitCirclesToDirections
  * Description: applies the iterative fitting function after McFadden and McElhinny, 1989 on fitting great circles to set point directions
- * 			  : implemented from PALFIT.f95
+ *   implemented from PALFIT.f95
  * Input: NONE
  * Output: VOID (stores information in exportData global for exporting)
  */
 function fitCirclesToDirections() {
-
-  "use strict";
 
   $("#fitCircles").hide();
 
@@ -1085,6 +1083,7 @@ function fitCirclesToDirections() {
           'strat': strat,
           'type': data[i][coordType][j].type
         }
+
         fitData.push(row);
 
         //Now check if it is a direction or a great circle and sort them to respective arrays
@@ -1228,10 +1227,9 @@ function fitCirclesToDirections() {
       'z': fittedCoordinates.z
     });
   }
-
-  var nIterations = 0;
 	
   //Iterative procedure start
+  var nIterations = 0;
   while(true) {
 
     nIterations++;
@@ -1330,9 +1328,9 @@ function fitCirclesToDirections() {
       //Get the appropriate negative or positive plane, and save it
       var greatCircles = getPlaneData({'dec': direction.dec, 'inc': direction.inc}, 'GC', null, pointsCircle[i].inc);
       if(pointsCircle[i].inc > 0) {
-        var greatCircleDataPos = greatCircleDataPos.concat(greatCircles.one);
+        var greatCircleDataPos = greatCircleDataPos.concat(greatCircles.lower);
       } else {
-        var greatCircleDataNeg = greatCircleDataNeg.concat(greatCircles.one);
+        var greatCircleDataNeg = greatCircleDataNeg.concat(greatCircles.upper);
       }
     }
 	
@@ -1358,96 +1356,96 @@ function fitCirclesToDirections() {
     //Set up data for Highcharts:
     //Directions, Fitted directions, Mean direction, Great circles, Confidence Ellipses..
     var plotData = [{
-      name: 'Directions',
-      type: 'scatter',
-      color: 'rgb(119, 152, 191)',
-      data: pointsSet,
-      zIndex: 100,
+      'name': 'Directions',
+      'type': 'scatter',
+      'color': 'rgb(119, 152, 191)',
+      'data': pointsSet,
+      'zIndex': 100,
     }, {
-      name: 'Fitted Directions',
-      type: 'scatter',
-      color: 'rgb(191, 119, 152)',
-      data: pointsCircle,
-      zIndex: 100,
-      marker: {
-      symbol: 'circle'
+      'name': 'Fitted Directions',
+      'type': 'scatter',
+      'color': 'rgb(191, 119, 152)',
+      'data': pointsCircle,
+      'zIndex': 100,
+      'marker': {
+      'symbol': 'circle'
     }
   }, {
-    name: 'Great Circles',
-    id: 'GCs',
-    type: 'line',
-    data: greatCircleDataPos,
-    dashStyle: 'ShortDash',
-    turboThreshold: 0,
-    enableMouseTracking: false,
-    marker: {
-      enabled: false,
+    'name': 'Great Circles',
+    'id': 'GCs',
+    'type': 'line',
+    'data': greatCircleDataPos,
+    'dashStyle': 'ShortDash',
+    'turboThreshold': 0,
+    'enableMouseTracking': false,
+    'marker': {
+      'enabled': false,
     }
   }, {
-    name: 'Great Circles',
-    linkedTo: 'GCs',
-    type: 'line',
-    data: greatCircleDataNeg,
-    turboThreshold: 0,
-    enableMouseTracking: false,
-    marker: {
-      enabled: false,
+    'name': 'Great Circles',
+    'linkedTo': 'GCs',
+    'type': 'line',
+    'data': greatCircleDataNeg,
+    'turboThreshold': 0,
+    'enableMouseTracking': false,
+    'marker': {
+      'enabled': false,
     }
   },  {
-    name: 'Mean',
-    type: 'scatter',
-    data: [{
+    'name': 'Mean',
+    'type': 'scatter',
+    'data': [{
       'sample': 'Direction Mean',
       'x': newMean.dec,
       'y': eqArea(newMean.inc),
       'inc': newMean.inc,
       'info': 'Direction Mean'
     }],
-    color: 'rgb(119, 191, 152)',
-    marker: {
-      symbol: 'circle',
-      radius: 6,
-      fillColor: color,
-      lineColor: 'rgb(119, 191, 152)',
-      lineWidth: 1
+    'color': 'rgb(119, 191, 152)',
+    'marker': {
+      'symbol': 'circle',
+      'radius': 6,
+      'fillColor': color,
+      'lineColor': 'rgb(119, 191, 152)',
+      'lineWidth': 1
     }
   }, {
-    name: 'α95 Fitted Confidence',
-    id: 'confidence',
-    type: 'line',
-    color: 'red',
-    enableMouseTracking: false,
-    data: ellipse.two,
-    marker: {
-      enabled: false
+    'name': 'α95 Fitted Confidence',
+    'id': 'confidence',
+    'type': 'line',
+    'color': 'red',
+    'enableMouseTracking': false,
+    'data': ellipse.lower,
+    'marker': {
+      'enabled': false
     }
   }, {
-    linkedTo: 'confidence',
-    type: 'line',
-    color: 'red',
-    enableMouseTracking: false,
-    data: ellipse.one,
-    marker: {
-      enabled: false
+    'linkedTo': 'confidence',
+    'type': 'line',
+    'color': 'red',
+    'enableMouseTracking': false,
+    'data': ellipse.upper,
+    'marker': {
+      'enabled': false
     }	
   }, {
-    name: 'α95 Full Confidence',
-    id: 'confidence2',
-    type: 'line',
-    color: 'red',
-    enableMouseTracking: false,
-    data: ellipse2.two,
-    marker: {
-      enabled: false
+    'name': 'α95 Full Confidence',
+    'id': 'confidence2',
+    'type': 'line',
+    'color': 'red',
+    'enableMouseTracking': false,
+    'data': ellipse2.lower,
+    'marker': {
+      'enabled': false
     }
   }, {
-    linkedTo: 'confidence2',
-    type: 'line',
-    color: 'red',
-    enableMouseTracking: false,
-    data: ellipse2.one,
-    marker: {
-      enabled: false
+    'linkedTo': 'confidence2',
+    'type': 'line',
+    'color': 'red',
+    'enableMouseTracking': false,
+    'data': ellipse2.upper,
+    'marker': {
+      'enabled': false
     }	
   }];
 	
@@ -1470,16 +1468,14 @@ function fitCirclesToDirections() {
  * Output: Cartesian Coordinates of point closest to vector V
  */
 function vClose (p, q, r, meanVector) {
-
-  "use strict";
 	
   var tau = meanVector.x * p + meanVector.y * q + meanVector.z * r;
   var rho = Math.sqrt(1 - tau * tau);
 	
   return {
-    'x': ((meanVector.x - tau * p) / rho),
-    'y': ((meanVector.y - tau * q) / rho),
-    'z': ((meanVector.z - tau * r) / rho),
+    'x': (meanVector.x - tau * p) / rho,
+    'y': (meanVector.y - tau * q) / rho,
+    'z': (meanVector.z - tau * r) / rho,
   }
 }
 
@@ -1492,6 +1488,7 @@ function getPlaneData(direction, type, MAD) {
 
   // Pad the arrays that collect discrete points with null
   // Otherwise Highcharts might connect lower & upper hemi
+  // Two Boolean values prevent this too
   var lowerHemisphere = new Array(null);
   var upperHemisphere = new Array(null);
   var once = true;
@@ -1502,6 +1499,7 @@ function getPlaneData(direction, type, MAD) {
   var iPoint = ((nPoints - 1) / 2);
   var once = true;
   var pointVector = [0, 0, 0];
+
   for(var i = 0; i < nPoints; i++){
 
     var psi = ((i * Math.PI) / iPoint);
@@ -1522,8 +1520,12 @@ function getPlaneData(direction, type, MAD) {
       pointVector[0] = Math.sqrt(1 - Math.pow(pointVector[1], 2) - Math.pow(pointVector[2], 2)); 
     }
 
-    // Rotate the discrete point vector with the requested dec/inc
-    var coords = rotateTo(direction.dec, -direction.inc, pointVector);
+    // For planes we always deal with the negative pole to the plane
+    // and we rotate our vector properly
+    var inclination = type === 'MAD' ? direction.inc : -direction.inc;
+
+    // Rotate the discrete point vector with the requested dec/-inc
+    var coords = rotateTo(direction.dec, -inclination, pointVector);
 
     if(type === 'MAD' && coords.inc < 0) {
       coords.dec += 180;
@@ -1552,8 +1554,8 @@ function getPlaneData(direction, type, MAD) {
   }
 
   return {
-    'one': upperHemisphere,
-    'two': lowerHemisphere
+    'lower': lowerHemisphere,
+    'upper': upperHemisphere
   };
 
 }
@@ -1568,6 +1570,8 @@ function showDataInformation() {
   var specimen = data[getSampleIndex()];
   var step = getSelectedStep();
 
+
+
   // Do the rotation on the demagnetization step if required
   var tcFlag = $('#tcViewFlag').prop('checked');
   var specFlag = $('#specFlag').prop('checked');
@@ -1579,7 +1583,11 @@ function showDataInformation() {
     }
   }
 
-  var information = [specimen.data[step].step, direction.dec, direction.inc, direction.R, specimen.coreAzi, specimen.coreDip, specimen.bedStrike, specimen.bedDip, specimen.strat, specimen.format];
+  if(specimen.data[step].visible) {
+    var information = [specimen.data[step].step, direction.dec, direction.inc, direction.R, specimen.coreAzi, specimen.coreDip, specimen.bedStrike, specimen.bedDip, specimen.strat, specimen.format];
+  } else {
+    var information = ['---', '---', '---', '---', '---', '---', '---', '---', '---', '---'];
+  }
 
   // Reduce numbers to decimals
   var information = information.map(function(x) {
@@ -1624,7 +1632,7 @@ function showData() {
   // Having class "show" means hidden -- hopefully fix this someday (sorry)
   for(var i = 0; i < data[sample].data.length; i++) {
     if(!data[sample].data[i].visible) {
-      li.eq(i).addClass('show');
+      li.eq(i).addClass('hidden');
       li.eq(i).text('···');
     }
     if(data[sample].data[i].include){
@@ -1634,13 +1642,9 @@ function showData() {
   }
 	
   var coordType = $('#tcViewFlag').prop('checked') ? 'TECT' : 'GEO';
-	
-  if($("#showStrat").prop('checked')) {
-    $("#stratLevelText").html('Stratigraphic Level: ' + data[sample].strat);
-  } else {
-    $("#stratLevelText").html('');
-  }
-	
+
+  $("#appBody").show();
+
   // Draw the charts
   plotZijderveldDiagram();
   plotIntensityDiagram();
@@ -1653,9 +1657,6 @@ function showData() {
   } else {
     showNotInterpretedBox();
   }
-
-  $("#appBody").show();
-
 
   //When a new specimen is loaded, start at step 0
   //Set the hover and selection on the first point of the series			
@@ -1838,7 +1839,6 @@ var drawInterpretations = function () {
 
     // Add the plane defined by t3 to the equal area projection
     if(type === 'GC') {
-		
       var planeFit = getPlaneData(PCADirection, 'GC');
       $("#eqAreaDirections").highcharts().addSeries({
         'lineWidth': 1,
@@ -1851,7 +1851,7 @@ var drawInterpretations = function () {
         },
         'type': 'line', 
         'name': 'Planar Fit #' + (i+1), 
-        'data': planeFit.one
+        'data': planeFit.lower
       });
 			
       $("#eqAreaDirections").highcharts().addSeries({
@@ -1864,7 +1864,7 @@ var drawInterpretations = function () {
         },
         'type': 'line', 
         'name': 'Planar Fit', 
-        'data': planeFit.two
+        'data': planeFit.upper
       });
 		
       // Add tau3 to the equal area projection
@@ -1898,7 +1898,7 @@ var drawInterpretations = function () {
         },
         'type': 'line', 
         'name': 'MAD Angle #' + (i + 1), 
-        'data': planeData.one
+        'data': planeData.lower
       });
 			
       $("#eqAreaDirections").highcharts().addSeries({
@@ -1909,7 +1909,7 @@ var drawInterpretations = function () {
         'lineColor': 'red',
         'type': 'line', 
         'name': 'MAD Angle', 
-        'data': planeData.two,
+        'data': planeData.upper,
         'marker': {
           'enabled': false
         }
@@ -1981,8 +1981,6 @@ var removeInterpretation = function (event) {
  */
 var showNotInterpretedBox = function () {
 
-  "use strict";
-	
   $('.ui-multiselect').css('color', 'rgb(191, 119, 152)'); 
   $("#update").html('<div style="width: 300px; margin: 0 auto; text-align: center; border: 1px solid red; background-color: rgba(255,0,0,0.1"><h2> Not interpreted </h2></div>');	
   $("#clrIntBox").hide();
@@ -1996,8 +1994,6 @@ var showNotInterpretedBox = function () {
  * Output: VOID
  */
 var changeRemark = function (event) {
-
-  "use strict";
 	
   var index = event.target.getAttribute('comp') - 1;
 	
@@ -2072,11 +2068,11 @@ function correctBedding(strike, plunge, direction) {
   var dipDirection =  strike + 90;
 
   // We can subtract the dip direction from the declination because 
-  // inclination will not change
-  // (Refer to Lisa Tauxe: 9.3 Changing coordinate systems; last paragraph)
+  // the inclination will not change (See Lisa Tauxe: 9.3 Changing coordinate systems; last paragraph)
   var coords = cart(direction.dec - dipDirection, direction.inc, direction.R);
 
-  // Call rotation matrix A.13 with (ϕ = 0, λ = -plunge) and pass Cartesian coordinates of the direction
+  // Call rotation matrix A.13 with (ϕ = 0, λ = -plunge) and pass
+  // the Cartesian coordinates of the direction to be rotated
   var rotated = rotateTo(0, -plunge, [coords.x, coords.y, coords.z]);
 
   // Add the dip direction back to the vector
@@ -2098,24 +2094,26 @@ function vectorLength(x, y, z) {
  * Input: Highcharts Intensity series
  * Output: Highcharts formatted array of the UBS
  */
-function unblockingSpectrum(data) {
+function getUBS(intensityData) {
 
   // Determine the unblocking spectrum
   var UBS = new Array();
-  for(var i = 1; i < data.length + 1; i++) {
-    if(i !== data.length) {	
+  for(var i = 1; i < intensityData.length + 1; i++) {
+    if(i !== intensityData.length) {	
       UBS.push({
-        'x': data[i - 1].x,
-	'y': Math.abs(data[i - 1].y - data[i].y)
+        'x': intensityData[i - 1].x,
+	'y': Math.abs(intensityData[i - 1].y - intensityData[i].y)
       });	
     }
   }
 
   // Add the first point
-  UBS.push({
-    'x': data[data.length - 1].x,
-    'y': UBS[UBS.length - 1].y
-  });
+  if(UBS.length) {
+    UBS.push({
+      'x': intensityData[intensityData.length - 1].x,
+      'y': UBS[UBS.length - 1].y
+    });
+  }
 
   return UBS;
 
@@ -2126,308 +2124,28 @@ function unblockingSpectrum(data) {
  * Input: Highcharts intensity series
  * Output: Highcharts formatted array of the VDS
  */
-function vectorDifferenceSum(data) {
+function getVDS(intensityData) {
 
  // Get the vector difference sum
-  var dataSeriesVDS = new Array();
-  for(var i = 1; i < data.length + 1; i++) {
+  var VDS = new Array();
+  for(var i = 1; i < intensityData.length + 1; i++) {
     var sum = 0;
-    for(var j = i; j < data.length + 1; j++) {
-      if(j === data.length) {
-        sum += Math.abs(data[j-1].y);
+    for(var j = i; j < intensityData.length + 1; j++) {
+      if(j === intensityData.length) {
+        sum += Math.abs(intensityData[j-1].y);
       } else {
-        sum += Math.abs(data[j-1].y - data[j].y);
+        sum += Math.abs(intensityData[j-1].y - intensityData[j].y);
       }
-    }	
-    dataSeriesVDS.push({
-      'x': data[i-1].x,
+    }
+
+    VDS.push({
+      'x': intensityData[i-1].x,
       'y': sum
     });
-  }
-
-  return dataSeriesVDS;
-
-}
-
-/* FUNCTION intensity
- * Description: handles graphic for intensity plot
- * Input: sample index
- * Output: VOID (plots intensity)
- */
-function plotIntensityDiagram () {
-
-  var sample = data[getSampleIndex()];
-
-  var intensities = new Array();
-  var RES = new Array();
-
-  for(var i = 0; i < sample.data.length; i++) {
-
-    var step = sample.data[i];
-
-    // On show steps that are visible
-    //Remove mT, μT or whatever from step - just take a number (regex)
-    if(step.visible) {
-
-      var treatmentStep = step.step.replace(/[^0-9.]/g, "");
-      var R = vectorLength(step.x, step.y, step.z);
-
-      intensities.push(R);
-      RES.push({
-        'x': Number(treatmentStep), 
-        'y': R
-      });
-
-    }
 
   }
 
-  // Get the unblocking spectrum (UBS) and vector difference sum (VDS)
-  var UBS = unblockingSpectrum(RES);
-  var VDS = vectorDifferenceSum(RES);
-
-  // Normalize the intensities to the maximum resultant intensity
-  // if requested
-  var normalizationFactor = Math.max.apply(null, intensities);
-  if($('#normalizeFlag').prop('checked')) {
-    RES = RES.map(function(x) {
-      x.y = x.y/normalizationFactor
-      return x;
-    });
-    VDS = VDS.map(function(x) {
-      x.y = x.y/normalizationFactor
-      return x;
-    });	
-    UBS = UBS.map(function(x) {
-      x.y = x.y/normalizationFactor
-      return x;			
-    });
-  }
-	
-  var plotSeries = [{
-    'name': 'Resultant Intensity',
-    'data': RES,
-    'zIndex': 10
-  }, {
-    'name': 'Vector Difference Sum',
-    'data': VDS,
-    'marker': {
-      'symbol': 'circle'
-    },
-    'zIndex': 10
-  }, {
-    'type': 'area',
-    'step': true,
-    'pointWidth': 50,
-    'name': 'Unblocking Spectrum',
-    'data': UBS,
-    'zIndex': 0
-  }];
-
-  createIntensityDiagram(sample, plotSeries);
- 
-}
-
-/* 
- * FUNCTION eqAreaProjection
- * Description: Handles plotting for equal area projection
- * Input: sample index
- * Output: VOID (plots chart)
- */
-function eqAreaProjection () {
-
-  var sample = data[getSampleIndex()];
-
-  //Get the bedding and core parameters from the sample object
-  var coreAzi = sample.coreAzi;
-  var coreDip = sample.coreDip - 90;
-  var beddingStrike = sample.bedStrike;
-  var beddingDip = sample.bedDip;
-	
-  //Get the Boolean flags for the graph
-  var enableLabels = $('#labelFlag').prop('checked');
-  var tcFlag = $('#tcViewFlag').prop('checked');
-  var specFlag = $('#specFlag').prop('checked');
-	
-  //Check if user wants to view in specimen coordinates, put the core bedding to 0 and core azimuth to 90;
-  if(specFlag) {
-    var coreAzi = 0;
-    var coreDip = 0;
-    var information = '(Specimen)';
-  } else {
-    var information = '(Geographic)';
-  }
-	
-  // Format a Highcharts data bucket for samples that are visible
-  var dataSeries = new Array();
-  for(var i = 0; i < sample.data.length; i++) {
-    if(sample.data[i].visible) {
-			
-      //Rotate samples to geographic coordinates using the core orientation parameters
-      var direction = rotateTo(coreAzi, coreDip, [sample.data[i].x, sample.data[i].y, sample.data[i].z]);
-			
-      // If a tilt correction is requested, rotate again
-      // Only do this if NOT viewing in specimen coordinates
-      if(tcFlag && !specFlag) {
-        var information = '(Tectonic)';
-        var direction = correctBedding(beddingStrike, beddingDip, direction);
-      }
-	
-      dataSeries.push({
-        'x': direction.dec, 
-        'y': eqArea(direction.inc), 
-        'inc': direction.inc, 
-        'step': sample.data[i].step,
-        'marker': { 
-          'fillColor': direction.inc < 0 ? 'white' : 'rgb(119, 152, 191)', 
-          'lineWidth': 1, 
-          'lineColor': 'rgb(119, 152, 191)' 
-        }
-      });
-    }
-  }
-	
-  // Prevent making a connection between first - last data point
-  dataSeries.push(null);
-	
-  var chartOptions = {
-    'chart': {
-      'backgroundColor': 'rgba(255, 255, 255, 0)',
-      'id': 'eqAreaProjDir',
-      'polar': true,
-      'animation': false,
-      'renderTo': 'eqAreaDirections',
-      'events': {
-        'load': function () {
-          if (this.options.chart.forExport) {
-            for(var i = 0; i < this.series[0].data.length; i++) {
-
-              this.series[0].data[i].update({
-                'marker': {
-                  'radius': 4,
-                  'lineWidth': 1,
-                  'lineColor': 'rgb(119, 152, 191)',
-                  'fillColor': this.series[0].data[i].inc < 0 ? 'white' : 'rgb(119, 152, 191)'
-                }
-              }, false);
-            }
-          }
-          this.redraw();
-        }
-      }
-    },
-    'exporting': {
-      'filename': 'Equal Area Projection',
-      'sourceWidth': 600,
-      'sourceHeight': 600,
-      'buttons': {
-        'contextButton': {
-          'symbolStroke': '#7798BF',
-          'align': 'right'
-        }
-      }
-    },
-    'title': {
-      'text': 'Equal Area Projection (' + sample.name + ')'
-    },
-    'subtitle': {
-      'text': '<b>' + information + '</b>'
-    },
-    'pane': {
-      'startAngle': 0,
-      'endAngle': 360
-    },
-    'yAxis': {
-      'type': 'linear',
-      'reversed': true,
-      'labels': {
-        'enabled': false
-      },
-      'tickInterval': 90,
-      'min': 0,
-      'max': 90,
-    },
-    'tooltip': {
-      'formatter': function () {
-        if(this.series.name == 'Directions') {
-          return '<b> Demagnetization step: </b>' + this.point.step + '<br> <b>Declination: </b>' + this.x.toFixed(1) + '<br> <b>Inclination </b>' + this.point.inc.toFixed(1)
-        }
-        return '<b>Name: </b> ' + this.point.name + '<br><b>Declination: </b>' + this.x.toFixed(1) + '<br> <b>Inclination </b>' + this.point.inc.toFixed(1)
-      }
-    },
-    'credits': {
-      'enabled': true,
-      'text': "Paleomagnetism.org (Equal Area Projection)",
-      'href': ''
-    },
-    'xAxis': {
-      'minorTickPosition': 'inside',
-      'type': 'linear',
-      'min': 0,
-      'max': 360,
-      'minorGridLineWidth': 0,
-      'tickPositions': [0, 90, 180, 270, 360],
-      'minorTickInterval': 10,
-      'minorTickLength': 5,
-      'minorTickWidth': 1,
-      'labels': {
-        'formatter': function () {
-          return this.value + '\u00B0';
-        }
-      }
-    },
-    'plotOptions': {
-      'line': {
-        'lineWidth': 1,
-        'color': 'rgb(119, 152, 191)'
-      },
-      'series': {
-        'animation': false,
-        'dataLabels': {
-          'color': 'grey',
-          'style': {
-            'fontSize': '10px'
-          },
-          'enabled': enableLabels,
-          'formatter': function () {
-             return this.point.step;
-          }
-        }
-      }
-    },
-    'series': [{
-      'name': 'Directions',
-      'id': 'Directions',
-      'type': 'scatter',
-      'zIndex': 100,
-      'data': dataSeries
-    }, {
-      'name': 'Directions',
-      'enableMouseTracking': false,
-      'marker': {
-        'enabled': false
-      },
-      'linkedTo': 'Directions',
-      'type': 'line', 
-      'data': dataSeries		
-    }],
-  }
-
-  var chart = new Highcharts.Chart(chartOptions);
-
-  // Add all stickies
-  if(globalSticky.length !== 0) {
-    chart.addSeries({
-      'color': 'gold',
-      'type': 'scatter', 
-      'name': 'Sticky', 
-      'data': globalSticky,
-      'marker': {
-        'radius': 8,
-        'symbol': 'diamond'
-      }
-    });
-  }
+  return VDS;
 
 }
 
@@ -2439,7 +2157,7 @@ function eqAreaProjection () {
  * Input: index of the point being hovered on
  * Output: VOID (updates Highcharts graphs)
  */
-function setHoverRadius (index) {
+function setHoverRadius(index) {
 
   if(data.length === 0) return;
 
@@ -2452,7 +2170,8 @@ function setHoverRadius (index) {
 	
   // Get specimen name and capture charts to use
   var sample = getSampleIndex();
-	
+
+
   // Capture the three graphs in the main body
   var zijderveldChart = $("#zijderveldPlot").highcharts();
   var hemisphereChart = $("#eqAreaDirections").highcharts();
@@ -2465,15 +2184,23 @@ function setHoverRadius (index) {
 		
     // Update zijderveld diagram series 2 and 3 (these are the markers; series 0 and 1 are the lines without markers)
     // the update method takes an argument false, meaning it will NOT redraw after the update (we do this manually at the end)
-    zijderveldChart.series[2].data[i].update({'marker': {'radius': 2}}, false);
+    zijderveldChart.series[1].data[i].update({'marker': {'radius': 2}}, false);
     zijderveldChart.series[3].data[i].update({'marker': {'radius': 2}}, false);
-		
+
     // For the equal area projection we are required to account for the fillColor of the marker (either white (negative) or blue (positive))
     var color = hemisphereChart.series[0].data[i].marker.fillColor;
     hemisphereChart.series[0].data[i].update({'marker': {'radius': 4, 'lineWidth': 1, 'lineColor': lineColor, 'fillColor': color}}, false);
-	
+
     intensityChart.series[0].data[i].update({'marker': {'radius': 4}}, false);
 
+  }
+
+  // Hovering over an invisible point, redraw charts and return
+  if(!data[sample].data[index].visible) {
+    zijderveldChart.redraw();
+    hemisphereChart.redraw();	
+    intensityChart.redraw();
+    return;
   }
 	
   // If we are hovering over a visible point (option has class show when it is hidden; good job)
@@ -2485,7 +2212,7 @@ function setHoverRadius (index) {
   for(var i = 0; i < data[sample].data.length; i++) {
     if(data[sample].data[i].visible) {	
       if(i === index) {	
-        zijderveldChart.series[2].data[index-skip].update({'marker': {'radius': 4}}, true);	
+        zijderveldChart.series[1].data[index-skip].update({'marker': {'radius': 4}}, true);	
         zijderveldChart.series[3].data[index-skip].update({'marker': {'radius': 4}}, true);	
         var color = hemisphereChart.series[0].data[i-skip].marker.fillColor;
         hemisphereChart.series[0].data[index-skip].update({'marker': {'zIndex': 100, 'radius': 6, 'lineWidth': 1, 'lineColor': lineColor, 'fillColor': color}}, true);
@@ -2503,270 +2230,6 @@ function setHoverRadius (index) {
   intensityChart.redraw();
 
 }
-
-/*
- * FUNCTION dlItem
- * Description: creates BLOB that can be downloaded
- * Input: string@string (usually .csv formatted) and extension@string (e.g. .csv, or .dir)
- * Output: VOID
- */
-function dlItem (string, extension) {
-	
-  "use strict";
-	
-  // Check if supported
-  var downloadAttrSupported = document.createElement('a').download !== undefined;
-	
-  var blob = new Blob([string], {'type': 'data:text/csv;charset=utf-8'});
-  var csvUrl = URL.createObjectURL(blob);
-  var name = 'export';
-
-  // Download attribute supported
-  if (downloadAttrSupported) {
-    var a = document.createElement('a');
-    a.href = csvUrl;
-    a.target      = '_blank';
-    a.download    = name + '.' + extension;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  } else if (window.Blob && window.navigator.msSaveOrOpenBlob) {
-    // Falls to msSaveOrOpenBlob if download attribute is not supported
-    window.navigator.msSaveOrOpenBlob(blob, name + '.' + extension);
-  } else {
-    // Fall back to server side handling (Highcharts)
-    Highcharts.post('http://www.highcharts.com/studies/csv-export/download.php', {
-      data: string,
-      type: 'txt',
-      extension: extension
-    });
-  }
-}
-
-/* 
- * FUNCTION exporting
- * Description: handles exporting for custom Paleomagnetism.org .dir format
- * Input: NULL
- * Output: VOID (calls dlItem for downloading JSON formatted data object)
- */
-function exporting() {
-
-  "use strict";
-	
-  if(data === null) {
-    notify('failure', 'There are no data for exporting.');
-    return;
-  }
-
-  var downloadingData = data.map(function (x) {
-    return $.extend({
-      'version': version,
-      'exported': new Date()
-    }, x);
-  })
-
-  // Try to parse our data JSON object to a string and download it to a custom .dir file
-  try {
-    dlItem(JSON.stringify(downloadingData), 'dir');
-  } catch (err) {
-    notify('failure', 'A critical error has occured when exporting the data: ' + err);
-  }
-
-}
-
-/*
- * FUNCTION getZijderveldCSV
- * Description: constructs CSV format for Zijderveld diagram
- * Input: self@object (Highcharts chart obj)
- * Output: returns formatted CSV string
- */
-function getZijderveldCSV(self) {
-
-  "use strict";
-	
-  var itemDelimiter = '","';
-  var lineDelimiter = '\n';
-  var csv = "";
-		
-  var row = ['Step', 'x', 'y', 'z'];
-  csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
-	
-  for(var j = 0; j < self.series[0].data.length; j++) {
-    row = [self.series[0].data[j].step, self.series[0].data[j].x, self.series[0].data[j].y, self.series[1].data[j].y];
-    csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
-  }
-
-  return csv;
-
-}
-
-function getEqualAreaProjectionCSV(self) {
-
-  "use strict";
-
-  var itemDelimiter = '","';
-  var lineDelimiter = '\n';
-  var csv = "";
-	
-  var row = [ 'Step', 'Inclination', 'Declination' ];	
-  csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
-	
-  for(var i = 0; i < self.series[0].data.length; i++) {
-    row = [self.series[0].data[i].step, self.series[0].data[i].x, self.series[0].data[i].inc];
-    csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
-  }
-
-  return csv;
-
-}
-
-/*
- * FUNCTION getZijderveldCSV
- * Description: constructs CSV format for hemisphere projection in interpretation tab
- * Input: self@object (Highcharts chart obj)
- * Output: returns formatted CSV string
- */
-function getEqualAreaInterpretationCSV(self) {
-
-  "use strict";
-	
-  var itemDelimiter = '","';
-  var lineDelimiter = '\n';
-  var csv = "";
-	
-  csv += self.userOptions.chart.coordinates;
-  csv += lineDelimiter + lineDelimiter;	
-	
-  var row = ['Specimen', 'Declination', 'Inclination', 'Type', 'Information'];
-  csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
-
-  for(var i = 0; i < self.series[0].data.length; i++) {
-    row = [self.series[0].data[i].options.sample, self.series[0].data[i].x, self.series[0].data[i].options.inc, 'Direction', self.series[0].data[i].info];
-    csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;		
-  }
-	
-  for(var i = 0; i < self.series[1].userOptions.poles.length; i++) {
-    row = [self.series[0].data[i].options.sample, self.series[1].userOptions.poles[i].dec, self.series[1].userOptions.poles[i].inc, 'Negative Pole to Plane', self.series[0].data[i].info];
-    csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;		
-  }
-	
-  csv += lineDelimiter;	 
-	
-  row = ['Mean Declination', 'Mean Inclination', '(Directions Only)'];
-  csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
-	
-  row = [self.series[3].data[0].x, self.series[3].data[0].options.inc];
-  csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
-
-  return csv;
-
-}
-
-function getIntensityCSV(self) {
-
-  "use strict";
-	
-  var itemDelimiter = '","';
-  var lineDelimiter = '\n';
-  var csv = "";
-	
-  var row = [ 'Step', 'Intensity', self.series[0].name ];	
-  csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
-
-  for(var i = 0; i < self.series[0].data.length; i++) {
-    row = [self.series[0].data[i].category, self.series[0].data[i].y];
-    csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
-  }
-			
-  return csv;
-
-}
-
-function getEqualAreaFittedCSV(self) {
-
-  "use strict";
-	
-  var itemDelimiter = '","';
-  var lineDelimiter = '\n';
-  var csv = "";
-	
-  csv += self.userOptions.chart.coordinates;
-  csv += lineDelimiter + lineDelimiter;	
-	
-  var row = ['Specimen', 'Declination', 'Inclination', 'Type', 'Information'];
-  csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;	
-	
-  for(var i = 0; i < self.series[0].data.length; i++) {
-    row = [self.series[0].data[i].options.sample, self.series[0].data[i].x, self.series[0].data[i].inc, 'Direction', self.series[0].data[i].info];
-    csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;		
-  }	
-	
-  for(var i = 0; i < self.series[1].data.length; i++) {
-    row = [self.series[1].data[i].options.sample, self.series[1].data[i].x, self.series[1].data[i].inc, 'Fitted Direction', self.series[1].data[i].info];
-    csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;		
-  }	
-	
-  csv += lineDelimiter;	 
-  row = ['Mean Declination', 'Mean Inclination', '(Great Circles Fitted)'];
-  csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
-
-  row = [self.series[4].data[0].x, self.series[4].data[0].options.inc];
-  csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
-			
-  return csv;
-
-}
-
-/* FUNCTION getCSV
- * Description: custom function to parse Highcharts data to csv format on exporting
- *            : has a custom function for each graph
- * Input: triggered by clicking export CSV -> passes chart ID
- * Output: CSV formatted variable that can be downloaded through dlItem routine
- */
-(function (Highcharts) {
-
-  var downloadAttrSupported = document.createElement('a').download !== undefined;
-		
-  var itemDelimiter = '","';
-  var lineDelimiter = '\n';
-
-  //Add a prototype function
-  Highcharts.Chart.prototype.getCSV = function () {
-
-    var csv;
-		 
-    // Zijderveld Diagram
-    if(this.userOptions.chart.id === 'Zijderveld') {
-      var csv = getZijderveldCSV(this);
-    } else if(this.userOptions.chart.id === 'eqAreaInterpretations') {
-      var csv = getEqualAreaInterpretationCSV(this);
-    } else if(this.userOptions.chart.id === 'eqAreaProjDir') {
-      var csv = getEqualAreaProjectionCSV(this);
-    } else if(this.userOptions.chart.id === 'intensity') {
-      var csv = getIntensityCSV(this);
-    } else if(this.userOptions.chart.id == 'eqAreaFitted') {
-      var csv = getEqualAreaFittedCSV(this);
-    } else {
-      var csv = "";
-    }
-		 
-    return csv;
-		
-  };  
-	
-}(Highcharts));
-
-// Now we want to add "Download CSV" to the exporting menu.
-// Code changed after https://github.com/highslide-software/export-csv
-// Original Author: Torstein Honsi (Highcharts)
-Highcharts.getOptions().exporting.buttons.contextButton.menuItems.push({
-  'text': 'Download CSV file',
-  'onclick': function () {
-    //Parse and download the formatted CSV
-    var csv = this.getCSV(); 
-    dlItem(csv, 'csv');
-  }
-});
 
 /*
  * FUNCTION exportInterpretation
@@ -2817,7 +2280,7 @@ function exportInterpretation () {
 	
 }
 
-/* Function to patch data and recursively fix mistakes.
+/* Function to patch data and recursively fix mistakes to exported.
  * The application needs to be backwards compatible so we needs
  * to update data that is not compatible with recent versions ._.
  */
@@ -2828,7 +2291,7 @@ function patch () {
   var patched = false;
   for(var i = 0; i < data.length; i++) {
 		
-  // First Paleomagnetism.org Patch
+  // First Paleomagnetism.org Patch (patch === undefined)
   // Set patch attribute, group attribute
   // Reduce the intensities by 10.5 (this was hardcoded before)
   // Loop over all specimens
@@ -2848,6 +2311,7 @@ function patch () {
         return x/10.5;
       });
     }
+
     for(var j = 0; j < data[i]['TECT'].length; j++) {
       data[i]['TECT'][j].group = "None";
       data[i]['TECT'][j].cm = data[i]['TECT'][j].cm.map(function(x) {
@@ -2873,30 +2337,6 @@ function patch () {
 	
 }
 
-function importApplication(applicationData, text) {
-
-  importedData = JSON.parse(text);
-
-  for(var i = 0; i < importedData.length; i++) {
-
-    var skip = false;
-    for(var l = 0; l < applicationData.length; l++) {
-      if(importedData[i].name === applicationData[l].name) {
-        var skip = true;
-      }
-    }
-
-    if(skip) {
-      notify('failure', 'Found duplicate ' + importedData[i].name + '; skipping specimen');
-      continue;
-    }
-    applicationData.push(importedData[i]);
-  }
-
-  return applicationData;
-
-}
-
 /* IMPORTING / PARSING FUNCTIONS
  * Description: Parses the Utrecht format to the Paleomagnetism.org format (interpretation portal)
  * Input: event (internal), format (the format to be parsed)
@@ -2909,14 +2349,14 @@ function importing (event, format) {
 		
   $("#appBody").hide();
   $("#input").dialog("close");
-	
+
+  // If not a .dir, read from the selected box
   if(format === undefined) {
     var format = $("#importFormats").val();
   }
 	
-  // Not appending, reset data array
-  var append = $('#appendFlag').prop('checked');
-  if(!append) {
+  // Not appending, reset specimen data array
+  if(!$('#appendFlag').prop('checked')) {
     data = new Array();
   }
 	
@@ -2939,25 +2379,31 @@ function importing (event, format) {
       // Contact us if you would like your custom format to be added
       // See the importUtrecht function as an example parser
       if(format === 'UTRECHT') {
-        data = importUtrecht(data, text);
+        importUtrecht(text);
       } else if(format === 'APP') {;
-        data = importApplication(data, text);
+        importApplication(text);
         patch();
       } else if(format === 'MUNICH') {
-        data = importMunich(data, text);
+        importMunich(text);
       } else if(format === 'PALEOMAC') {
-        data = importMac(data, text);
+        importMac(text);
       }
 
       index++;
 			
       if(index < input.files.length) {
+
         readFile(index);
+
       } else {
 
-        refreshSpecimenScroller();		
-        setStorage();
-	notify('success', 'Importing was succesful; added ' + (data.length - initialSize) + ' samples');
+        if(data.length !== initialSize) {
+          refreshSpecimenScroller();		
+          setStorage();
+	  notify('success', 'Importing was succesful; added ' + (data.length - initialSize) + ' specimens');
+        } else {
+	  notify('failure', 'No specimens were added.');
+        }
 
       }
     }
@@ -3160,11 +2606,12 @@ function plotInterpretations() {
 	  nCircles++;
 					
           var k = getPlaneData({'dec': dec, 'inc': inc}, 'GC');
-	  plotDataCircle = plotDataCircle.concat(k.one);
+	  plotDataCircle = plotDataCircle.concat(k.lower);
 	  plotDataCircle.push({x: null, y: null});
-	  plotDataCircle2 = plotDataCircle2.concat(k.two);
+	  plotDataCircle2 = plotDataCircle2.concat(k.upper);
 	  plotDataCircle2.push({x: null, y: null});
 	  circlePoles.push({'dec': dec, 'inc': inc});
+
         }
       }
     }
@@ -3230,7 +2677,7 @@ function plotInterpretations() {
     'type': 'line',
     'color': 'red',
     'enableMouseTracking': false,
-    'data': ellipse.two,
+    'data': ellipse.lower,
     'marker': {
       'enabled': false
     }
@@ -3239,7 +2686,7 @@ function plotInterpretations() {
     'type': 'line',
     'color': 'red',
     'enableMouseTracking': false,
-    'data': ellipse.one,
+    'data': ellipse.upper,
     'marker': {
       'enabled': false
     }	

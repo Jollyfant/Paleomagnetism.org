@@ -47,14 +47,14 @@ function plotZijderveldDiagram() {
   var enableLabels = $('#labelFlag').prop('checked');
   var specFlag = $('#specFlag').prop('checked');
   var tickFlag = $('#tickFlag').prop('checked');
-	
+
   // Check if user wants to view in specimen coordinates, put the core bedding to 0 and core azimuth to 90;
   if(specFlag) {
     var coreBedding = 0;
     var coreDip = 0;
-    var coordinateInformation = '(Specimen)';
+    var coordinateInformation = 'Specimen Coordinates';
   } else {
-    var coordinateInformation = '(Geographic)';
+    var coordinateInformation = 'Geographic Coordinates';
   }
 	
   // Data buckets for inclination/declination lines
@@ -64,7 +64,7 @@ function plotZijderveldDiagram() {
   // Parameters to scale axes (min, max)
   var graphScale = new Array();	
 	
-  // Loop over all points and do rotations if requested (e.g. Specimen, Geographic, or Tectonic coordinates in N/Up or W/Up projection)
+  // Loop over all points and do rotations if required
   for(var i = 0; i < samples.data.length; i++) {
 
     if(samples.data[i].visible) {
@@ -74,17 +74,17 @@ function plotZijderveldDiagram() {
 
       // Rotate to tectonic coordinates if requested and not viewing in specimen coordinates
       if(tcFlag && !specFlag) {
-        var coordinateInformation = '(Tectonic)';
+        var coordinateInformation = 'Tectonic Coordinates';
         var direction = correctBedding(beddingStrike, beddingDip, direction);
       }
 
       // Check the projection flag, if we wish to show Up/North subtract 90 from the declination
       // x and y axes are swapped in Highcharts (to our Cartesian definition [see core.cart])
       if(nFlag) {
-        var carts = new cart(direction.dec - 90, direction.inc, direction.R);
+        var carts = cart(direction.dec - 90, direction.inc, direction.R);
         var projectionInformation = 'Up/North';	
       } else {
-        var carts = new cart(direction.dec, direction.inc, direction.R);	
+        var carts = cart(direction.dec, direction.inc, direction.R);	
         var projectionInformation = 'Up/West';				
       }
 
@@ -111,14 +111,14 @@ function plotZijderveldDiagram() {
 
       //Push the values for x and (y, z) to arrays. At the end we determine the maximum/minimum from these arrays. 
       graphScale.push(Math.abs(carts.x), Math.abs(carts.y), Math.abs(carts.z));
-
+      
     }
   }
 
-  //Obtain the maximum and minimum values which will be used as the graph boundaries
-  //The Zijderveld diagram will always be a square
-  var graphScale = Math.max.apply(Math, graphScale);
-
+  // Obtain the maximum and minimum values which will be used as the graph boundaries
+  // The Zijderveld diagram will always be a square (add one so all points fall in chart)
+  var graphScale = Math.max.apply(Math, graphScale) + 1;
+ 
   var chartOptions = {
     'chart': {
     'animation': false,
@@ -277,6 +277,92 @@ function plotZijderveldDiagram() {
 
 }
 
+
+/* FUNCTION intensity
+ * Description: handles graphic for intensity plot
+ * Input: sample index
+ * Output: VOID (plots intensity)
+ */
+function plotIntensityDiagram() {
+
+  var sample = data[getSampleIndex()];
+
+  var intensities = new Array();
+  var RES = new Array();
+
+  for(var i = 0; i < sample.data.length; i++) {
+
+    var step = sample.data[i];
+
+    // On show steps that are visible
+    //Remove mT, μT or whatever from step - just take a number (regex)
+    if(step.visible) {
+
+      var treatmentStep = step.step.replace(/[^0-9.]/g, "");
+      var R = vectorLength(step.x, step.y, step.z);
+
+      intensities.push(R);
+      RES.push({
+        'x': Number(treatmentStep), 
+        'y': R
+      });
+
+    }
+
+  }
+
+  // Get the unblocking spectrum (UBS) and vector difference sum (VDS)
+  var UBS = getUBS(RES);
+  var VDS = getVDS(RES);
+
+  // Normalize the intensities to the maximum resultant intensity
+  // if requested
+  var normalizationFactor = Math.max.apply(null, intensities);
+  if($('#normalizeFlag').prop('checked')) {
+    RES = RES.map(function(x) {
+      x.y = x.y / normalizationFactor
+      return x;
+    });
+    VDS = VDS.map(function(x) {
+      x.y = x.y / normalizationFactor
+      return x;
+    });	
+    UBS = UBS.map(function(x) {
+      x.y = x.y / normalizationFactor
+      return x;			
+    });
+  }
+	
+  var plotSeries = [{
+    'name': 'Resultant Intensity',
+    'data': RES,
+    'zIndex': 10
+  }, {
+    'name': 'Vector Difference Sum',
+    'data': VDS,
+    'marker': {
+      'symbol': 'circle'
+    },
+    'zIndex': 10
+  }, {
+    'type': 'area',
+    'step': true,
+    'pointWidth': 50,
+    'name': 'Unblocking Spectrum',
+    'data': UBS,
+    'zIndex': 0
+  }];
+
+  createIntensityDiagram(sample, plotSeries);
+ 
+}
+
+/*
+ * function createIntensityDiagram
+ * Description: handles graphic for intensity plot
+ * Input: sample index
+ * Output: VOID (plots intensity)
+ */
 function createIntensityDiagram(sample, series) {
 
   var chartOptions = {
@@ -326,6 +412,7 @@ function createIntensityDiagram(sample, series) {
       }
     },
     'legend': {
+      'itemMarginTop': 20,
       'layout': 'vertical',
       'align': 'right',
       'verticalAlign': 'middle',
@@ -344,7 +431,211 @@ function createIntensityDiagram(sample, series) {
     'series': series
   }
 
-  $("#intensityPlot").show();
   new Highcharts.Chart(chartOptions);
+
+}
+
+/* 
+ * FUNCTION eqAreaProjection
+ * Description: Handles plotting for equal area projection
+ * Input: sample index
+ * Output: VOID (plots chart)
+ */
+function eqAreaProjection() {
+
+  var sample = data[getSampleIndex()];
+
+  //Get the bedding and core parameters from the sample object
+  var coreAzi = sample.coreAzi;
+  var coreDip = sample.coreDip;
+  var beddingStrike = sample.bedStrike;
+  var beddingDip = sample.bedDip;
+	
+  // Get the Boolean flags for the graph
+  var enableLabels = $('#labelFlag').prop('checked');
+  var tcFlag = $('#tcViewFlag').prop('checked');
+  var specFlag = $('#specFlag').prop('checked');
+
+  var information;
+
+  // Check if user wants to view in specimen coordinates
+  // put the core azimuth to 0 and core plunge to 90;
+  if(specFlag) {
+    var coreAzi = 0;
+    var coreDip = 90;
+    information = 'Specimen Coordinates';
+  } else {
+    information = 'Geographic Coordinates';
+  }
+	
+  // Format a Highcharts data bucket for samples that are visible
+  var dataSeries = new Array();
+  for(var i = 0; i < sample.data.length; i++) {
+    if(sample.data[i].visible) {
+			
+      //Rotate samples to geographic coordinates using the core orientation parameters
+      var direction = rotateTo(coreAzi, coreDip - 90, [sample.data[i].x, sample.data[i].y, sample.data[i].z]);
+			
+      // If a tilt correction is requested, rotate again
+      // Only do this if NOT viewing in specimen coordinates
+      if(tcFlag && !specFlag) {
+        information = 'Tectonic Coordinates';
+        var direction = correctBedding(beddingStrike, beddingDip, direction);
+      }
+	
+      dataSeries.push({
+        'x': direction.dec, 
+        'y': eqArea(direction.inc), 
+        'inc': direction.inc, 
+        'step': sample.data[i].step,
+        'marker': { 
+          'fillColor': direction.inc < 0 ? 'white' : 'rgb(119, 152, 191)', 
+          'lineWidth': 1, 
+          'lineColor': 'rgb(119, 152, 191)' 
+        }
+      });
+    }
+  }
+	
+  // Prevent making a connection between first - last data point
+  dataSeries.push(null);
+	
+  var chartOptions = {
+    'chart': {
+      'backgroundColor': 'rgba(255, 255, 255, 0)',
+      'id': 'eqAreaProjDir',
+      'polar': true,
+      'animation': false,
+      'renderTo': 'eqAreaDirections',
+      'events': {
+        'load': function () {
+          if (this.options.chart.forExport) {
+            for(var i = 0; i < this.series[0].data.length; i++) {
+              this.series[0].data[i].update({
+                'marker': {
+                  'radius': 4,
+                  'lineWidth': 1,
+                  'lineColor': 'rgb(119, 152, 191)',
+                  'fillColor': this.series[0].data[i].inc < 0 ? 'white' : 'rgb(119, 152, 191)'
+                }
+              }, false);
+            }
+          }
+          this.redraw();
+        }
+      }
+    },
+    'exporting': {
+      'filename': 'Equal Area Projection',
+      'sourceWidth': 600,
+      'sourceHeight': 600,
+      'buttons': {
+        'contextButton': {
+          'symbolStroke': '#7798BF',
+          'align': 'right'
+        }
+      }
+    },
+    'title': {
+      'text': 'Equal Area Projection (' + sample.name + ')'
+    },
+    'subtitle': {
+      'text': '<b>' + information + '</b>'
+    },
+    'pane': {
+      'startAngle': 0,
+      'endAngle': 360
+    },
+    'yAxis': {
+      'type': 'linear',
+      'reversed': true,
+      'labels': {
+        'enabled': false
+      },
+      'tickInterval': 90,
+      'min': 0,
+      'max': 90,
+    },
+    'tooltip': {
+      'formatter': function () {
+        if(this.series.name == 'Directions') {
+          return '<b> Demagnetization step: </b>' + this.point.step + '<br> <b>Declination: </b>' + this.x.toFixed(1) + '<br> <b>Inclination </b>' + this.point.inc.toFixed(1)
+        }
+        return '<b>Name: </b> ' + this.point.name + '<br><b>Declination: </b>' + this.x.toFixed(1) + '<br> <b>Inclination: </b>' + this.point.inc.toFixed(1)
+      }
+    },
+    'credits': {
+      'enabled': true,
+      'text': "Paleomagnetism.org (Equal Area Projection)",
+      'href': ''
+    },
+    'xAxis': {
+      'minorTickPosition': 'inside',
+      'type': 'linear',
+      'min': 0,
+      'max': 360,
+      'minorGridLineWidth': 0,
+      'tickPositions': [0, 90, 180, 270, 360],
+      'minorTickInterval': 10,
+      'minorTickLength': 5,
+      'minorTickWidth': 1,
+      'labels': {
+        'formatter': function () {
+          return this.value + '\u00B0';
+        }
+      }
+    },
+    'plotOptions': {
+      'line': {
+        'lineWidth': 1,
+        'color': 'rgb(119, 152, 191)'
+      },
+      'series': {
+        'animation': false,
+        'dataLabels': {
+          'color': 'grey',
+          'style': {
+            'fontSize': '10px'
+          },
+          'enabled': enableLabels,
+          'formatter': function () {
+             return this.point.step;
+          }
+        }
+      }
+    },
+    'series': [{
+      'name': 'Directions',
+      'id': 'Directions',
+      'type': 'scatter',
+      'zIndex': 100,
+      'data': dataSeries
+    }, {
+      'name': 'Directions',
+      'enableMouseTracking': false,
+      'marker': {
+        'enabled': false
+      },
+      'linkedTo': 'Directions',
+      'type': 'line', 
+      'data': dataSeries		
+    }],
+  }
+
+  var chart = new Highcharts.Chart(chartOptions);
+
+  // Add all stickies
+  if(globalSticky.length !== 0) {
+    chart.addSeries({
+      'color': 'gold',
+      'type': 'scatter', 
+      'name': 'Sticky', 
+      'data': globalSticky,
+      'marker': {
+        'radius': 8,
+        'symbol': 'diamond'
+      }
+    });
+  }
 
 }

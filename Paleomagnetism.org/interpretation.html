@@ -31,6 +31,7 @@
 	<script src="./src/paldir/core.js"></script> <!-- Main Script for Interpretation Portal -->
 	<script src="./src/paldir/graphs.js"></script> <!-- Graphing module for Interpretation Portal -->
 	<script src="./src/paldir/importing.js"></script> <!-- Format importing module for Interpretation Portal -->
+	<script src="./src/paldir/exporting.js"></script> <!-- Exporting module for Interpretation Portal -->
 
 	<link rel="shortcut icon" type="image/x-icon" href="images/icon.ico" />
 	<title> Paleomagnetism.org - Interpretation Portal </title>
@@ -118,7 +119,7 @@
 					</div>
 				</div>
 				<br>
-				<div id="specimenInformation" style="margin: 0 auto; text-align: center;"></div>
+
 				<input multiple style="display: none" id="file-type" type="file" size="4" name="file" onChange="importing(event)"/>
 				<input style="display: none" id="file-type2" type="file" size="4" name="file" onChange="importing(event, 'APP')"/>
 				<p>
@@ -134,7 +135,8 @@
 				
 					<!-- MAIN BODY FOR INTERPRETATION -->
 					<div id="appBody" style="display: none; text-align: center; margin: 0 auto;">
-						<div id="stepWalk" style="height: 550px; width: 100px; display: inline-block; padding: 2px; vertical-align: top; margin-left: 10px; border: 1px dotted rgb(119, 152, 191);"><p><h2>Steps</h2>
+				<div id="specimenInformation" style="margin: 0 auto; text-align: center;"></div>
+                                          <p><div id="stepWalk" style="height: 550px; width: 100px; display: inline-block; padding: 2px; vertical-align: top; margin-left: 10px; border: 1px dotted rgb(119, 152, 191);"><p><h2>Steps</h2>
 						<select id='demagType' style="height: 20px; width: 80px; padding: 0px; margin: 0 auto;">
 							<option value='UNKNOWN'> --- </option>
 							<option value='TH'>TH</option>
@@ -156,8 +158,9 @@
 							<button id="clrInterpretation">Clear Interpretation</button>
 						</div>
 						<p>
+
+						<div id="intensityPlot" style="width: auto; height: 500px; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
 						</div>
-						<div id="intensityPlot" style="display: none; width: auto; height: 500px; margin: 0 auto; border: 1px dotted rgb(119, 152, 191);"></div>
 			</div>
 	
 			<!-- DIRECTION FITTING TAB -->

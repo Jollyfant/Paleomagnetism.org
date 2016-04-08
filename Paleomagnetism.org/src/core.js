@@ -575,19 +575,19 @@ function poles(slat, slong, data) {
  */
 function eqArea(inc) {
 
-	//Get the absolute inclination
+	// Get the absolute inclination
 	inc = Math.abs(inc);
 	
-	//Get the projection flag
+	// Get the projection flag
 	var projFlag = $('#projFlag').prop('checked');
 
-	//Undefined for other portals 
+	// Undefined for other portals 
 	if(!projFlag || projFlag === undefined) {
 		//Equal area projection
-		return (90-(Math.sqrt(2)*90*Math.sin(Math.PI*(90-inc)/(360)))); 
+		return 90 - (Math.sqrt(2) * 90 * Math.sin(Math.PI * (90 - inc) / 360)); 
 	} else {
 		//Equal angle projection
-		return 90-(90*Math.tan(Math.PI*(90-inc)/(360))); 
+		return 90 - (90 * Math.tan(Math.PI * (90 - inc) / 360)); 
 	}
 	
 }
@@ -603,8 +603,8 @@ var sortEig = function (eig) {
 	var V = new Array();
 	var tau = new Array();
 	
-	/* Algorithm to sort eigenvalues and corresponding eigenvectors */
-	/* as taken from the PmagPY library */
+	// Algorithm to sort eigenvalues and corresponding eigenvectors
+	// as taken from the PmagPY library
 	var t1 = 0;
 	var t2 = 0;
 	var t3 = 1;

@@ -1,11 +1,21 @@
+/* PALEOMAGNETISM.ORG INTERPRETATION PORTAL [GRAPHING MODULE]
+ * 
+ * VERSION: ALPHA.1604
+ * LAST UPDATED: 04/07/2016
+ *
+ * Description: Graphing module for the interpretation portal. Powered by Highcharts.
+ *
+ * This open-source application is licensed under the GNU General Public License v3.0 and may be used, modified, and shared freely
+ */
+
+"use strict"
+
 /*
  * Importing parser for Munich format
  * One sample per file, multiple files can be selected during importing
  */
-function importMunich(applicationData, text) {
-	
-  "use strict"
-	
+function importMunich(text) {
+
   var lines = text.split(/[\n]/).filter(Boolean);
   var parsedData = new Array();
 
@@ -13,8 +23,8 @@ function importMunich(applicationData, text) {
 			
     // Reduce empty lines
     var parameters = lines[i].split(/[,\s\t]+/);
-    parameters = $.grep(parameters, function(n) { 
-      return n;
+    parameters = parameters.filter(function(x) {
+      return x !== "";
     });
 			
     // Get the header
@@ -22,8 +32,8 @@ function importMunich(applicationData, text) {
       var name = parameters[0];
 				
       // Check if sample with name exists -> append copy text
-      for(var k = 0; k < applicationData.length; k++) {
-        if(name === applicationData[k].name) {
+      for(var k = 0; k < data.length; k++) {
+        if(name === data[k].name) {
           var skip = true;
         }
       }
@@ -34,7 +44,7 @@ function importMunich(applicationData, text) {
       var coreDip = 90 - Number(parameters[2]);
 				
       // Bedding strike needs to be decreased by 90 for input convention
-      var bedStrike = parameters[3] - 90;
+      var bedStrike = (parameters[3] + 270) % 360;
       var bedDip = parameters[4];
       var info = parameters[5];
 
@@ -62,11 +72,10 @@ function importMunich(applicationData, text) {
 
   if(skip) {
     notify('failure', 'Found duplicate ' + name + '; skipping specimen');
-    return applicationData;
   }
 	
   // Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
-  applicationData.push({
+  data.push({
     'added': new Date(),
     'format': "Munich",
     'demagType': "Unknown",
@@ -83,17 +92,13 @@ function importMunich(applicationData, text) {
     'data': parsedData
   });
 
-  return applicationData;
-
 }
 
 /*
  * Parser for the Utrecht format
  * Supported formats (.TH, .AF)
  */
-function importUtrecht(applicationData, text) {
-	
-  "use strict";
+function importUtrecht(text) {
 	
   // Split by 9999 on new line (which indicates end of a single specimen)
   var blocks = text.split(/9999[\n\r]/);
@@ -135,8 +140,8 @@ function importUtrecht(applicationData, text) {
         var sampleVolume = Number(parameterPoints[4]) || 10.5;
 				
         // Check if sample with name exists -> append copy text
-        for(var k = 0; k < applicationData.length; k++) {
-          if(name === applicationData[k].name) {
+        for(var k = 0; k < data.length; k++) {
+          if(name === data[k].name) {
             var skip = true;
           }
         }						
@@ -181,7 +186,7 @@ function importUtrecht(applicationData, text) {
     }
 		
     // Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
-    applicationData.push({
+    data.push({
       'added': new Date(),
       'format': "Utrecht",
       'demagType': "Unknown",
@@ -198,15 +203,13 @@ function importUtrecht(applicationData, text) {
       'data': parsedData
     })
   }
-
-  return applicationData;
 	
 }
 
 /*
  * Importing function for PaleoMac
  */
-function importMac (applicationData, text) {
+function importMac(text) {
 	
   var lines = text.split(/[\n\r]/);
   lines = $.grep(lines, function(n) { 
@@ -257,7 +260,7 @@ function importMac (applicationData, text) {
   }
 
   // Add the data to the application
-  applicationData.push({
+  data.push({
     'added': new Date(),
     'format': "PaleoMac",
     'strat': null,
@@ -274,6 +277,36 @@ function importMac (applicationData, text) {
     'data': parsedData
   });
 
-  return applicationData;
+}
+
+/*
+ * Importing function for custom .dir files
+ */
+function importApplication(text) {
+
+  try {
+    importedData = JSON.parse(text);
+  } catch(err) {
+    notify('failure', 'A fatal error occured during loading: ' + err);
+    return;
+  }
+
+  for(var i = 0; i < data.length; i++) {
+
+    var skip = false;
+    for(var l = 0; l < data.length; l++) {
+      if(importedData[i].name === data[l].name) {
+        var skip = true;
+      }
+    }
+
+    if(skip) {
+      notify('failure', 'Found duplicate ' + importedData[i].name + '; skipping specimen');
+      continue;
+    }
+
+    data.push(importedData[i]);
+
+  }
 
 }
