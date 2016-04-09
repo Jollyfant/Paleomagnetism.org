@@ -31,10 +31,9 @@ $(function() {
 		//magnetizationVector = Site Remanent Magnetization Vector
 		//dykePole = Pole to Dyke Orientation
 		var referencePole = {
-			dec: Number($("#refPoleDec option:selected").text()), 
+			dec: Number($("#refPoleDec").val()), 
 			inc: Number($("#refPoleInc").val())
 		};
-
 		var magnetizationVector = {
 			dec: Number($("#magDec").val()), 
 			inc: Number($("#magInc").val())
