@@ -195,11 +195,12 @@ $(function() {
   $("#removeSticky").click( function () {
 		
     globalSticky = new Array();
-    notify('success', 'Stickies have been removed.');		
+    notify('success', 'All stickies have been removed');		
 
     var sample = getSampleIndex();
     eqAreaProjection();
     setHoverRadius();
+	
   });
 	
   // Tabs initialization and functions
@@ -411,7 +412,7 @@ $(function() {
       plotIntensityDiagram();
       eqAreaProjection();
       drawInterpretations();
-	console.log('down')
+
       // Move step down for convenience
       moveDemagnetizationStep("down");
       setStorage();
