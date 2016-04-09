@@ -8,8 +8,10 @@
  * This open-source application is licensed under the GNU General Public License v3.0 and may be used, modified, and shared freely
  */
  
+"use strict";
+
 //Constant definition
-rad = (Math.PI / 180);
+var rad = (Math.PI / 180);
 	
 /* FUNCTION pseudoDirection
  * Draw a single direction from a Fisherian distribution around 0, 90 with dispersion k
@@ -18,18 +20,19 @@ rad = (Math.PI / 180);
  */
 var pseudoDirection = function (k) {
 
-	"use strict";
+  // Get a random declination (0 inclusive; 1 exclusive)
+  var dec = 360 * Math.random();
 	
-	//Get a random declination (0 inclusive; 1 exclusive)
-	var dec = 360*Math.random();
+  // Get a random inclination
+  var L = Math.exp(-2 * k);
+  var a = (Math.random() * (1 - L) + L);
+  var fac = Math.sqrt((-Math.log(a)) / (2 * k));
+  var inc = 90 - (2 * Math.asin(fac)) / rad;
 	
-	//Get a random inclination
-	var L = Math.exp(-2*k);
-	var a = (Math.random()*(1-L)+L);
-	var fac = Math.sqrt((-Math.log(a))/(2*k));
-	var inc = 90 - (2*Math.asin(fac))/rad;
-	
-	return { 'dec': dec, 'inc': inc };
+  return {
+    'dec': dec,
+	'inc': inc
+  };
 
 }
 
@@ -39,36 +42,36 @@ var pseudoDirection = function (k) {
  * Output: Arrays of Cartesian coordinates and directions {x[], y[], z[], dec[], and inc[]}
  */
 var sampleFisher = function (N, k) {
-
-	"use strict";
 	
-	//Data buckets
-	var xCoordinate = new Array();
-	var yCoordinate = new Array();
-	var zCoordinate = new Array();
-	var dec = new Array();
-	var inc = new Array();
+  // Data buckets
+  var xCoordinate = new Array();
+  var yCoordinate = new Array();
+  var zCoordinate = new Array();
+  var dec = new Array();
+  var inc = new Array();
 	
-	//Draw N pseudo-random samples
-	for(var i = 0; i < N; i++) {
-		var randomDirection = pseudoDirection(k);
-		dec.push(randomDirection.dec);
-		inc.push(randomDirection.inc);
-
-		//Get the Cartesian coordinates
-		var cartesianCoords = cart(randomDirection.dec, randomDirection.inc);
-		xCoordinate.push(cartesianCoords.x);
-		yCoordinate.push(cartesianCoords.y);
-		zCoordinate.push(cartesianCoords.z);
-	}
+  // Draw N pseudo-random samples
+  for(var i = 0; i < N; i++) {
+	  
+  	var randomDirection = pseudoDirection(k);
+  	dec.push(randomDirection.dec);
+  	inc.push(randomDirection.inc);
+  
+  	//Get the Cartesian coordinates
+  	var cartesianCoords = cart(randomDirection.dec, randomDirection.inc);
+  	xCoordinate.push(cartesianCoords.x);
+  	yCoordinate.push(cartesianCoords.y);
+  	zCoordinate.push(cartesianCoords.z);
 	
-	return {
-		'x': xCoordinate, 
-		'y': yCoordinate, 
-		'z': zCoordinate, 
-		'dec': dec, 
-		'inc': inc 
-	};
+  }
+  
+  return {
+  	'x': xCoordinate, 
+  	'y': yCoordinate, 
+  	'z': zCoordinate, 
+  	'dec': dec, 
+  	'inc': inc 
+  };
 }
 
 /* FUNCTION TMatrix
@@ -726,23 +729,23 @@ var getKentParameters = function ( data ) {
 	
 	//Get the Fisher parameters of our data
 	var fisherParameters = new fisher(data, 'dir', 'full');
-	pBar = fisherParameters.mDec*rad;
-	tBar = (90 - fisherParameters.mInc)*rad;
+	var pBar = fisherParameters.mDec*rad;
+	var tBar = (90 - fisherParameters.mInc)*rad;
 	
 	//Set up matrices
-	w = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
-	b = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
-	gam = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
-	xg = new Array();
+	var w = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+	var b = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+	var gam = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+	var xg = new Array();
 	
 	//set up rotation Matrix H
-	H = [[Math.cos(tBar) * Math.cos(pBar), - Math.sin(pBar), Math.sin(tBar)*Math.cos(pBar)],
+	var H = [[Math.cos(tBar) * Math.cos(pBar), - Math.sin(pBar), Math.sin(tBar)*Math.cos(pBar)],
 		[Math.cos(tBar) * Math.sin(pBar), Math.cos(pBar), Math.sin(pBar)*Math.sin(tBar)],
 		[-Math.sin(tBar), 0, Math.cos(tBar)]];
 
 	//Get Cartesian coordinates of data
-	X = new Array();
-	P = new Array();
+	var X = new Array();
+	var P = new Array();
 	for(var i = 0; i < data.length; i++) {
 		X.push(cart(data[i][0], data[i][1]));
 		P.push([X[i].x, X[i].y, X[i].z]);
@@ -778,7 +781,7 @@ var getKentParameters = function ( data ) {
 
 	//Choose a rotation w about North pole to diagonalize upper part of B
 	var psi = 0.5*Math.atan(2*b[0][1]/(b[0][0]-b[1][1]));
-	w = [[Math.cos(psi), -Math.sin(psi), 0],
+	var w = [[Math.cos(psi), -Math.sin(psi), 0],
 		[Math.sin(psi), Math.cos(psi), 0],
 		[0, 0, 1]];
 		
@@ -795,7 +798,7 @@ var getKentParameters = function ( data ) {
 	for(var i = 0; i < data.length; i++) {
 		xg.push([0, 0, 0]);
 		for(var k = 0; k < 3; k++) {
-			xgtmp = 0; 
+			var xgtmp = 0; 
 			for( var j = 0; j < 3; j++) {
 				xgtmp += gam[j][k] * P[i][j];
 			}
