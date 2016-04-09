@@ -8,12 +8,27 @@
  * This open-source application is licensed under the GNU General Public License v3.0 and may be used, modified, and shared freely
  */
 
- //Specify map options
+// Specify map options
 module.map = {				
 	mapInit: false,
 	gmarkers: new Array(),
 	markers: new Array()
 }	
+
+$(function () {
+  $('#overlay').prop('checked', false);
+  $('#overlay').change(function () {
+    toggleOverlay($("#overlay").is(':checked'));
+  });
+});
+
+/*
+ * fn toggleOverlay
+ * toggles the loaded plate KML from and to map object
+ */
+function toggleOverlay(bool) {
+  bool ? plateLayer.setMap(module.map.map) : plateLayer.setMap(null);
+}
 
 module.map.initialize = function () {
 
@@ -66,6 +81,17 @@ module.map.initialize = function () {
         document.getElementById('lngspan').innerHTML = '-----------';
     });
 
+  /*
+   * Buffer tectonic plate overlay
+   * Sourced from "hisz.rsoe.hu/alertmap/Tectonic_Plate_Boundaries.kml"
+   * using ORFEUS path
+   */
+  plateLayer = new google.maps.KmlLayer({
+    url: 'http://www.orfeus-eu.org/mathijs/newWeb/docs/examples/offcanvas/extra/tectonic_plates.kml',
+    suppressInfoWindows: true,
+    preserveViewport: true,
+  });
+  
 }
 
 /* 

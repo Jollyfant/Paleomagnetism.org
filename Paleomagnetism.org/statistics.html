@@ -251,7 +251,8 @@ $(function () {
 			<div id="wrapper">
 				<!-- Option Box (top left) -->
 				<div id="KMLbox">
-					<button id="addKMLButton" type="button" onClick="$('#addKML').click();" title="Import a .KML file">Import KML file</button>
+					<p><label><input type="checkbox" id="overlay" value="boundaries"> Show plates </label>			
+					<p><button id="addKMLButton" type="button" onClick="$('#addKML').click();" title="Import a .KML file">Import KML file</button>
 					<input style="display: none" id="addKML" type="file" size="4" name="file" onChange="module.map.addKML(event)"/>
 				</div>
 				<div id="latandlon" >
@@ -305,7 +306,6 @@ $(function () {
 				</div>
 				<div id="map-canvas" style="border: 1px solid rgb(119, 152, 191); height: 600px; width: 100%;"></div>
 			</div>
-			
 			<!-- Map Caption and information -->
 			<small> Tip: Press shift to snap age slider to 10 Myr increments; parachute color can be changed by clicking the markers. </small>
 			<div class="caption">
