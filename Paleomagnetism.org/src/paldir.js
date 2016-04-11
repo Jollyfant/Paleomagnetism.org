@@ -3437,6 +3437,65 @@ function importDefault ( applicationData, text ) {
 	}
 	return applicationData;
 }
+
+function importBeijing(applicationData, text) {
+	
+	// Read as a binary string, split by unicode characters
+	var text = text.split(/[\u0001\u0002\u0003\u0016\u0084\u0017]/);
+
+	// Split by NULL (u0000)
+	for(var i = 0; i < text.length; i++) {
+		text[i] = text[i].split('\u0000').filter(function(x) {
+			return x !== "";
+		});
+	}
+
+	// Sometimes things get a little bit wonky and elements are offset by one
+	var text = text[5].length === 8 ? text.splice(4) : text.splice(5);
+
+	// Get the core information
+	var sampleName = text[0][0];
+	var coreParameters = text[1];
+	var coreAzi = Number(coreParameters[1]);	
+	var coreDip = Number(coreParameters[2]);
+	var bedStrike = Number(coreParameters[3]);
+	var bedDip = Number(coreParameters[4]);
+	
+	// Parse the demagnetization information
+	// For now multiply by 10.5 (this will be fixed in a later patch)
+	var parsedData = new Array();
+	for(var i = 2; i < text.length; i++) {
+		var stepData = text[i];
+		var coordinates = cart(stepData[3], stepData[4], stepData[9] * 1e6 * 10.5);
+		
+		parsedData.push({
+			'visible'	: true, 
+			'include'	: false,
+			'step'		: stepData[2],
+			'x'			: coordinates.x,
+			'y'			: coordinates.y,
+			'z'			: coordinates.z,
+			'a95'		: null,
+			'info'		: stepData[stepData.length - 1]
+		});	
+	}
+
+	applicationData.push({
+		'GEO'			: [],
+		'TECT'			: [],
+		'interpreted'	: false,
+		'name'			: sampleName,
+		'coreAzi'		: coreAzi,
+		'coreDip'		: coreDip,
+		'bedStrike'		: bedStrike,
+		'bedDip'		: bedDip,
+		'data'			: parsedData
+	});
+
+	return applicationData;
+	
+}
+
 /* IMPORTING / PARSING FUNCTIONS
  * Description: Parses the Utrecht format to the Paleomagnetism.org format (interpretation portal)
  * Input: event (internal), format (the format to be parsed)
@@ -3472,7 +3531,12 @@ function importing (event, format)  {
 	//Multiple input
 	(function readFile(index) {
 
-		reader.readAsText(input.files[index]);
+		if(format === 'PGLBEIJING') {
+			reader.readAsBinaryString(input.files[index]);			
+		} else {
+			reader.readAsText(input.files[index]);
+		}
+		
 		reader.onload = function () {
 			
 			var text = reader.result;
@@ -3484,9 +3548,8 @@ function importing (event, format)  {
 				data = importUtrecht(data, text);
 			} else if(format === 'APP') {
 				data = importApplication(data, text);
-			} else if(format === 'SPINNER') {
-				notify('failure', 'Spinner input is currently not supported.');
-				return;
+			} else if(format === 'PGLBEIJING') {
+				data = importBeijing(data, text);
 			} else if(format === 'DEFAULT') {
 				data = importDefault(data, text);
 			} else if(format === 'MUNICH') {
