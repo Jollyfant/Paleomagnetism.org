@@ -1,3 +1,5 @@
-"scripts": {
-  "test": "./tests/runtests.js"
+{
+  "scripts": {
+    "test": "./tests/runtests.js"
+  }
 }
