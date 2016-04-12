@@ -348,13 +348,13 @@ function importMac(text) {
 function importApplication(text) {
 
   try {
-    importedData = JSON.parse(text);
+    var importedData = JSON.parse(text);
   } catch(err) {
     notify('failure', 'A fatal error occured during loading: ' + err);
     return;
   }
 
-  for(var i = 0; i < data.length; i++) {
+  for(var i = 0; i < importedData.length; i++) {
 
     var skip = false;
     for(var l = 0; l < data.length; l++) {
