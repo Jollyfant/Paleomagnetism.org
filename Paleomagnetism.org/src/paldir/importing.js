@@ -106,16 +106,16 @@ function importBeijing(text) {
       return x !== "";
     });
   }
-  
+ 
   // Sometimes things get a little bit wonky and elements are offset by one
   var text = text[5].length === 8 ? text.splice(4) : text.splice(5);
-  
+ 
   // Get the core information
   var sampleName = text[0][0];
   var coreParameters = text[1];
   var coreAzi = Number(coreParameters[1]);	
   var coreDip = Number(coreParameters[2]);
-  var bedStrike = Number(coreParameters[3]);
+  var bedStrike = Number(coreParameters[3]) - 90;
   var bedDip = Number(coreParameters[4]);
   
   // Parse the demagnetization information
