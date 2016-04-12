@@ -124,7 +124,7 @@ function importBeijing(text) {
   for(var i = 2; i < text.length; i++) {
 
     var stepData = text[i];
-    var coordinates = cart(stepData[3], stepData[4], stepData[9] * 1e6);
+    var coordinates = cart(stepData[3], stepData[4], stepData[9] * 1e6 / 10e-6);
   	
     parsedData.push({
       'visible': true, 
