@@ -1,9 +1,15 @@
 language: node_js
 node_js:
-  - "stable"
+- stable
 
 before_script:
-  - chmod 0777 ./tests/runtests.js
+- chmod 0777 ./tests/runtests.js
+
+env:
+  global:
+  - secure: aZGLZki+RSH5Wiu02J3wDeBgqLoyZ48T+RamjkdT/fKEg90Y/tPICF7YATqfR0w8ArmXdK6+ePM1Pw2jnd1ixCY4S8DPC28nphSErk+j9745kjbcBrppP7FsywfcAR1xzcdlLzC8GK3mnV0pTJeVs8xYDwUtC6Gbbjtq3zX9qjJ2A0D2lOo1RHJsa6/ODwCOXXiRBHoGhkOQJgWWq7ZxZdZG75ITXgjw14se2RoXrlsljPE3nMdpS7wyynVlOdgY1fTSsmzFc98HSG0Xnel7f4Sw0tTS2deTCcrpFvsH955hc23LR7BvjaATeJpSPxcP2bwKVlXgPVLmZ3O4pJOvPrh8SQ54ybYmoGab9OckZ65AGNXgOwEDFV81JSuH50/eQh+zi8kaS7/lxNEbKI76BTqPS9w+a8FwQuKdW6BjWhIo2tSRe/Dlc4bw3Tp/+Q0EeSU4PVeITD57PQak10lNrZ57+vXvDS3kWzgmeaXvocUWArHtIbFldgONmJkZJKuWgEFkpGp+EPSoru+DAWz0hVk5d8lmNGmLkVZvdUhU/D8JeioCFCWqepq7mJtDluNf/T52InmVduQW14kgCNsgvW5Nzd8vEdlMQDrL54IlATwlCNZZnAVOfmZ41WWB4jQqbkW1VfyEyB75m9ccy3OrJCkoaVEKJ67PS/QHxY64W+8=
+  - secure: kTEysf8c1/GN4BR0qs7x8jcAv45RC5FkVbTg+sD+dEA2TE5uBlIQpgROqg4cU6BvmW2WVTk82GLY9MGRbq3RNFiTs3CNInu2n99DdVcBI0ds2KQF2YP7BP8PeD7fq7V/LDvcowV7HyFP7Zm3lCKshuK+yJdvSG0n7vWDkg9xABaDPseh+ARTjv5uroKqHvV2bifihu8DzaYVNG13aGlVyjuhsm0UHX2RA762XHhaTpFxzoXAlruyMK/OYsyJ5quoWuJpu5dNf5uy9eB0wYiNuG9ZjSPSlP0UsrxXIcs9wrA8yX39h9BlpqIY1ThCIBR2c/pZVwWpAapU6EspH85eaI1k1KDaS8X7W1K7ddrWDRWUdQnpHpuHtM5daM8giNu1fkpTRyPkovkJMyoaxYXJPYFHbp5EnLa8358Ay32MHnggSqpQSC96IPmOA/f/hpUqoCPVqViJi1UADZMVND7c8yFe8+zZ4upCmNYcH7WU0UkRm31jzuNe1S+aXZnHeHvlpHwl/5kICBVpv7l8nb7N6pl66Daepp46jy3v8siF+khIyX7dBp7dTmqPx0ctssTyCUXJXNj53wyRwNMWD+evHqjGngvGXUFAUhBSMUAdGPQQK7f2hTuGLiadwnx10XZ5Gpx8Dgdwg8ID0OW9/CZTTS1u3MPKYiL1cx3XJSIsoMA=
 
 after_success:
-  - echo 'success'
+  - cd Paleomagnetism.org
+  "find . -type f -exec curl -u $FTP_USER:$FTP_PASSWORD --ftp-create-dirs -T {} ftp://ftpserv.geo.uu.nl/beta/{} \;"
