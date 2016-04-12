@@ -2,5 +2,8 @@ language: node_js
 node_js:
   - "stable"
 
+before_script:
+  - chmod 0777 ./tests/runtests.js
+
 after_success:
   - echo 'success'
