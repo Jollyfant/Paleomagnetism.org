@@ -12,4 +12,4 @@ env:
 
 after_success:
   - cd Paleomagnetism.org
-  "find . -type f -exec curl -u $FTP_USER:$FTP_PASSWORD --ftp-create-dirs -T {} ftp://ftpserv.geo.uu.nl/beta/{} \;"
+  "find . -type f -exec curl -u $FTP_USER:$FTP_PASSWORD --ftp-create-dirs -T {} ftp://ftpserv.geo.uu.nl/beta/{} \\;"
