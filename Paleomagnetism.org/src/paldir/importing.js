@@ -135,7 +135,7 @@ function importBeijing(text) {
       'z': coordinates.z,
       'a95': null,
       'info': stepData[stepData.length - 1]
-    });	
+    });
   }
   
   data.push({
