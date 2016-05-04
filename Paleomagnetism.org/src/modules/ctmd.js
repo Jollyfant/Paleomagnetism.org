@@ -356,7 +356,7 @@ module.CTMD.vMake = function (R, kappa, setAngle) {
 	 
 	"use strict";
 		
-	var setAngle = setAngle*rad;
+	var setAngle = setAngle * RADIANS;
 	 
 	//Create Cartesian coordinates for two vectors with angle between them
 	var xVector = [0, Math.sin(setAngle)];
@@ -407,7 +407,7 @@ module.CTMD.resmonte = function (v95, R, k) {
 	}
 		
 	//Convert to critical angle
-	return Math.acos(A)/rad;
+	return Math.acos(A) / RADIANS;
 	
 }
 

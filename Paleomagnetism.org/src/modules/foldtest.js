@@ -113,7 +113,7 @@ module.foldtest.extremes = function (siteNames) {
 		//Save the maximum eigenvalue for this bootstrap and unfolding increment
 		//Eigenvalue are properties: r(3), s(2), t(1) <- we want 1, the maximum
 		//For the bootstraps we're showing on the graph, only take points with steps of 10 degrees to reduce load
-		taus.push(eigenvalues.t);
+		taus.push(eigenvalues['t1']);
 
 		//Converge to the maximum eigenvalue t and record the unfolding percentage associated with this
 		if(eigenvalues.t > max) {
@@ -142,7 +142,7 @@ module.foldtest.extremes = function (siteNames) {
 	
 			//Save the maximum eigenvalue for this bootstrap and unfolding increment
 			if(eigenvalues.t > max) {
-				max = eigenvalues.t;
+				max = eigenvalues['t1'];
 				index = (oldIndex+j);
 			}
 		}

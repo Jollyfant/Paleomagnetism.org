@@ -127,7 +127,7 @@ function lastIndex( array ) {
 	//Data bucket for inclination (Is) and elongation (Es) pairs for one bootstrap
 	//Run the procedure initially for the original data
 	var unflattenedData = module.EI.unflattenDirections(data);
-	var unflattenedInclination = lastIndex(unflattenedData.inclinations);
+        var unflattenedInclination = unflattenedData.len > 0 ? lastIndex(unflattenedData.inclinations) : null;
 
 	//Construct Highcharts formatted data series for actual data
 	var datArray = new Array();
@@ -263,7 +263,7 @@ module.EI.unflattenDirections = function ( data ) {
 	//The inclination is stored in the 2nd element of the data array
 	var tanInclinations = new Array();
 	for(var i = 0; i < data.length; i++) {
-		tanInclinations.push(Math.tan(data[i][1]*rad));
+		tanInclinations.push(Math.tan(data[i][1] * RADIANS));
 	}
 
 	//Decrement over the flattening values f from 100 to 20
@@ -279,7 +279,7 @@ module.EI.unflattenDirections = function ( data ) {
 		var unflattenedData = new Array();
 		for(var j = 0; j < data.length; j++) {
 			var declination = data[j][0];
-			var inclinationF = ( Math.atan( tanInclinations[j] / f ))/rad;
+			var inclinationF = ( Math.atan( tanInclinations[j] / f )) / RADIANS;
 			unflattenedData.push([declination, inclinationF]); 
 		}
 
@@ -288,9 +288,8 @@ module.EI.unflattenDirections = function ( data ) {
 		var eigenvalues = eigValues(unflattenedData);
 		
 		//Record the flattening factor, elongation (τ2/τ3), and mean inclination
-		//Tau2 and Tau3 are in the .s and .r method of eigenvalues respectively
 		flatteningFactors.push(f);
-		elongations.push(eigenvalues.s / eigenvalues.r); //τ2/τ3
+		elongations.push(eigenvalues['t2'] / eigenvalues['t3']); //τ2/τ3
 		inclinations.push(meanInc);
 
 		//In case we initially start above the TK03.GAD Polynomial
@@ -356,7 +355,7 @@ module.EI.saveUnflattened = function () {
 	// Unflatten
 	var newDatArray = new Array();
 	for(var i = 0; i < input.length; i++) {
-		newDatArray.push([input[i][0],  (Math.atan(Math.tan(input[i][1]*rad) / flattening))/rad, input[i][2], input[i][3], input[i][4]]);
+		newDatArray.push([input[i][0],  (Math.atan(Math.tan(input[i][1] * RADIANS) / flattening)) / RADIANS, input[i][2], input[i][3], input[i][4]]);
 	}
 
 	var meta = JSON.parse(JSON.stringify(sites[name].userInput.metaData));

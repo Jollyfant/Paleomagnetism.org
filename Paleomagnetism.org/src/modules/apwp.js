@@ -80,15 +80,15 @@ function getRotatedPole (APWP, i) {
 	
 	//Find co-latitudes and do conversions to radians
 	var coLatEuler = (90 - APWP.lat[i]);
-	var phiEuler = APWP.lon[i]*rad;
+	var phiEuler = APWP.lon[i] * RADIANS;
 	
 	var coLatPole = (90 - APWP.africanPolePath.plat[i]);
-	var thetaEuler = coLatEuler*rad;
+	var thetaEuler = coLatEuler * RADIANS;
 
-	var rotationAngle = APWP.rot[i]*rad;
+	var rotationAngle = APWP.rot[i] * RADIANS;
 	
-	var phiPole = APWP.africanPolePath.plong[i]*rad;
-	var thetaPole = coLatPole*rad;
+	var phiPole = APWP.africanPolePath.plong[i] * RADIANS;
+	var thetaPole = coLatPole * RADIANS;
 	
 	//Construct transformation matrix L
 	var L = [
@@ -155,8 +155,8 @@ function getRotatedPole (APWP, i) {
 		phiPoleRot += 2*Math.PI;
 	}
 
-	var thetaPoleRot = thetaPoleRot/rad;
-	var latPoleRot = (90 - thetaPoleRot)*rad;
+	var thetaPoleRot = thetaPoleRot / RADIANS;
+	var latPoleRot = (90 - thetaPoleRot) * RADIANS;
 	
 	return {
 		'latPoleRot': latPoleRot, 
@@ -176,8 +176,8 @@ function getExpectedLocation (skip) {
 	"use strict";
 
 	//Site location (latitude and longitude) check
-	var siteLat = $("#palatLat").val()*rad;
-	var siteLon = $("#palatLon").val()*rad;
+	var siteLat = $("#palatLat").val() * RADIANS;
+	var siteLon = $("#palatLon").val() * RADIANS;
 	
 	//Age filter (get minimum and maximum)
 	var ageMin = $( "#ageRange" ).slider( "values", 0);
@@ -266,8 +266,8 @@ function getExpectedLocation (skip) {
 						var phiPoleRot = rotParameters.phiPoleRot;			
 					} else {
 						//Custom APWP, just take specified lat/lon 
-						var latPoleRot = APWP.lat[i]*rad;
-						var phiPoleRot = APWP.lon[i]*rad;
+						var latPoleRot = APWP.lat[i] * RADIANS;
+						var phiPoleRot = APWP.lon[i] * RADIANS;
 					}
 					
 					//Lisa Tauxe Book, 2.4.2 Virtual geomagnetic poles	
@@ -276,15 +276,15 @@ function getExpectedLocation (skip) {
 					var lower = Math.sqrt(C);
 					
 					//Take either the user specified A95 or the one from the africanPolePath
-					var A95rad = custom ? APWP.A95[i]*rad : APWP.africanPolePath.A95[i]*rad
+					var A95rad = custom ? APWP.A95[i] * RADIANS : APWP.africanPolePath.A95[i] * RADIANS
 					
 					//Get paleolatitude (degrees), declination (degrees), and inclination (radians)
-					var palat = Math.atan2(upper, lower)/rad;
+					var palat = Math.atan2(upper, lower) / RADIANS;
 					var inc = Math.atan2(2 * upper, lower);					
-					var dec = Math.acos((Math.sin(latPoleRot) - Math.sin(siteLat) * upper) / (Math.cos(siteLat) * lower))/rad;
+					var dec = Math.acos((Math.sin(latPoleRot) - Math.sin(siteLat) * upper) / (Math.cos(siteLat) * lower)) / RADIANS;
 		
 					//Check delta phi and fix the declination if necessary
-					var delPhi = (phiPoleRot - siteLon)/rad;
+					var delPhi = (phiPoleRot - siteLon) / RADIANS;
 					if(delPhi < 0 || delPhi > 180) {
 						dec = 360 - dec;
 					}
@@ -297,8 +297,8 @@ function getExpectedLocation (skip) {
 					}
 					
 					//Caclulate the Error on inclination and declination (after Butler, 1992)
-					var dDi = A95rad * ( 2 / ( 1 + 3 * Math.pow(Math.cos((90 - palat)*rad), 2)));
-					var dDx = Math.asin(Math.sin(A95rad)/Math.cos(palat*rad));
+					var dDi = A95rad * ( 2 / ( 1 + 3 * Math.pow(Math.cos((90 - palat) * RADIANS), 2)));
+					var dDx = Math.asin(Math.sin(A95rad)/Math.cos(palat * RADIANS));
 					
 					//If there is a problem in the determination of the errors, put the error to 0
 					if(isNaN(dDx)) {
@@ -310,8 +310,8 @@ function getExpectedLocation (skip) {
 					
 					//Use error on inclination to obtain error on paleolatitude
 					//We want to get the absolute difference with the paleolatitude (so we can add and subtract it later)
-					var min = Math.abs(palat - Math.atan(0.5*Math.tan(inc - dDi))/rad);
-					var max = Math.abs(palat - Math.atan(0.5*Math.tan(inc + dDi))/rad);
+					var min = Math.abs(palat - Math.atan(0.5*Math.tan(inc - dDi)) / RADIANS);
+					var max = Math.abs(palat - Math.atan(0.5*Math.tan(inc + dDi)) / RADIANS);
 					
 					//If the difference is very large (i.e. > 90 degrees) we probably went over a pole
 					//Therefore, take away 180
@@ -324,23 +324,23 @@ function getExpectedLocation (skip) {
 					
 					//Put data in data bucket (in degrees)
 					poleData.push({
-						'x': phiPoleRot/rad, 
-						'y': eqArea(latPoleRot/rad), 
-						'inc': latPoleRot/rad, 
+						'x': phiPoleRot / RADIANS, 
+						'y': eqArea(latPoleRot / RADIANS), 
+						'inc': latPoleRot / RADIANS, 
 						'age': APWP.age[i], 
-						'A95': A95rad/rad
+						'A95': A95rad / RADIANS
 					}); 
 					
 					//Construct ellipse parameters to draw an ellipse around pole positions on polar plot
 					var ellipseParameters = {
-						'xDec' 	: phiPoleRot/rad,
-						'xInc'	: latPoleRot/rad,
-						'yDec'	: phiPoleRot/rad,
-						'yInc'	: latPoleRot/rad - 90,
-						'zDec'	: phiPoleRot/rad + 90,
+						'xDec' 	: phiPoleRot / RADIANS,
+						'xInc'	: latPoleRot / RADIANS,
+						'yDec'	: phiPoleRot / RADIANS,
+						'yInc'	: (latPoleRot / RADIANS) - 90,
+						'zDec'	: (phiPoleRot / RADIANS) + 90,
 						'zInc'	: 0,
-						'beta'	: A95rad/rad,
-						'gamma'	: A95rad/rad
+						'beta'	: A95rad / RADIANS,
+						'gamma'	: A95rad / RADIANS
 					}
 					
 					//Call the ellipse subroutine and store the data in the arrays
@@ -360,14 +360,14 @@ function getExpectedLocation (skip) {
 					paleoDecs.push({
 						'x': APWP.age[i], 
 						'y': dec, 
-						'error': dDx/rad
+						'error': dDx / RADIANS
 					});
 					
 					//Paleo-inclinations
 					paleoIncs.push({
 						'x': APWP.age[i], 
-						'y': (inc)/rad, 
-						'error': dDi/rad
+						'y': (inc) / RADIANS, 
+						'error': dDi / RADIANS
 					});				
 					
 					}
@@ -459,8 +459,8 @@ function getExpectedLocation (skip) {
 					'fillColor': color
 				},
 				'frame': realRefName2,
-				'lat': siteLat/rad,
-				'lon': siteLon/rad,
+				'lat': siteLat / RADIANS,
+				'lon': siteLon / RADIANS,
 			}, {
 				'linkedTo': ':previous', 
 				'type': 'arearange', 
@@ -492,8 +492,8 @@ function getExpectedLocation (skip) {
 	
 	//Call paleo plotting functions
 	//Age vs. parameter plots
-	var latitude = (siteLat/rad).toFixed(3);
-	var longitude = (siteLon/rad).toFixed(3);
+	var latitude = (siteLat / RADIANS).toFixed(3);
+	var longitude = (siteLon / RADIANS).toFixed(3);
 		
 	//Call plotting function for the expected declination, inclination, and paleolatitude
 	plotExpectedLocation(palatData, 'palatContainer', 'Paleolatitude', latitude, longitude);

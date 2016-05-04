@@ -162,8 +162,8 @@ module.map.mapAddSites = function() {
 			//Only put on the map if latitude and longitude is specified (Google Maps defaults null, null to 0, 0) and the Gulf of Guinea is not really an ideal spot for sampling.
 			if(latitude != null && longitude != null && ageMin <= siteMaxAge && ageMax >= siteMinAge) {
 	
-				var angle = declination*rad-0.5*Math.PI;
-				var radError = dDx*rad;
+				var angle = declination * RADIANS - 0.5 * Math.PI;
+				var radError = dDx * RADIANS;
 					
 				//Actual LatLng object that Google Maps v3 can interpret.
 				var LatLng = new google.maps.LatLng(latitude, longitude);
@@ -197,7 +197,7 @@ module.map.mapAddSites = function() {
 					id: key,
 					info: contentString,
 					icon: {
-						path: ['M0 0 ',  (Math.cos(angle+radError)), (Math.sin(angle+radError)), (Math.cos(angle)),  (Math.sin(angle)), (Math.cos(angle-radError)), (Math.sin(angle-radError)), 'z'].join(' '),
+						path: ['M0 0 ',  (Math.cos(angle + radError)), (Math.sin(angle + radError)), (Math.cos(angle)),  (Math.sin(angle)), (Math.cos(angle - radError)), (Math.sin(angle - radError)), 'z'].join(' '),
 						scale: 50,
 						strokeWeight: 1,
 						fillColor: markerColor,
@@ -315,8 +315,8 @@ module.map.changeColorFromName = function( name, index, color) {
 module.map.expectedDeclination = function ( declination, dDx, latitude, longitude, color, model, name ) {
 	
 	//Get the angle
-	var angle = declination*rad-0.5*Math.PI;
-	var radError = dDx*rad;
+	var angle = declination * RADIANS - 0.5 * Math.PI;
+	var radError = dDx * RADIANS;
 	
 	//We use an array to capture the single declination marker
 	//This clears the array (single marker)
@@ -344,7 +344,7 @@ module.map.expectedDeclination = function ( declination, dDx, latitude, longitud
 		title: 'Expected Declination',
 		info: contentString,
 		icon: {
-			path: ['M0 0 ',  (Math.cos(angle+radError)), (Math.sin(angle+radError)), (Math.cos(angle)),  (Math.sin(angle)), (Math.cos(angle-radError)), (Math.sin(angle-radError)), 'z'].join(' '),
+			path: ['M0 0 ',  (Math.cos(angle + radError)), (Math.sin(angle + radError)), (Math.cos(angle)),  (Math.sin(angle)), (Math.cos(angle - radError)), (Math.sin(angle - radError)), 'z'].join(' '),
 			scale: 100,
 			strokeWeight: 1,
 			strokeColor: color,

@@ -73,8 +73,8 @@ $(function() {
  
 	var NTRApproach = !$('#NTRApproach').prop('checked');
 	
-	var dDx = dDx*rad;
-	var dIx = dIx*rad;
+	var dDx = dDx * RADIANS;
+	var dIx = dIx * RADIANS;
 	
 	var incSign = (Math.abs(mInc)/mInc); // 1 or -1 depending on inclination polarity
 	
@@ -164,10 +164,10 @@ $(function() {
 	}
 	
 	if(!NTRApproach) {
-		discreteEllipsePoints.push({x: mDec+dDx/rad, y: eqArea(mInc), inc: mInc});
-		discreteEllipsePoints.push({x: mDec-dDx/rad, y: eqArea(mInc), inc: mInc});
-		discreteEllipsePoints.push({x: mDec, y: eqArea(mInc+dIx/rad), inc: mInc+dIx/rad});
-		discreteEllipsePoints.push({x: mDec, y: eqArea(mInc-dIx/rad), inc: mInc-dIx/rad});
+		discreteEllipsePoints.push({x: mDec+dDx / RADIANS, y: eqArea(mInc), inc: mInc});
+		discreteEllipsePoints.push({x: mDec-dDx / RADIANS, y: eqArea(mInc), inc: mInc});
+		discreteEllipsePoints.push({x: mDec, y: eqArea(mInc+dIx / RADIANS), inc: mInc+dIx / RADIANS});
+		discreteEllipsePoints.push({x: mDec, y: eqArea(mInc-dIx / RADIANS), inc: mInc-dIx / RADIANS});
 	}	
 			
 	return discreteEllipsePoints;
@@ -181,8 +181,8 @@ $(function() {
  */
 var ellipseDataZero = function(mDec, mInc, dDx, dIx) {
 		
-		var dDx = dDx*rad;
-		var dIx = dIx*rad;
+		var dDx = dDx * RADIANS;
+		var dIx = dIx * RADIANS;
 		
 		var incSign = (Math.abs(mInc)/mInc); // 1 or -1 depending on inclination polarity
 		
@@ -588,9 +588,9 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				}
 				
 				var vRotated = {'x': 0, 'y': 0, 'z': 0};
-				vRotated.x = vVector.x * Math.cos(theta * rad) + crossProd.x * Math.sin(theta * rad) + kVector.x * dot * (1 - Math.cos(theta * rad));
-				vRotated.y = vVector.y * Math.cos(theta * rad) + crossProd.y * Math.sin(theta * rad) + kVector.y * dot * (1 - Math.cos(theta * rad));
-				vRotated.z = vVector.z * Math.cos(theta * rad) + crossProd.z * Math.sin(theta * rad) + kVector.z * dot * (1 - Math.cos(theta * rad));
+				vRotated.x = vVector.x * Math.cos(theta * RADIANS) + crossProd.x * Math.sin(theta * RADIANS) + kVector.x * dot * (1 - Math.cos(theta * RADIANS));
+				vRotated.y = vVector.y * Math.cos(theta * RADIANS) + crossProd.y * Math.sin(theta * RADIANS) + kVector.y * dot * (1 - Math.cos(theta * RADIANS));
+				vRotated.z = vVector.z * Math.cos(theta * RADIANS) + crossProd.z * Math.sin(theta * RADIANS) + kVector.z * dot * (1 - Math.cos(theta * RADIANS));
 
 				var pointLoc = dir(vRotated.x, vRotated.y, vRotated.z);
 				var beddingdata = getPlaneData(pointLoc, 'GC');
@@ -607,9 +607,9 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 				}
 				
 				var vRotated = {'x': 0, 'y': 0, 'z': 0};
-				vRotated.x = vVector.x * Math.cos(theta * rad) + crossProd.x * Math.sin(theta * rad) + kVector.x * dot * (1 - Math.cos(theta * rad));
-				vRotated.y = vVector.y * Math.cos(theta * rad) + crossProd.y * Math.sin(theta * rad) + kVector.y * dot * (1 - Math.cos(theta * rad));
-				vRotated.z = vVector.z * Math.cos(theta * rad) + crossProd.z * Math.sin(theta * rad) + kVector.z * dot * (1 - Math.cos(theta * rad));
+				vRotated.x = vVector.x * Math.cos(theta * RADIANS) + crossProd.x * Math.sin(theta * RADIANS) + kVector.x * dot * (1 - Math.cos(theta * RADIANS));
+				vRotated.y = vVector.y * Math.cos(theta * RADIANS) + crossProd.y * Math.sin(theta * RADIANS) + kVector.y * dot * (1 - Math.cos(theta * RADIANS));
+				vRotated.z = vVector.z * Math.cos(theta * RADIANS) + crossProd.z * Math.sin(theta * RADIANS) + kVector.z * dot * (1 - Math.cos(theta * RADIANS));
 
 				var pointLoc = dir(vRotated.x, vRotated.y, vRotated.z);
 				var beddingdata2 = getPlaneData(pointLoc, 'GC');
@@ -1127,8 +1127,8 @@ function getPlaneData ( dirIn, type, MAD, signInc ) {
 			v[2] = Math.sin(psi);
 			v[0] = 0 //resulting coordinate on unit-sphere.
 		} else if (type == 'MAD') {
-			v[1] = Math.sin(MAD*rad)*Math.cos(psi);
-			v[2] = Math.sin(MAD*rad)*Math.sin(psi);
+			v[1] = Math.sin(MAD * RADIANS)*Math.cos(psi);
+			v[2] = Math.sin(MAD * RADIANS)*Math.sin(psi);
 			v[0] = Math.sqrt( 1 - Math.pow(v[1],2) - Math.pow(v[2],2) ); //resulting coordinate on unit-sphere.
 		}
 
