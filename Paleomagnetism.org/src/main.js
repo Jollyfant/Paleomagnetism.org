@@ -832,7 +832,7 @@ var constructEllipse = function(data, type) {
 	
   // Call the ellipse drawing function
   // This returns an object containing positive and negative ellipse data
-  var ellipse = new ellipseData(ellipseParameters, false);
+  var ellipse = ellipseData(ellipseParameters, false);
 
   // If the type is a95pole we need to transform the ellipse and fix it
   if(type === 'a95pole') {
@@ -1237,7 +1237,6 @@ var processUserInput = function(data, type, name) {
 				
       var inputDataSampled = new Array();
       var sampleVGP = $("#sampleFish input[type='radio']:checked").val();				
-      console.log(sampleVGP);
 				
       // Sample a Fisherian distribution with N and Kappa
       var sampled = sampleFisher(N, K);
@@ -1317,7 +1316,6 @@ var constructMetaData = function( ) {
 
   var date = new Date();
   this.dateAdded = date.toISOString();
-
   this.version = version;
   this.markerColor = 'orange';	
 
@@ -1353,9 +1351,38 @@ var constructMetaData = function( ) {
  * Output: boolean
  */
 function checkNumeric(data)  {
-
   return data.every(function(x) {
     return x === null || $.isNumeric(x);
+  });
+}
+
+/* FUNCTION notify
+ * Description: notifies user of message; 
+ * Input: notification types 'success', 'note' and 'failure' and message
+ * Output: calls the $.notiny plugin
+ */
+var notify = function(type, msg) {
+
+  // Check the type of the notification (success, note, or failure)
+  var theme;
+  if(type === 'success') {
+    msg = '<b>&#x2714</b> ' + msg;
+    theme = 'dark';
+  } else if(type === 'failure') {
+    msg = '<b>&#10007</b> ' + msg;
+    theme = 'light';
+  } else if(type === 'note') {
+    msg = '<b>&#8801</b> ' + msg;
+    theme = 'orange';
+  } else {
+    throw('Unexpected type of notification (' + type + ') expected ("success", "failure", "note")')
+  }
+	
+  // Call the notiny plugin to do print the notification
+  $.notiny({
+    'text': msg, 
+    'theme': theme,
+    'width': 'auto'
   });
 
 }

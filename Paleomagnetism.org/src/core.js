@@ -127,7 +127,6 @@ var eigenvalues = function(T) {
   // Publication: O.K. Smith, Eigenvalues of a symmetric 3 × 3 matrix - Communications of the ACM (1961)
   // See https://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices
 	
-	
   // Calculate the trace of the orientation matrix
   // 3m is equal to the trace
   var m = (T[0][0] + T[1][1] + T[2][2]) / 3;
@@ -560,7 +559,7 @@ function invPoles(siteLat, siteLong, data) {
   var cosp = sinlatp * sinlats + coslatp * coslats * Math.cos(RADIANS * (poleLong - siteLong));
   var sinp = Math.sqrt(1 - cosp * cosp);
 	
-  var dec = (Math.acos((sinlatp - sinlats * cosp) / (coslats * sinp)))/RADIANS
+  var dec = (Math.acos((sinlatp - sinlats * cosp) / (coslats * sinp))) / RADIANS
 	
   if(poleLong > siteLong && (poleLong - siteLong) > 180) {
     dec = 360 - dec;
@@ -570,7 +569,7 @@ function invPoles(siteLat, siteLong, data) {
   }
 	
   // Right quadrant
-  var inc = Math.atan2(2 * cosp, sinp)/RADIANS;
+  var inc = Math.atan2(2 * cosp, sinp) / RADIANS;
 
   var newData = JSON.parse(JSON.stringify(data));
   newData[0] = dec;
@@ -923,7 +922,7 @@ var getKentParameters = function ( data ) {
  * Input: type@sting (FISHER), mean declination@float, mean inclination@float, errorDec@float, errorInc@float, reduction@bool
  * Output: object containing data with discrete points on an ellipse that can be plotted
  */
-var ellipseData = function(params, reduction) {
+function ellipseData(params, reduction) {
 
   // Definition of ellipse series
   // Adding null prevents highcharts from making unwanted marker connections.
@@ -1005,38 +1004,9 @@ var ellipseData = function(params, reduction) {
     }
   }
 
-  this.neg = upperHemisphere;
-  this.pos = lowerHemisphere;
-
-}
-
-/* FUNCTION notify
- * Description: notifies user of message; 
- * Input: notification types 'success', 'note' and 'failure' and message
- * Output: calls the $.notiny plugin
- */
-var notify = function(type, msg) {
-
-  // Check the type of the notification (success, note, or failure)
-  var theme;
-  if(type === 'success') {
-    msg = '<b>&#x2714</b> ' + msg;
-    theme = 'dark';
-  } else if(type === 'failure') {
-    msg = '<b>&#10007</b> ' + msg;
-    theme = 'light';
-  } else if(type === 'note') {
-    msg = '<b>&#8801</b> ' + msg;
-    theme = 'orange';
-  } else {
-    throw('Unexpected type of notification (' + type + ') expected ("success", "failure", "note")')
+  return {
+    'neg': upperHemisphere,
+	'pos': lowerHemisphere
   }
-	
-  // Call the notiny plugin to do print the notification
-  $.notiny({
-    'text': msg, 
-    'theme': theme,
-    'width': 'auto'
-  });
 
 }

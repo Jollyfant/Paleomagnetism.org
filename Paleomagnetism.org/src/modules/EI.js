@@ -34,8 +34,9 @@
  *
  * This open-source application is licensed under the GNU General Public License v3.0 and may be used, modified, and shared freely
  */
-
-//Set running options to prevent the launching of additional instances; these would conflict
+ 
+ "use strict";
+	
 module.EI = new Object();
 module.EI.running = false;
 
@@ -48,15 +49,14 @@ module.EI.running = false;
  */
  module.EI.polynomial = function ( inc ) {
 
- 	"use strict";
-	
-	var inc = Math.abs(inc);
-	
-	//Polynomial coefficients
-	var coeffs = [ 3.15976125e-06, -3.52459817e-04, -1.46641090e-02, 2.89538539e+00 ];
-	var elongation = coeffs[0]*Math.pow(inc, 3) + coeffs[1]*Math.pow(inc, 2) + coeffs[2]*inc + coeffs[3];
-	
-	return elongation;
+  var inc = Math.abs(inc);
+  
+  //Polynomial coefficients
+  var coeffs = [3.15976125e-06, -3.52459817e-04, -1.46641090e-02, 2.89538539e+00];
+  var elongation = (coeffs[0] * Math.pow(inc, 3)) + (coeffs[1] * Math.pow(inc, 2)) + (coeffs[2] * inc) + coeffs[3];
+  
+  return elongation;
+  
 }
 
 /* 
@@ -65,11 +65,8 @@ module.EI.running = false;
  * Input: array@array
  * Output: last element of array
  */
-function lastIndex( array ) {
-
-	"use strict";
-	
-	return array[array.length - 1];
+function lastIndex( array ) {	
+  return array[array.length - 1];
 }
 
 /*
@@ -79,168 +76,165 @@ function lastIndex( array ) {
  * Output: VOID
  */
  module.EI.initialize = function () {
-	
-	"use strict";
-	
-	//Quit procedure if already running
-	if(module.EI.running) {
-		notify('failure', 'The inclination shallowing is already running.');
-		return;
-	}
-	
-	//Capture progress bar to variable
-	module.EI.bar = $("#EIBar");
-	
-	//Get selected site name
-	var siteNames = $("#EISel").val();
-	if(siteNames === null) {
-		notify('failure', 'Please select a site.');
-		$("#EIInfo").hide();
-		return;
-	}
-	
-	var coordinates = $("#EIRadio input[type='radio']:checked").val();
-	var coordRef = coordinates === "TECT" ? 'dataTC' : 'data';
-	
-	//Get the accepted directions from the data block
-	var data = sites[siteNames][coordRef].dir.accepted;
-	
-	//Get the absolute original inclination from the data set
-	var originalInclination = new fisher(data, 'dir', 'simple').mInc;
-	
-	//Define number of bootstrap attempts and set number of intersections and bootstrap iteration counter to 0
-	var nBootstraps = 5000;
-	var nIntersections = 0;
-	var bootstrapIteration = 0;
-	
-	//define data buckets
-	var inclinations = new Array();
-	var elongations = new Array();
-	var bootstraps = new Array();
-
-	//Get time of initialization
-	var timeInit = Date.now();
-	
-	//Lock the procedure from running additional instances
-	module.EI.running = true;
-
-	//Data bucket for inclination (Is) and elongation (Es) pairs for one bootstrap
-	//Run the procedure initially for the original data
-	var unflattenedData = module.EI.unflattenDirections(data);
-        var unflattenedInclination = unflattenedData.len > 0 ? lastIndex(unflattenedData.inclinations) : null;
-
-	//Construct Highcharts formatted data series for actual data
-	var datArray = new Array();
-	for(var i = 0; i < unflattenedData.len; i++) {
-		datArray.push({
-			'x': unflattenedData.inclinations[i], 
-			'y': unflattenedData.elongations[i],
-			'f': unflattenedData.flatteningFactors[i]
-		});
-	}
-	
-	bootstraps.push(datArray);
-	
-	//Asynchronous timed function that is called automatically
-	(module.EI.timed = function () {
-	
-		//After first doing the actual data, get a pseudo-random set of the data
-		//Unflatten the pseudo-random directions
-		var unflattenedData = module.EI.unflattenDirections( new pseudo(data));
 		
-		//Data bucket for inclination (Is) and elongation (Es) pairs for one bootstrap
-		var datArray = new Array();
-		for(var i = 0; i < unflattenedData.len; i++) {
-			datArray.push({
-				'x': unflattenedData.inclinations[i], 
-				'y': unflattenedData.elongations[i],
-				'f': unflattenedData.flatteningFactors[i]
-			});
-		}
-		
-		//If the procedure is successful and finds an intersect with the polynomial, save the bootstrap and increment b for the next bootstrap
-		if(unflattenedData.len !== 0) {
-			
-			//Save the first 25 successful bootstraps for plotting (and the first on the actual data)
-			if(nIntersections <= 26) {
-				bootstraps.push(datArray);
-			}
-		
-			//Save the final entry of the arrays (which is the intersection (if any) with the TK03.GAD polynomial)
-			inclinations.push(lastIndex(unflattenedData.inclinations));
-			elongations.push(lastIndex(unflattenedData.elongations));
-			
-			//Found an intersection
-			nIntersections++;
-		}
-		
-		//One bootstrap is completed
-		bootstrapIteration++;
-		
-		//Has the procedure completed enough bootstraps
-		//If FALSE, call timed procedure again
-		//If TRUE, escape the timed procedure
-		if(bootstrapIteration < nBootstraps) {	
-			
-			//Update the progressbar
-			module.EI.bar.progressbar('value', (bootstrapIteration)/(nBootstraps) * 100);
-			$("#EIPerc").html((bootstrapIteration+1) + ' / ' + nBootstraps);
-			
-			//Give the browser 1 millisecond every 10 bootstraps; otherwise proceed immediately to the next bootstrap
-			if(bootstrapIteration%10 == 0) {
-				setTimeout(function() { module.EI.timed(); }, 1);
-			} else {
-				module.EI.timed();
-			}
-			
-		} else {
+  // Quit procedure if already running
+  if(module.EI.running) {
+  	notify('failure', 'The unflattening procedure is already running.');
+  	return;
+  }
+  
+  // Capture progress bar to variable
+  module.EI.bar = $("#EIBar");
+  
+  //Get selected site name
+  var siteNames = $("#EISel").val();
+  if(siteNames === null) {
+  	notify('failure', 'Select a site');
+  	$("#EIInfo").hide();
+  	return;
+  }
+  
+  var coordinates = $("#EIRadio input[type='radio']:checked").val();
+  var coordRef = coordinates === "TECT" ? 'dataTC' : 'data';
+  
+  //Get the accepted directions from the data block
+  var data = sites[siteNames][coordRef].dir.accepted;
+  
+  //Get the absolute original inclination from the data set
+  var originalInclination = new fisher(data, 'dir', 'simple').mInc;
+  
+  //Define number of bootstrap attempts and set number of intersections and bootstrap iteration counter to 0
+  var nBootstraps = 5000;
+  var nIntersections = 0;
+  var bootstrapIteration = 0;
+  
+  //define data buckets
+  var inclinations = new Array();
+  var elongations = new Array();
+  var bootstraps = new Array();
+  
+  //Get time of initialization
+  var timeInit = Date.now();
+  
+  //Lock the procedure from running additional instances
+  module.EI.running = true;
+  
+  //Data bucket for inclination (Is) and elongation (Es) pairs for one bootstrap
+  //Run the procedure initially for the original data
+  var unflattenedData = module.EI.unflattenDirections(data);
+  var unflattenedInclination = unflattenedData.len > 0 ? lastIndex(unflattenedData.inclinations) : null;
+  
+  //Construct Highcharts formatted data series for actual data
+  var datArray = new Array();
+  for(var i = 0; i < unflattenedData.len; i++) {
+  	datArray.push({
+      'x': unflattenedData.inclinations[i], 
+  	  'y': unflattenedData.elongations[i],
+  	  'f': unflattenedData.flatteningFactors[i]
+  	});
+  }
+  
+  bootstraps.push(datArray);
+  
+  //Asynchronous timed function that is called automatically
+  (module.EI.timed = function () {
+  
+  	//After first doing the actual data, get a pseudo-random set of the data
+  	//Unflatten the pseudo-random directions
+  	var unflattenedData = module.EI.unflattenDirections( new pseudo(data));
+  	
+  	//Data bucket for inclination (Is) and elongation (Es) pairs for one bootstrap
+  	var datArray = new Array();
+  	for(var i = 0; i < unflattenedData.len; i++) {
+  	  datArray.push({
+  	    'x': unflattenedData.inclinations[i], 
+  	    'y': unflattenedData.elongations[i],
+  	    'f': unflattenedData.flatteningFactors[i]
+  	  });
+  	}
+  	
+  	// If the procedure is successful and finds an intersect with the polynomial, save the bootstrap and increment b for the next bootstrap
+  	if(unflattenedData.len !== 0) {
+  		
+  	  // Save the first 25 successful bootstraps for plotting (and the first on the actual data)
+  	  if(nIntersections <= 26) {
+  	  	bootstraps.push(datArray);
+  	  }
+  	  
+  	  // Save the final entry of the arrays (which is the intersection (if any) with the TK03.GAD polynomial)
+  	  inclinations.push(lastIndex(unflattenedData.inclinations));
+  	  elongations.push(lastIndex(unflattenedData.elongations));
 
-			//Sort the inclination array numerically from lowest to highest
-			inclinations.sort(function (a, b) {
-				return a > b ? 1 : a < b ? -1 : 0;
-			});
-	
-			//Data bucket for the cumulative distribution function of inclination and average inclination
-			var cdfData = new Array();
-			var averageInclination = 0;
-			for(var i = 0; i < inclinations.length; i++){
-				cdfData.push({
-					'x': inclinations[i], 
-					'y': i/(nIntersections-1)
-				});
-				averageInclination += inclinations[i];
-			}
-			
-			averageInclination = averageInclination/i;
-			
-			//Our lower and upper boostrapped bounds are respectively
-			var lower = inclinations[parseInt(0.025*nIntersections, 10)];
-			var upper = inclinations[parseInt(0.975*nIntersections, 10)];
-			
-			//If undefined put to 0
-			var upper = upper ? upper : 0;
-			var lower = lower ? lower : 0;
-			
-			//Get the number of intersections of the total number of bootstraps
-			var intersectionNum =  nIntersections + ' out of ' + nBootstraps;
-			
-			//Get the final processing time
-			var time = (Date.now() - timeInit);
-
-			//Update the progressbar and notify userAgent
-			notify('success', 'Inclination shallowing has been succesfully completed!');
-			module.EI.bar.progressbar('value', 0);
-			$("#EIInfo").show();
-			$("#EIPerc").html("Done!");
-			
-			//Call plotting functions (bootstrap and CDF figure)
-			EIbootstraps(bootstraps, time, intersectionNum, data, siteNames);
-			EICDF(cdfData, originalInclination, unflattenedInclination, averageInclination, lower, upper);
-			
-			//Free running lock
-			module.EI.running = false;
-		}
-	})();
+	  nIntersections++;
+	  
+  	}
+  	
+  	//One bootstrap is completed
+  	bootstrapIteration++;
+  	
+  	if(bootstrapIteration < nBootstraps) {	
+  		
+  		// Update the progressbar
+  		module.EI.bar.progressbar('value', (bootstrapIteration) / (nBootstraps) * 100);
+  		$("#EIPerc").html((bootstrapIteration + 1) + ' / ' + nBootstraps);
+  		
+  		// Give the browser 1 millisecond every 10 bootstraps
+		// Otherwise proceed immediately to the next bootstrap
+  		if(bootstrapIteration % 10 === 0) {
+  			setTimeout(function() { module.EI.timed(); }, 1);
+  		} else {
+  			module.EI.timed();
+  		}
+  		
+  	} else {
+  
+  	  //Sort the inclination array numerically from lowest to highest
+  	  inclinations.sort(function (a, b) {
+  	  	return a > b ? 1 : a < b ? -1 : 0;
+  	  });
+      
+  	  //Data bucket for the cumulative distribution function of inclination and average inclination
+  	  var cdfData = new Array();
+  	  var averageInclination = 0;
+  	  for(var i = 0; i < inclinations.length; i++){
+  	  	cdfData.push({
+  	  	  'x': inclinations[i], 
+  	  	  'y': i / (nIntersections - 1)
+  	  	});
+  	  	averageInclination += inclinations[i];
+  	  }
+  	  
+  	  averageInclination = averageInclination / i;
+  	  
+  	  //Our lower and upper boostrapped bounds are respectively
+  	  var lower = inclinations[parseInt(0.025 * nIntersections, 10)];
+  	  var upper = inclinations[parseInt(0.975 * nIntersections, 10)];
+  	  
+  	  //If undefined put to 0
+  	  var upper = upper ? upper : 0;
+  	  var lower = lower ? lower : 0;
+  	  
+  	  //Get the number of intersections of the total number of bootstraps
+  	  var intersectionNum =  nIntersections + ' out of ' + nBootstraps;
+  	  
+  	  //Get the final processing time
+  	  var time = Date.now() - timeInit;
+      
+  	  //Update the progressbar and notify userAgent
+  	  notify('success', 'Inclination shallowing has been succesfully completed!');
+  	  module.EI.bar.progressbar('value', 0);
+  	  $("#EIInfo").show();
+  	  $("#EIPerc").html("Done!");
+  	  
+  	  //Call plotting functions (bootstrap and CDF figure)
+  	  EIbootstraps(bootstraps, time, intersectionNum, data, siteNames);
+  	  EICDF(cdfData, originalInclination, unflattenedInclination, averageInclination, lower, upper);
+  	  
+  	  //Free running lock
+  	  module.EI.running = false;
+	  
+  	}
+  })();
 }
 
 /*
@@ -251,132 +245,88 @@ function lastIndex( array ) {
  * Output: returns Arrays with elongation, inclination, and the respective flattening factor
  */
 module.EI.unflattenDirections = function ( data ) {
-
- 	"use strict";
 	
-	//Buckets for our data 
-	var elongations = new Array(); //Elongation
-	var inclinations = new Array(); //Inclination
-	var flatteningFactors = new Array(); //Flattening Factor
-	
-	//Get the tan of the observed inclinations (equivalent of tan(Io))
-	//The inclination is stored in the 2nd element of the data array
-	var tanInclinations = new Array();
-	for(var i = 0; i < data.length; i++) {
-		tanInclinations.push(Math.tan(data[i][1] * RADIANS));
-	}
-
-	//Decrement over the flattening values f from 100 to 20
-	//We will find f with a resolution of 1/100th
-	for(var i = 100; i >= 20; i--) {
-	
-		//Flattening factor (from 1 to 0.2)
-		var f = i/100; 
+  // Buckets for our data 
+  var elongations = new Array();
+  var inclinations = new Array();
+  var flatteningFactors = new Array();
+  
+  // Get the tan of the observed inclinations (equivalent of tan(Io))
+  // The inclination is stored in the 2nd element of the data array
+  var tanInclinations = new Array();
+  for(var i = 0; i < data.length; i++) {
+  	tanInclinations.push(Math.tan(data[i][1] * RADIANS));
+  }
+  
+  // Decrement over the flattening values f from 100 to 20
+  // We will find f with a resolution of 1/100th
+  for(var i = 100; i >= 20; i--) {
+  
+  	//Flattening factor (from 1 to 0.2)
+  	var f = i / 100; 
+  	
+  	// Unflattening function after King, 1955
+  	// (tanIo = f tanIf) where tanIo is observed and tanIf is recorded.
+  	// Create unflattenedData containing (dec, inc) pair for a particular f
+  	var unflattenedData = new Array();
+  	for(var j = 0; j < data.length; j++) {
+  	  var declination = data[j][0];
+  	  var inclinationF = ( Math.atan( tanInclinations[j] / f )) / RADIANS;
+  	  unflattenedData.push([declination, inclinationF]); 
+  	}
+  
+  	// Calculate mean inclination for unflattenedData and get eigenvalues
+  	var meanInc = new fisher(unflattenedData, 'dir', 'simple').mInc;
+  	var eigenvalues = eigValues(unflattenedData);
+  	
+  	// Record the flattening factor, elongation (τ2/τ3), and mean inclination
+  	flatteningFactors.push(f);
+  	elongations.push(eigenvalues['t2'] / eigenvalues['t3']); //τ2/τ3
+  	inclinations.push(meanInc);
+  
+  	// In case we initially start above the TK03.GAD Polynomial
+  	// For each point check if we are above the polynomial; if so pop the parameters and do not save them
+  	// This simple algorithm finds the line below the TK03.GAD polynomial
+  	// Compare expected elongation with elongation from data from TK03.GAD
+  	// Only do this is Epoly < Edata
+  	if(module.EI.polynomial(meanInc) <= elongations[elongations.length-1]) {
+  
+  	  // Remember the latest unflattening factor
+  	  var unflatIndex = flatteningFactors[flatteningFactors.length-1]; 
+      
+  	  // Always pop the latest value
+  	  var poppedE = elongations.pop();
+  	  var poppedI = inclinations.pop();
+  	  var poppedF = flatteningFactors.pop();	
+      
+  	  // If there is more than 1 consecutive flattening factor in the array
+  	  // This means we have a line under the TK03.GAD Polynomial
+  	  // So we can return our parameters
+  	  if(flatteningFactors.length > 0) {
+  	  
+  	  	// Put the latest popped elements back in the arrays
+  	  	flatteningFactors.push(poppedF);
+  	  	inclinations.push(poppedI);
+  	  	elongations.push(poppedE);
+  	  
+  	  	return {
+  	  	  'flatteningFactors': flatteningFactors, 
+  	  	  'elongations': elongations, 
+  	  	  'inclinations': inclinations,
+  	  	  'len': flatteningFactors.length
+  	  	}
 		
-		// Unflattening function after King, 1955
-		//(tanIo = f tanIf) where tanIo is observed and tanIf is recorded.
-		//Create unflattenedData containing (dec, inc) pair for a particular f
-		var unflattenedData = new Array();
-		for(var j = 0; j < data.length; j++) {
-			var declination = data[j][0];
-			var inclinationF = ( Math.atan( tanInclinations[j] / f )) / RADIANS;
-			unflattenedData.push([declination, inclinationF]); 
-		}
-
-		//Calculate mean inclination for unflattenedData and get eigenvalues
-		var meanInc = new fisher(unflattenedData, 'dir', 'simple').mInc;
-		var eigenvalues = eigValues(unflattenedData);
-		
-		//Record the flattening factor, elongation (τ2/τ3), and mean inclination
-		flatteningFactors.push(f);
-		elongations.push(eigenvalues['t2'] / eigenvalues['t3']); //τ2/τ3
-		inclinations.push(meanInc);
-
-		//In case we initially start above the TK03.GAD Polynomial
-		//For each point check if we are above the polynomial; if so pop the parameters and do not save them
-		//This simple algorithm finds the line below the TK03.GAD polynomial
-		//Compare expected elongation with elongation from data from TK03.GAD
-		//Only do this is Epoly < Edata
-		if(module.EI.polynomial(meanInc) <= elongations[elongations.length-1]) {
-
-			//Remember the latest unflattening factor
-			var unflatIndex = flatteningFactors[flatteningFactors.length-1]; 
-
-			//Always pop the latest value
-			var poppedE = elongations.pop();
-			var poppedI = inclinations.pop();
-			var poppedF = flatteningFactors.pop();	
-
-			//If there is more than 1 consecutive flattening factor in the array
-			//This means we have a line under the TK03.GAD Polynomial
-			//So we can return our parameters
-			if(flatteningFactors.length > 0) {
-			
-				//Put the latest popped elements back in the arrays
-				flatteningFactors.push(poppedF);
-				inclinations.push(poppedI);
-				elongations.push(poppedE);
-			
-				return {
-					'flatteningFactors': flatteningFactors, 
-					'elongations': elongations, 
-					'inclinations': inclinations,
-					'len': flatteningFactors.length
-				};
-			}	
-		}
-	}
-	
-	//No intersection with TK03.GAD polynomial return zeros (this is filtered in the main routine and recorded as no-intersect)
-	return {
-		'flatteningFactors': [0], 
-		'elongations': [0], 
-		'inclinations': [0],
-		'len': 0
-	};
+  	  }	
+  	}
+  }
+  
+  // No intersection with TK03.GAD polynomial return zeros
+  // this is filtered in the main routine and recorded as no-intersect
+  return {
+    'flatteningFactors': [0], 
+    'elongations': [0], 
+    'inclinations': [0],
+    'len': 0
+  }
+  
 }
-
-/*
- * FUNCTION module.EI.saveUnflattened
- * Description: Saves unflattened directions at f to a new site
- * Input: NULL
- * Output: VOID (Calls site constructor)
- */
-module.EI.saveUnflattened = function () {
-
-	var chart = $("#EIbootstraps").highcharts();
-	if(!chart) return;
-
-	// We saved the unflattening @ intersection with some other site info
-	var input = chart.userOptions.chart.input;
-	var flattening = chart.userOptions.chart.flattening;
-	var name = chart.userOptions.chart.site;
-
-	// Unflatten
-	var newDatArray = new Array();
-	for(var i = 0; i < input.length; i++) {
-		newDatArray.push([input[i][0],  (Math.atan(Math.tan(input[i][1] * RADIANS) / flattening)) / RADIANS, input[i][2], input[i][3], input[i][4]]);
-	}
-
-	var meta = JSON.parse(JSON.stringify(sites[name].userInput.metaData));
-	var name = prompt('Enter a site name');
-	if(!name) {
-		notify('failure', 'Please enter a name');
-		return;
-	}
-	if(sites.hasOwnProperty(name)) {
-		notify('failure', 'A site with this name already exists!');
-		return;
-	}
-
-	// Copy old meta-data and fix with new info (name / type)
-	meta.name = name;
-	meta.type += ' (EI)';
-
-	sites[name] = new site(meta, newDatArray, true);
-	setStorage();	
-}
-
-
-
-

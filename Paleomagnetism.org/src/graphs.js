@@ -286,7 +286,7 @@ var eqAreaVGPs = function(name) {
     'gamma': data.params.A95
   };
   
-  var ellipse = new ellipseData(ellipseParameters, false);
+  var ellipse = ellipseData(ellipseParameters, false);
 
   // Get the formatted data
   var acceptedVGPs = formatDirections(data.vgpRotated.accepted, 'rgb(119, 152, 191)');
@@ -1560,10 +1560,11 @@ function plotSiteDataExpected ( type ) {
           'gamma'  : A95
         }  
         
-        var elly = new ellipseData(ellipseParameters, true);
+        var elly = ellipseData(ellipseParameters, true);
         
-        ellipseDataNeg = ellipseDataNeg.concat(elly.neg)
-        ellipseDataPos = ellipseDataPos.concat(elly.pos)
+        ellipseDataNeg = ellipseDataNeg.concat(elly.neg);
+        ellipseDataPos = ellipseDataPos.concat(elly.pos);
+		
       }
     }
     

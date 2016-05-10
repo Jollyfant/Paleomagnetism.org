@@ -21,6 +21,8 @@
  * This open-source application is licensed under the GNU General Public License v3.0 and may be used, modified, and shared freely
  */
 
+"use strict";
+
 //Specify running method (blocks procedure if it is already running)
 module.foldtest = new Object();
 module.foldtest.running = false;
@@ -88,9 +90,7 @@ module.foldtest.extremes = function (siteNames) {
  * Output: Index of maximum clustering (% unfolding with highest principle eigenvalue) and array of taus (increments of 10% unfolding)
  */
  var unfoldData = function ( pseudoDirections, unfoldingMin, unfoldingMax) {
- 
- 	"use strict";
-	
+ 	
  	//Variable to capture the maximum-maximum eigenvalue of one bootstrap
 	var max = 0;
 	var index = 0;
@@ -157,40 +157,24 @@ module.foldtest.extremes = function (siteNames) {
 /*
  * FUNCTION module.foldtest.initialize
  */
-module.foldtest.initialize = function ( ) {
-
-	"use strict";
+module.foldtest.initialize = function () {
 	
 	//Stop if foldtest procedure is already running
 	if(module.foldtest.running) {
-		notify('failure', 'A foldtest is already running. Please wait.');
-		return;
+	  notify('failure', 'A foldtest is already running. Please wait.');
+	  return;
 	}
 
 	//Get the array of selected sites ['Site1', 'Site2', '...']
 	var siteNames = $('#foldSel').val();
 	if(siteNames === null) {
-		notify('failure', 'Please select a site.');
-		return;
+	  notify('failure', 'Please select a site.');
+	  return;
 	}
 	
 	//Check if the number of bootstraps is an integer
 	//Surely people will try a negative number of bootstraps -> take the absolute value
-	if($('#spinner').val() % 1 === 0) {
-		var nBootstraps = Math.abs($('#spinner').val());
-	} else {
-		notify('failure', 'Number of bootstraps is not an integer.');
-		return;
-	}
-	
-	//Check number of bootstraps and cancel procedure if there is a problem
-	if(nBootstraps === 0) {
-		notify('failure', 'A minimum number of 1 bootstrap is required.');
-		return
-	} else if(nBootstraps > 10000) {
-		notify('failure', 'The maximum number of bootstraps is limited to 10000.');
-		return
-	}
+	var nBootstraps = 1000;
 	
 	//Get the data to be used in the foldtest
 	var data = module.foldtest.getData(siteNames);
@@ -208,8 +192,8 @@ module.foldtest.initialize = function ( ) {
 	//This will prevent freezing of the browser during the computation
 			
 	//Get the unfolding percentages (min and max) from the slider range
-	var unfoldingMin = $( "#unfoldingPercentage" ).slider( "values", 0);
-	var unfoldingMax = $( "#unfoldingPercentage" ).slider( "values", 1);
+	var unfoldingMin = -50;
+	var unfoldingMax = 150;
 	
 	//Parameters 
 	var iteration = 0;
