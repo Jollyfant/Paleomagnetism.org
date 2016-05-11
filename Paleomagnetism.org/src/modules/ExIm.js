@@ -106,7 +106,7 @@ module.IO.importing = function(event) {
   	  $('#plateNames').multiselect('refresh');	
   	  
   	  // No errors, then save the instance and notify user
-  	  notify('success', 'Importing was succesful; ' + numAPWPs + ' new site(s) have been added.');
+  	  notify('success', 'Importing was succesful; ' + numAPWPs + ' new APWP(s) have been added.');
 	  
   	  $('#update').click();
 	  setStorage();

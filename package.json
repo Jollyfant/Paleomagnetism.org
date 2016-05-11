@@ -1,7 +1,0 @@
-{
-    "name": "travis-ci-test",
-    "version": "0.0.1",
-    "scripts": {
-        "test": "./tests/runtests.js"
-    }
-}

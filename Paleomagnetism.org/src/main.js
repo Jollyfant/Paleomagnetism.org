@@ -590,8 +590,6 @@ function include(filename) {
  */ 
 var applicationInit = function (page) { 
 
-  "use strict";
-
   jQueryInit(page);
 
   // Paleomagnetism.org can also run offline; some features (e.g. Google Maps will be disabled)
@@ -605,6 +603,22 @@ var applicationInit = function (page) {
   sites = new Object();
   APWPs = new Object();
 	
+  if(location.search) {
+	$.ajax({
+	  'type': 'GET',
+	  'dataType': 'json',
+	  'url': './pubs/' + location.search.substring(1),
+	  'success': function(json) {
+		console.log(json);
+        addData(json.data, json.apwp, version);
+	  },
+	  'error': function(error) {
+		  notify('failure', 'Could not load data; unknown publication hash.');
+	  }
+	});
+	return;
+  }
+  
   // Try loading the application data (if any) stored within LocalStorage
   if(localStorage) {
     try {
@@ -618,7 +632,7 @@ var applicationInit = function (page) {
     notify('failure', 'Local storage is not supported. Please export your data manually.');
     var parsedInput = null;
   }
-	
+	  
   // Check if there is any data in the local storage
   if (parsedInput !== null) {
     if (parsedInput.version !== undefined) {
@@ -634,6 +648,15 @@ var applicationInit = function (page) {
     dataVersion = version;
     loadedSites = new Array();
   }
+  
+  // Load saved interpretations from the interpretation portal	
+  getSavedInterpretations();
+  
+  addData(loadedSites, APWPs, dataVersion);
+
+};
+
+function addData(loadedSites, APWPs, dataVersion) {
 	
   // Check if version is up to date
   if(dataVersion !== version) {
@@ -645,9 +668,6 @@ var applicationInit = function (page) {
     $('#plateNames').append("<option custom=\"true\" value=\"" + plate + "\">" + plate + "</option>");
   }
   $('#plateNames').multiselect('refresh');
-
-  // Load saved interpretations from the interpretation portal	
-  getSavedInterpretations();
 	
   $("#loading").show();
 
@@ -668,14 +688,15 @@ var applicationInit = function (page) {
       }, 1);
 
     } else {
+		
       notify('success', 'Application has been initialized succesfully; found ' + i + ' site(s) and ' + Object.keys(APWPs).length + ' APWP(s)');
       $("#loading").hide();
       setStorage();
+	  
     }
 
-  })();
-
-};
+  })();	
+}
 
 /* FUNCTION site [CONSTRUCTOR]
  * Description: Site Constructor that adds a new site to the application
@@ -1072,7 +1093,12 @@ var inputError = function(element) {
  * Output: VOID
  */
 var setStorage = function() {
-	
+
+  // Got here through URL, do not set storage
+  if(location.search) {
+	return;
+  }
+
   // Define the object to be saved
   var pMag = {
     'data': new Array(),

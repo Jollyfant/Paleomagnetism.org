@@ -1086,7 +1086,7 @@ function toggleBands(chart, plotBands) {
 
 }
 
-function eqAreaFoldLeft ( data, container, subtitle, type ) {
+function eqAreaFoldLeft(data, container, subtitle, type) {
   
   "use strict";
   
@@ -1130,14 +1130,14 @@ function eqAreaFoldLeft ( data, container, subtitle, type ) {
       'borderColor': 'rgb(119, 152, 191)',
       'borderWidth': type === 'tiny' ? 1 : 0, 
       'animation': true,
-          'renderTo': container, 
+      'renderTo': container, 
       'events': {
-                'load': function () {
-                    if(this.options.chart.forExport) {
-                        Highcharts.each(this.series, function (series) {
-                            series.update({
-                                marker: { 
-                  radius: 4 //Work around to resize markers on exporting from radius 2 (tiny preview) to 4 (normalized) Fixes [#0011]
+        'load': function () {
+          if(this.options.chart.forExport) {
+            Highcharts.each(this.series, function(series) {
+              series.update({
+                'marker': { 
+                  'radius': 4
                 }
               }, false);
             });
@@ -1157,7 +1157,7 @@ function eqAreaFoldLeft ( data, container, subtitle, type ) {
       'style': { 
         'fontSize': '32px'
       }
-        },
+    },
     'legend': {
             'enabled': bLegend,
         },
@@ -1167,7 +1167,7 @@ function eqAreaFoldLeft ( data, container, subtitle, type ) {
         'pane': {
       'startAngle': 0,
       'endAngle': 360
-       },
+     },
     'yAxis': {
       'type': 'linear',
       'reversed': true,
@@ -1177,7 +1177,7 @@ function eqAreaFoldLeft ( data, container, subtitle, type ) {
       'tickInterval': 90,
             'min': 0,
       'max': 90,
-        },
+    },
     'exporting': { 
       'chartOptions': { 
         'legend': { 
@@ -1206,21 +1206,21 @@ function eqAreaFoldLeft ( data, container, subtitle, type ) {
       'text': "Paleomagnetism.org (ChRM Mean Directions)",
       'href': ''
     },
-        'xAxis': {
+    'xAxis': {
       'minorTickPosition': 'inside',
       'type': 'linear',
       'min': 0,
       'max': 360,
-            'minorGridLineWidth': 0,
-            'tickPositions': [0, 90, 180, 270, 360],
-            'minorTickInterval': 10,
-            'minorTickLength': 5,
-            'minorTickWidth': 1,
-            'labels': {
-                'formatter': function () {
-                    return this.value + '\u00B0'; //Add degree symbol to x-axis labels.
-                }
-            }
+        'minorGridLineWidth': 0,
+        'tickPositions': [0, 90, 180, 270, 360],
+        'minorTickInterval': 10,
+        'minorTickLength': 5,
+        'minorTickWidth': 1,
+        'labels': {
+          'formatter': function () {
+            return this.value + '\u00B0'; //Add degree symbol to x-axis labels.
+          }
+         }
         },
         'plotOptions': {
             'animation': false,
@@ -1383,7 +1383,7 @@ function EIbootstraps (data, time, nb, input, name) {
     
                 //Get data for particular percentage of unfolding (at this.x = the clicked x-axis value)
                 for(var i = 0; i < input.length; i++) {
-                  newDatArray.push([input[i][0],  (Math.atan(Math.tan(input[i][1]*rad) / this.f))/rad, input[i][2], input[i][3], input[i][4]]);
+                  newDatArray.push([input[i][0],  (Math.atan(Math.tan(input[i][1] * RADIANS) / this.f)) / RADIANS, input[i][2], input[i][3], input[i][4]]);
                 }
                 
                 //Put the flattening factor for the clicked point in the subtitle
@@ -2247,7 +2247,7 @@ function plotFoldtestCDF (cdfdat, data, lower, upper, begin, end, sub, input ) {
     'name': 'Geographic Coordinates',
     'type': 'line',
     'color': 'rgba(119, 191, 152, 1)',
-    'data': [[0, 0], [0, 1]],        //0% unfolding
+    'data': [[0, 0], [0, 1]],
     'enableMouseTracking': false,
     'marker': {
       'enabled': false
@@ -2255,7 +2255,7 @@ function plotFoldtestCDF (cdfdat, data, lower, upper, begin, end, sub, input ) {
   }, {
     'name': 'Tectonic Coordinates',
     'type': 'line',
-    'data': [[100, 0], [100, 1]],     //100% unfolding
+    'data': [[100, 0], [100, 1]],
     'color': 'rgba(119, 152, 191, 1)',
     'enableMouseTracking': false,
     'marker': {
@@ -2277,12 +2277,12 @@ function plotFoldtestCDF (cdfdat, data, lower, upper, begin, end, sub, input ) {
         }
       }
     },
-        'title': {
-            'text': 'Bootstrapped foldtest',
-        },
-        'subtitle': {
-            'text': 'highest τ1 between [' + lower + ', ' + upper + '] % unfolding (' + cdfdat.length + ' bootstraps in ' + sub + 'ms)',
-        },
+    'title': {
+      'text': 'Bootstrapped foldtest',
+    },
+    'subtitle': {
+      'text': 'highest τ1 between [' + lower + ', ' + upper + '] % unfolding (' + cdfdat.length + ' bootstraps in ' + sub + 'ms)',
+    },
     'exporting': {
       'filename': 'Foldtest',
         'sourceWidth': 800,
@@ -2315,14 +2315,14 @@ function plotFoldtestCDF (cdfdat, data, lower, upper, begin, end, sub, input ) {
       'text': "Paleomagnetism.org [Foldtest Module] - <i>after Tauxe et al., 2010 </i>",
       'href': ''
     },
-        'tooltip': {
+    'tooltip': {
       'enabled': true,
-        },
+    },
     'myTooltip': {
       'enabled': false,
       'useHTML': true,
       'formatter': function(evt) {
-        if(this.series.name == 'Bootstraps') {
+        if(this.series.name === 'Bootstraps') {
           var appendix = '';
           if(this.x == 100) {
             appendix = '<b> Tectonic Coordinates </b> <br>';

@@ -111,16 +111,16 @@ var eigValues = function(data) {
 	
   // Construct the orientation matrix and 
   // return eigenvalues for the orientation matrix
-  return eigenvalues(TMatrix(coords));
+  return getEigenvalues(TMatrix(coords));
 	
 }
 
-/* FUNCTION eigenvalues
- * Description: calculates eigenvalues
+/* FUNCTION getEigenvalues
+ * Description: calculates getEigenvalues
  * Input: orientation matrix [[xx, xy, xz], [yx, yy, yz], [zx, zy, zz]]
  * Output: values of the eigenvectors of the system
  */
-var eigenvalues = function(T) {
+var getEigenvalues = function(T) {
 	
   // Algorithm to find eigenvalues of a symmetric, real matrix.
   // We need to compute the eigenvalues for many (> 100.000) real, symmetric matrices (Orientation Matrix T). Calling available libraries (Numeric.js) is much slower so we implement this algorithm instead.
