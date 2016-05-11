@@ -582,6 +582,31 @@ function include(filename) {
    head.appendChild(script)
 }   
 
+function getPublicationFromHash() {
+	
+  var MD5 = location.search.substring(1);
+  
+  if(!PUBLICATIONS[MD5]) {
+    notify('failure', 'Unknown publication hash, could not load data.');
+    return;
+  }
+  
+  $.ajax({
+    'type': 'GET',
+    'dataType': 'json',
+    'url': './pubs/' + MD5 + '.pub',
+    'success': function(json) {
+  	var pub = PUBLICATIONS[MD5];
+  	notify('success', 'Data is being loaded from a verified publication. Changes to this sessions are not saved.');
+  	addData(json.data, json.apwp, version, pub);
+    },
+    'error': function(error) {
+  	notify('failure', 'An unexpected error occured loading the publication data.');		  
+    }
+  });
+  
+}
+
 /*
  * FUNCTION applicationInit
  * Description: Initializes the Paleomagnetism.org application and loads sites/APWPs saved in localStorage to application
@@ -603,19 +628,9 @@ var applicationInit = function (page) {
   sites = new Object();
   APWPs = new Object();
 	
+  // If a hash is specified, try to load the publication
   if(location.search) {
-	$.ajax({
-	  'type': 'GET',
-	  'dataType': 'json',
-	  'url': './pubs/' + location.search.substring(1),
-	  'success': function(json) {
-		console.log(json);
-        addData(json.data, json.apwp, version);
-	  },
-	  'error': function(error) {
-		  notify('failure', 'Could not load data; unknown publication hash.');
-	  }
-	});
+	getPublicationFromHash();
 	return;
   }
   
@@ -656,7 +671,7 @@ var applicationInit = function (page) {
 
 };
 
-function addData(loadedSites, APWPs, dataVersion) {
+function addData(loadedSites, APWPs, dataVersion, pub) {
 	
   // Check if version is up to date
   if(dataVersion !== version) {
@@ -689,8 +704,14 @@ function addData(loadedSites, APWPs, dataVersion) {
 
     } else {
 		
-      notify('success', 'Application has been initialized succesfully; found ' + i + ' site(s) and ' + Object.keys(APWPs).length + ' APWP(s)');
       $("#loading").hide();
+	  
+	  if(pub) {
+	    notify('note', '<img src="./images/book_icon.png"> <b> ' + pub + ' </b>');
+	  }
+	  
+      notify('success', 'Application has been initialized succesfully; found ' + i + ' site(s) and ' + Object.keys(APWPs).length + ' APWP(s)');
+	  
       setStorage();
 	  
     }

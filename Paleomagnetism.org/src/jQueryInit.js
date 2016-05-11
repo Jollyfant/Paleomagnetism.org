@@ -312,7 +312,7 @@ function jQueryInit(page) {
     sortSiteSelector('bogo');
   });  
   
-  function sortSiteSelect(type) {
+  function sortSiteSelector(type) {
     
     var capture = $(".siteSelector");
     capture.find('option').remove().end();
