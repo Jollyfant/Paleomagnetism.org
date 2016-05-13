@@ -882,7 +882,7 @@ $(function() {
 		
       // Calculation of maximum angle of deviation
       var s1 = Math.sqrt(tau[0]);
-      var MAD = Math.atan(Math.sqrt(tau[1] + tau[2]) / s1)/rad;
+      var MAD = Math.atan(Math.sqrt(tau[1] + tau[2]) / s1) / RADIANS;
       var setType = 'dir';
 			
       // Get the dec/inc of the maximum eigenvector stored in v1
@@ -921,7 +921,7 @@ $(function() {
 			
       // Calculation of MAD
       var s1 = Math.sqrt((tau[2] / tau[1]) + (tau[2] / tau[0]));
-      var MAD = Math.atan(s1)/rad;
+      var MAD = Math.atan(s1) / RADIANS;
       var setType = 'GC';
 			
       // Per definition we use the negative pole of the plane
@@ -1257,7 +1257,7 @@ function fitCirclesToDirections() {
 
       //Dot product to find the angle between the newly fitted point and the old fitted point this will determine whether the procedure is broken
       var dotProduct = Math.min(1, newClose.x * fittedCircleCoordinates[i].x + newClose.y * fittedCircleCoordinates[i].y + newClose.z * fittedCircleCoordinates[i].z);
-      angles.push(Math.acos(dotProduct)/rad);
+      angles.push(Math.acos(dotProduct) / RADIANS);
 			
       //Add the new closest direction back to the mean vector
       meanVector.x += newClose.x, meanVector.y += newClose.y, meanVector.z += newClose.z;
@@ -1341,11 +1341,11 @@ function fitCirclesToDirections() {
 
     //Other statistical parameters (McFadden & McElhinny, 1988)
     var k = (2*nPoints + nCircles - 2)/(2*(nPoints + nCircles - R));
-    var t95 = Math.acos(1 - ((nPrime - 1)/k) * (Math.pow(20, (1/(nPrime - 1))) - 1))/rad;
+    var t95 = Math.acos(1 - ((nPrime - 1)/k) * (Math.pow(20, (1/(nPrime - 1))) - 1)) / RADIANS;
 	
     //Standard Fisher parameters (k, a95);
     var k = (nTotal - 1) / (nTotal - R);
-    var a95 = Math.acos(1 - ((nTotal - R)/R) * (Math.pow(20, (1/(nTotal - 1))) - 1))/rad;
+    var a95 = Math.acos(1 - ((nTotal - R)/R) * (Math.pow(20, (1/(nTotal - 1))) - 1)) / RADIANS;
 
     //Get confidence envelope data around newMean with a95, t95
     var ellipse = getPlaneData({'dec': newMean.dec, 'inc': newMean.inc}, 'MAD', a95);
@@ -1498,7 +1498,6 @@ function getPlaneData(direction, type, MAD) {
   // Define the number of discrete points on an ellipse
   var nPoints = 251;
   var iPoint = ((nPoints - 1) / 2);
-  var once = true;
   var pointVector = [0, 0, 0];
 
   for(var i = 0; i < nPoints; i++){
@@ -1516,8 +1515,8 @@ function getPlaneData(direction, type, MAD) {
     // Create a circle in the y-z plane (with a normal to North)
     // The resulting coordinate is sqrt(1 - y^2 - z^2)
     if (type === 'MAD') {
-      pointVector[1] = Math.sin(MAD * rad) * Math.cos(psi);
-      pointVector[2] = Math.sin(MAD * rad) * Math.sin(psi);
+      pointVector[1] = Math.sin(MAD * RADIANS) * Math.cos(psi);
+      pointVector[2] = Math.sin(MAD * RADIANS) * Math.sin(psi);
       pointVector[0] = Math.sqrt(1 - Math.pow(pointVector[1], 2) - Math.pow(pointVector[2], 2)); 
     }
 
@@ -1526,7 +1525,7 @@ function getPlaneData(direction, type, MAD) {
     var inclination = type === 'MAD' ? direction.inc : -direction.inc;
 
     // Rotate the discrete point vector with the requested dec/-inc
-    var coords = rotateTo(direction.dec, -inclination, pointVector);
+    var coords = rotateTo(direction.dec, inclination, pointVector);
 
     if(type === 'MAD' && coords.inc < 0) {
       coords.dec += 180;
