@@ -1010,3 +1010,34 @@ function ellipseData(params, reduction) {
   }
 
 }
+
+/* FUNCTION notify
+ * Description: notifies user of message; 
+ * Input: notification types 'success', 'note' and 'failure' and message
+ * Output: calls the $.notiny plugin
+ */
+var notify = function(type, msg) {
+
+  // Check the type of the notification (success, note, or failure)
+  var theme;
+  if(type === 'success') {
+    msg = '<b>&#x2714</b> ' + msg;
+    theme = 'dark';
+  } else if(type === 'failure') {
+    msg = '<b>&#10007</b> ' + msg;
+    theme = 'light';
+  } else if(type === 'note') {
+    msg = '<b>&#8801</b> ' + msg;
+    theme = 'orange';
+  } else {
+    throw('Unexpected type of notification (' + type + ') expected ("success", "failure", "note")')
+  }
+
+  // Call the notiny plugin to do print the notification
+  $.notiny({
+    'text': msg,
+    'theme': theme,
+    'width': 'auto'
+  });
+
+}
