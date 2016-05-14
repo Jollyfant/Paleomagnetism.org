@@ -53,9 +53,9 @@ function importMunich(text) {
     // Get Cartesian coordinates for specimen coordinates (intensities in mA -> bring to μA)
     var dec = Number(parameters[3]);
     var inc = Number(parameters[4]);
-    var int = Number(parameters[1]);
+    var intensity = Number(parameters[1]);
 
-    var cartesianCoordinates = cart(dec, inc, int * 1e3);
+    var cartesianCoordinates = cart(dec, inc, intensity * 1e3);
 
     parsedData.push({
       'visible': true, 
@@ -64,7 +64,7 @@ function importMunich(text) {
       'x': cartesianCoordinates.x,
       'y': cartesianCoordinates.y,
       'z': cartesianCoordinates.z,
-      'a95': parameters[4],
+      'a95': parameters[2],
       'info': info
      });			
     }
