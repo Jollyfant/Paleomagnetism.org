@@ -431,21 +431,35 @@ var addInterpretations = function () {
 
   var input = '';
   var capture = interpretations[index].data;
-
+  var settings = interpretations[index].settings;
+  
   $("#interpretationInfo").html('Directions in ' + interpretations[index].coordType + ' coordinates.');
 	
-  //Generate line from dec, inc, bedding, sample name, and stratigraphy
-  //Only put the bedding if the site has been interpreted in GEOGRAPHIC coordinates WITHOUT fitted great circles
-  //Otherwise, just put directions without beddings
-  if(interpretations[index].unique || interpretations[index].type === 'directions') {
-
+  // Generate line from dec, inc, bedding, sample name, and stratigraphy
+  // Only put the bedding if the site has been interpreted in GEOGRAPHIC coordinates WITHOUT fitted great circles
+  // Otherwise, just put directions without beddings
+  if(interpretations[index].type === 'directions' || interpretations[index].unique) {
+	  
     for(var i = 0; i < capture.length; i++) {
-      input += [capture[i].dec, capture[i].inc, capture[i].bedStrike, capture[i].bedDip, capture[i].sample].join(", ");
-      if(capture[i].strat !== null) {
-        input += ', ' + capture[i].strat;
-      }
+		
+      input += capture[i].dec + ", " + capture[i].inc
+	  
+	  if(settings.bedding) {
+		input += ", " + capture[i].bedStrike + ", " + capture[i].bedDip;
+	  }
+	  
+	  if(settings.sampleName) {
+		input += ", " + capture[i].sample;
+	  }
+	  
+	  if(settings.stratigraphy) {
+		 input += ", " + capture[i].strat; 
+	  }
+	  
       input += '\n';
+	  
     }
+	
   } else {
     for(var i = 0; i < capture.length; i++) {
       input += [capture[i].dec, capture[i].inc, capture[i].sample].join(", ");

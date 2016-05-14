@@ -129,7 +129,13 @@ $(function() {
   $(".additionalOptions").selectmenu({
     'width': 200
   });
-	
+
+  $("#forwardInterpretations").dialog({
+	'modal': true,
+	'autoOpen': false,
+	'width': 'auto'
+  });
+  
   $("#demagType").selectmenu({
     'select': function () {
       var sample = getSampleIndex();
@@ -516,18 +522,48 @@ $(function() {
   });
 	
   //Function to save interpretations to the statistics portal through localStorage
-  $("#saveInterpretation").click( function () {
+  $("#saveInterpretation").click(function () {
+    $('#forwardInterpretations').dialog('open');
+  });
+  
+  $("#saveInterpretationButton").click(function() {
+	  
+	// Ask the users what to include
+	var settings = {
+	  'coordinates': $("#coordinates input[type='radio']:checked").val(),
+	  'bedding': $("#includeBedding").prop('checked'),
+	  'sampleName': $("#includeName").prop('checked'),
+	  'stratigraphy': $("#includeStrat").prop('checked'),
+	  'siteName': $("#saveSiteName").val()
+	}
 	
     //Check if localStorage is supported
     if(!localStorage) {
       notify('failure', 'localStorage is not supported. Cannot add interpretations to localStorage.');			
       return;
     }
+	
+	if(!settings.siteName) {
+		notify('failure', 'Cannot add site with no name');
+		return;
+	}
+	
+	if(settings.coordinates === 'TECT' && settings.bedding) {
+		notify('failure', 'Cannot include bedding in tectonic coordinates');
+		return;
+	}
+	
+    forwardInts(settings);
+	
+  });
+  
+  function forwardInts(settings) {
 		
-    var coordType = $("#coordinates input[type='radio']:checked").val();
-    var saveObj = localStorage.getItem('savedInt');
-		
+	var coordType = settings.coordinates;
+	var name = settings.siteName;
+	
     //Previously saved, get the save and 
+	var saveObj = localStorage.getItem('savedInt');
     if(saveObj !== null) {
       var parsedObj = JSON.parse(saveObj);
     } else {
@@ -536,6 +572,7 @@ $(function() {
 				
     //Has not been fitted
     if(exportData.length === 0) {
+		
       var type = 'directions';
       for(var i = 0; i < data.length; i++) {
         if(data[i].interpreted) {
@@ -546,15 +583,17 @@ $(function() {
             }
 				
             if(data[i][coordType][j].type === 'dir') {
+
               exportData.push({
                 'sample': data[i].name,
-	        'dec': data[i][coordType][j].dec,
-	        'inc': data[i][coordType][j].inc,
+	            'dec': data[i][coordType][j].dec,
+	            'inc': data[i][coordType][j].inc,
                 'bedStrike': data[i].bedStrike,
                 'bedDip': data[i].bedDip,
-	        'strat': data[i].strat,
+	            'strat': data[i].strat || 0,
                 'type': data[i][coordType][j].type
               });
+
             }
           }
         }
@@ -563,18 +602,11 @@ $(function() {
       var type = 'great circles';
     }
 		
-    var name = prompt('Enter a site name.');
-		
-    if(name === "") {
-      notify('failure', 'Site name is empty.');
-      return;
-    } else if(name === null) return;
-		
-    //Check if the site name already exists, if so, ask if the user wishes to overwrite the data.
-    //Then splice the site from the array and add a new one, otherwise return
+    // Check if the site name already exists, if so, ask if the user wishes to overwrite the data.
+    // Then splice the site from the array and add a new one, otherwise return
     for(var i = 0; i < parsedObj.length; i++) {
       if(name === parsedObj[i].name) {
-        if(confirm('A site with this name already exists. Do you wish to overwrite?')) {
+        if(confirm('A site with this name already exists. Overwrite?')) {
           parsedObj.splice(i, 1);
         } else {
           notify('failure', 'Aborted: site has not been saved.');
@@ -583,27 +615,43 @@ $(function() {
       }
     }
 
-    var beddings = exportData.map(function(x) {
-      return x.bedStrike + '/' + x.bedDip;
-    });
-    var unique = (beddings.filter(function(value, index, self) {
-      return self.indexOf(value) === index;
-    }).length === 1);
-
+	// Check if all beddings are unique
+	var unique;
+	if(type === 'great circles') {
+	  var beddings = exportData.map(function(x) {
+	  return x.bedStrike + '/' + x.bedDip;
+	  });
+	  unique = (beddings.filter(function(value, index, self) {
+	  return self.indexOf(value) === index;
+	  }).length === 1);
+	} else {
+	  unique = true;
+	}
+	
+	if(settings.beddings && !unique) {
+	  notify('failure', 'Cannot add fitted great circles with non-unique beddings');
+	  return 	
+	}
+	
     parsedObj.push({
       'name': name,
       'data': exportData, 
       'type': type,
       'coordType': coordType === 'GEO' ? "geographic" : "tectonic",
-      'unique': unique
+      'unique': unique,
+	  'settings': settings
     });
-
+		
     localStorage.setItem('savedInt', JSON.stringify(parsedObj));
+	
     notify('success', 'Site ' + name + ' has been forwarded to the statistics portal.');	
 			
     exportData = new Array();
-		
-  });
+	$("#eqAreaFitted").hide();
+	
+	$('#forwardInterpretations').dialog('close');
+	
+  }
 	
   //Button handler for left-handed scrolling through specimens
   $("#left").click( function () {
@@ -687,7 +735,7 @@ $(function() {
    * PRINICPLE COMPONENT ANALYSIS FUNCTIONS
    * PCA (line) and PCAGC (great circle)
    */
-  $('#PCA, #PCAGC').click( function (event) {
+  $('#PCA, #PCAGC').click(function (event) {
 	
     // Get the flags
     var tcFlag = $('#tcFlag').prop('checked');
@@ -764,7 +812,7 @@ $(function() {
     // For specimen get core parameters
     // Reduce the core dip to -hade that is equal to -(90 - plunge)
     var coreAzi = sampleData.coreAzi;
-    var coreDip = -(90 - sampleData.coreDip);
+    var coreDip = sampleData.coreDip - 90;
     var bedStrike = sampleData.bedStrike;
     var bedDip = sampleData.bedDip;
 		
@@ -915,10 +963,10 @@ $(function() {
 
     // For great circles we find direction of tau3 (which serves as the pole to the plane spanned by tau1, tau2)	
     } else if (typeFit == 'PCAGC') {
-		
+	
       // Minimum eigenvector (direction of tau3);
       var eigenDirection = new dir(v3[0], v3[1], v3[2]);
-			
+	  	
       // Calculation of MAD
       var s1 = Math.sqrt((tau[2] / tau[1]) + (tau[2] / tau[0]));
       var MAD = Math.atan(s1) / RADIANS;
@@ -926,7 +974,7 @@ $(function() {
 			
       // Per definition we use the negative pole of the plane
       if(eigenDirection.inc > 0) {
-        eigenDirection.dec = (eigenDirection.dec+180)%360;
+        eigenDirection.dec = (eigenDirection.dec + 180) % 360;
         eigenDirection.inc = -eigenDirection.inc;
       }
 			
@@ -948,7 +996,7 @@ $(function() {
         'remark': '',
         'nSteps': steps.length,
         'minStep': steps[0],
-        'maxStep': steps[steps.length-1],
+        'maxStep': steps[steps.length - 1],
         'steps': steps,
         'group': group,
         'version': version
@@ -958,7 +1006,7 @@ $(function() {
     // Check if component already exists
     var sanitized = true;
     for(var i = 0; i < sampleData[coordType].length; i++) {
-      if(JSON.stringify(steps) === JSON.stringify(sampleData[coordType][i].steps) && anchor === sampleData[coordType][i].forced) {
+      if(JSON.stringify(steps) === JSON.stringify(sampleData[coordType][i].steps) && anchor === sampleData[coordType][i].forced && setType === sampleData[coordType][i].type) {
         if(tcFlag) {
           notify('failure', 'This direction has already been interpreted.');
         }
@@ -1522,10 +1570,14 @@ function getPlaneData(direction, type, MAD) {
 
     // For planes we always deal with the negative pole to the plane
     // and we rotate our vector properly
-    var inclination = type === 'MAD' ? direction.inc : -direction.inc;
+	if(type === 'MAD') {
+	  var inclination = -(Math.abs(direction.inc));	
+	} else {
+      var inclination = direction.inc;
+	}
 
     // Rotate the discrete point vector with the requested dec/-inc
-    var coords = rotateTo(direction.dec, inclination, pointVector);
+    var coords = rotateTo(direction.dec, -inclination, pointVector);
 
     if(type === 'MAD' && coords.inc < 0) {
       coords.dec += 180;

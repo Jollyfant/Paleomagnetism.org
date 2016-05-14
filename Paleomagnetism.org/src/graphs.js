@@ -1856,42 +1856,46 @@ function plotExpectedTable(title, data) {
   }
 
   var text = title === 'Declination' ? 'Rotation (deg)' : 'Flattening (deg)'
-  var string = '<table class="sample"><thead><th>Site</th><th>Reference Frame and Plate</th><th>' + text + '</th><th>Error (deg)</th></thead><tbody>';
+  var string = '<table class="sample"><thead><th>Site</th><th>Reference Frame and Plate </th><th>' + text + '</th><th>Error (deg)</th></thead><tbody>';
 
   // Loop over all series, these are formatted as a HighCharts data series, a new plate/frame combination is every 2nd in the array.
   // The second last is the actual site data
   var number = data.length;
 
   // Go over all plate/frame data (in steps of 2 series), ignore last two series
-  for(var k = 0; k <= (number-4); k+=2) {
+  for(var k = 0; k < (number - 4); k += 2) {
+	  
     var errors = new Array();
     // Go over all selected sites
-    for(var i = 0; i < data[number-2].data.length; i++) {
-      var val = data[number-2].data[i].x;
-      var obj = false
+    for(var i = 0; i < data[number - 2].data.length; i++) {
+      var val = data[number - 2].data[i].x;
       for(var j = 0; j < data[k].data.length; j++) {
         if(data[k].data[j].x > data[number-2].data[i].x || j === data[k].data.length - 1) {
           errors.push({
             'type': 'rangeError',
-            'name': data[number-2].data[i].name + '<b> (out of interpolation range)</b>',
+            'name': data[number - 2].data[i].name + '<b> (out of interpolation range) </b>',
             'value': '---',
             'error': '---'
           });
           break;
         }
+		
         if(val <= data[k].data[j+1].x && val >= data[k].data[j].x) {
 
           // Do a linear interpolation on values/errors
           var ratio = (val-data[k].data[j].x) * (data[k].data[j+1].y - data[k].data[j].y)/10 + data[k].data[j].y
-          var errorHigh = (val - data[k].data[j].x) * (data[k].data[j+1].max - data[k].data[j].max)/10 + data[k].data[j].max;
-          var errorLow = (val - data[k].data[j].x) * (data[k].data[j+1].min - data[k].data[j].min)/10 + data[k].data[j].min;
+          var errorHigh = (val - data[k].data[j].x) * (data[k].data[j+1].max - data[k].data[j].max) / 10 + data[k].data[j].max;
+          var errorLow = (val - data[k].data[j].x) * (data[k].data[j+1].min - data[k].data[j].min) / 10 + data[k].data[j].min;
+
           // New error is half of the upper and lower interpolation
           var error = 0.5 * (errorHigh - errorLow);
           var obj = {'interpolation': ratio, 'error': error}
 
           break;
+		  
         }
       }
+	  
       if(obj) {
         var errorVal = obj.interpolation - data[number-2].data[i].y;
         var errorBar = Math.sqrt(Math.pow(obj.error, 2) + Math.pow(data[number-2].data[i].y - data[number-2].data[i].max, 2));
@@ -1906,7 +1910,8 @@ function plotExpectedTable(title, data) {
       }
     }
 
-
+    console.log(errors);
+	
     // Gotta do 2 otherwise .toFixed throws an error for strings '---'
     for(var i = 0; i < errors.length; i++) {
       if(errors[i].type === 'OK') {
@@ -1999,7 +2004,7 @@ function plotExpectedLocation(data, container, title, lat, lon) {
         if(this.series.name === 'Selected Site Data') {
           return getSelectedSiteTooltip(this);
         } else {
-          return getReferenceFrameTooltip(this);
+          return getReferenceFrameTooltip(this, title);
         }
       }
     },
@@ -2033,7 +2038,7 @@ function getSelectedSiteTooltip(self) {
  * FUNCTION getReferenceFrameTooltip
  * Description: returns tooltip for the plates & reference frames
  */
-function getReferenceFrameTooltip(self) {
+function getReferenceFrameTooltip(self, title) {
 
   return [
     '<b>Reference Frame: </b>' + self.series.options.frame,

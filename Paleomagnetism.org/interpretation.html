@@ -230,16 +230,16 @@
 		
 		<hr>
 			
-		<div id="customHelpDialog" title="Custom Input Format" style="display: none;">
-			<p><b>The default input format is specified below:</b></p>
-			<p style="padding: 10px; border: 1px dotted rgb(119, 152, 191); font-family: monospace;">
-			<br> Sample Name, Core Azimuth, Core Dip, Bedding Strike, Bedding Dip
-			<br> Demagnetization Step, Declination, Inclination, Intensity, Error, Info
-			<br> ...
-			<br> 9999
-			<br>
-			</p>
-			<p> <b> Note: </b> 9999 indicates the end of a single specimen. Multiple samples can be chained in the input and will be added to the application.
+		<div id="forwardInterpretations" title="Save Directions to Statistics Portal" style="display: none;">
+			<p> Please select the parameters you wish to export
+			<div id="inputOptions">		<p>
+			<input id="includeBedding" type="checkbox"> <label for="includeBedding"> Bedding </label>
+			<input id="includeName" type="checkbox"> <label for="includeName"> Sample Name </label>
+			<input id="includeStrat" type="checkbox"> <label for="includeStrat"> Stratigraphic Level </label>
+            <p><b> Site name: <input id="saveSiteName" type="text">
+			<button id="saveInterpretationButton">Save</button>
+			</div>
+		   <p><b>Interpreted directions are forwarded to the statistics portal</b></p>
 		</div>
 		
 		<!-- FOOTER -->
