@@ -932,11 +932,6 @@ function ellipseData(params, reduction) {
   var once = true;
   var once2 = true;
 
-  var incSign = (Math.abs(params.xInc)/params.xInc);
-  if(params.xInc === 0) {
-    incSign = 1;
-  }
-
   // Number of points on ellipse.
   // If we need to plot many ellipses, we may use the reduction to reduce the load
   var nPoints = reduction ? 51 : 201;
@@ -975,11 +970,7 @@ function ellipseData(params, reduction) {
     var coords = dir(eli[0], eli[1], eli[2]);
 
     // Put the ellipse on the right side		
-    if(params.xInc < 0) {
-      coords.dec += 180;
-    }
-
-    if(coords.inc < 0) {
+    if(coords.inc * params.xInc < 0) {
       coords.dec += 180;
     }
 
@@ -993,7 +984,7 @@ function ellipseData(params, reduction) {
       upperHemisphere.push(discretePointsPosition);
       if(once) {
         lowerHemisphere.push(null)
-	once = false;
+	    once = false;
       }
     } else {
       lowerHemisphere.push(discretePointsPosition);

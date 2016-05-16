@@ -1534,7 +1534,7 @@ function vClose (p, q, r, meanVector) {
  * Output: Two series with discrete points (positive/negative)
  */
 function getPlaneData(direction, type, MAD) {
-
+  
   // Pad the arrays that collect discrete points with null
   // Otherwise Highcharts might connect lower & upper hemi
   // Two Boolean values prevent this too
@@ -1561,34 +1561,37 @@ function getPlaneData(direction, type, MAD) {
     }
 
     // Create a circle in the y-z plane (with a normal to North)
-    // The resulting coordinate is sqrt(1 - y^2 - z^2)
+    // The resulting coordinate is simply sqrt(1 - y^2 - z^2)
     if (type === 'MAD') {
       pointVector[1] = Math.sin(MAD * RADIANS) * Math.cos(psi);
       pointVector[2] = Math.sin(MAD * RADIANS) * Math.sin(psi);
       pointVector[0] = Math.sqrt(1 - Math.pow(pointVector[1], 2) - Math.pow(pointVector[2], 2)); 
     }
 
-    // For planes we always deal with the negative pole to the plane
-    // and we rotate our vector properly
-	if(type === 'MAD') {
-	  var inclination = -(Math.abs(direction.inc));	
-	} else {
-      var inclination = direction.inc;
-	}
-
     // Rotate the discrete point vector with the requested dec/-inc
-    var coords = rotateTo(direction.dec, -inclination, pointVector);
-
-    if(type === 'MAD' && coords.inc < 0) {
+    var coords = rotateTo(direction.dec, direction.inc, pointVector);
+	
+	// For A95, MAD angles check if the ellipse coordinates 
+	// is required to be rotated 180deg
+	// (-ellipse, -inclination) = do nothing
+	// (+ellipse, -inclination) = do flip
+	// (-ellipse, +inclination) = do flip
+	// (+ellipse, +inclination) = do nothing
+	// So we can check ellipse * inclination < 0 
+    if(type === 'MAD' && direction.inc * coords.inc < 0) {
       coords.dec += 180;
     }
 
+	// Create an Highcharts data object for a point on the ellipse
     var discretePointPosition = {
       'x': coords.dec % 360,
       'y': eqArea(coords.inc), 
       'inc': coords.inc
     }
 
+	// Push to the appropriate hemisphere, the push(null)
+	// is to prevent Highcharts from making unwanted connections
+	// between hemispheres 180 degrees apart
     if(coords.inc < 0) {
       upperHemisphere.push(discretePointPosition);
       if(once) {
