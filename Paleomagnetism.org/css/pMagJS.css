@@ -101,13 +101,17 @@ li.menuLink {
 	height: 26px;
 	text-align: center;
 }
-  
+.ui-multiselect-checkboxes {
+max-height: 400px;
+}
+
 # ageNames {
 	width: 100px !important;
 }
 
 .ui-multiselect  span{  
 	font-style: italic;
+	max-height: 100px;
 }
   
 hr {

@@ -20,6 +20,7 @@ function jQueryInit(page) {
   $(".siteSelector").multiselect({
     'selectedText': "# sites selected",
     'minWidth': 250,
+	'height': 'auto',
     'selectedList': 1,
     'noneSelectedText': "Select a site",
     'close': function() {
