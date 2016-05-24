@@ -1466,13 +1466,12 @@ function translateToSite(direction, from, to) {
  * Input: @type (declination, inclination, or paleolatitude), @sum (parameter that determines declination convention (e.g. 350 or -10) depending on average of expected declination
  * Output: Two prepared series for Highcharts in the return
  */
-function plotSiteDataExpected ( type ) {
+function plotSiteDataExpected(type) {
 
-  "use strict";
   
-        // Do not plot if no reference site is specified
+  // Do not plot if no reference site is specified
   var requestedLoc = {'lat': $("#palatLat").val(), 'lon': $("#palatLon").val()}
-        if(!requestedLoc.lat || !requestedLoc.lon) {
+    if(!requestedLoc.lat || !requestedLoc.lon) {
     return new Array();
   }
 
@@ -1705,7 +1704,7 @@ function plotSiteDataExpected ( type ) {
         'y': parameterMin
       });
     
-      parameterConfidence.push(null);
+      parameterConfidence.push({'x': null, 'y': null});
     
       parameterConfidence.push({
         'x': Number(minAge),
@@ -1715,7 +1714,8 @@ function plotSiteDataExpected ( type ) {
         'y': parameter
       });
     
-      parameterConfidence.push(null);
+      parameterConfidence.push({'x': null, 'y': null});
+	  
     }
   }
 
@@ -1726,6 +1726,7 @@ function plotSiteDataExpected ( type ) {
     'name': 'Selected Site Data', 
     'data': parameterData
   }, {
+	'cropThreshold': 10000,
     'zIndex': 200,
     'type': 'line',
     'color': 'grey', 
@@ -1969,6 +1970,7 @@ function plotExpectedLocation(data, container, title, lat, lon) {
         'fillOpacity': 0.3,
       },
       'line': {
+		'turboThreshold': 0,
         'marker': {
           'symbol': 'circle'
         }
