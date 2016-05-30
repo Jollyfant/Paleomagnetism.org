@@ -646,13 +646,19 @@ $(function() {
 	
     notify('success', 'Site ' + name + ' has been forwarded to the statistics portal.');	
 			
-    exportData = new Array();
-	$("#eqAreaFitted").hide();
+    resetFit();
 	
 	$('#forwardInterpretations').dialog('close');
 	
   }
-	
+
+  function resetFit() {
+	$("#eqAreaFitted").hide();
+	$("#fitCircles").show();
+    $("#saveInterpretation").text('Save Interpreted Directions');
+    exportData = new Array();	  
+  }
+  
   //Button handler for left-handed scrolling through specimens
   $("#left").click( function () {
 		
@@ -1060,7 +1066,13 @@ $(function() {
 });
 
 function initialize() {
-	
+
+  // If a hash is specified, try to load the publication
+  if(location.search) {
+	getPublicationFromHash();
+	return;
+  }
+  
   // Get data from the local storage
   if(localStorage) {
     data = JSON.parse(localStorage.getItem('InterPortal'));
@@ -1082,6 +1094,33 @@ function initialize() {
   refreshSpecimenScroller();
   notify('success', 'Welcome back. Added ' + data.length + ' specimens to the application.')
 
+}
+
+function getPublicationFromHash() {
+
+  var MD5 = location.search.substring(1);
+  
+  if(!PUBLICATIONS[MD5]) {
+    notify('failure', 'Unknown publication hash, could not load data.');
+    return;
+  }
+  
+  $.ajax({
+    'type': 'GET',
+    'dataType': 'json',
+    'url': './pubs/' + MD5 + '.pub',
+    'success': function(json) {
+  	  var pub = PUBLICATIONS[MD5];
+	  data = json;
+	  refreshSpecimenScroller();
+  	  notify('success', 'Data is being loaded from a verified publication. Changes to this sessions are not saved.');
+	  notify('note', '<img src="./images/book_icon.png"> <b> ' + pub + ' </b>');
+    },
+    'error': function(error) {
+  	  notify('failure', 'An unexpected error occured loading the publication data.');		  
+    }
+  });
+  
 }
 
 /* 
@@ -2442,6 +2481,11 @@ function clearStorage() {
 
 function setStorage() {
 
+  // Got here through URL, do not set storage
+  if(location.search) {
+	return;
+  }
+  
   if(localStorage) {
     try {
       var storeObj = JSON.stringify(data);
@@ -2451,6 +2495,7 @@ function setStorage() {
       notify('failure', 'Critical failure writing data to localstorage: ' + err);
     }
   }
+  
 }
 
 function plotInterpretationsGraph(dataBucket, nCircles, container, title, coordinates) {

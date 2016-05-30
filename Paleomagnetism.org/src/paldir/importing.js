@@ -198,7 +198,8 @@ function importUtrecht(text) {
           continue
         }
 
-        // Remove quotes (for TH-demag, samples are written as ""SS1.1"". Not very nice.);	
+        // Remove quotes (for TH-demag, samples are written as ""SS1.1"". Not very nice.);
+		// Default to 10.5cc
         var name = parameterPoints[0].replace(/['"]+/g, ''); 
         var sampleVolume = Number(parameterPoints[4]) || 10.5;
 				
@@ -234,11 +235,11 @@ function importUtrecht(text) {
           'visible': true, 
           'include': false,
           'step': parameterPoints[0],
-	  'x': Number(-parameterPoints[2]) / sampleVolume,
-	  'y': Number(parameterPoints[3]) / sampleVolume,
-	  'z': Number(-parameterPoints[1]) / sampleVolume,
-	  'a95': parameterPoints[4],
-	  'info': parameterPoints[5] + ' at ' + parameterPoints[6]
+	      'x': Number(-parameterPoints[2]) / sampleVolume,
+	      'y': Number(parameterPoints[3]) / sampleVolume,
+	      'z': Number(-parameterPoints[1]) / sampleVolume,
+	      'a95': parameterPoints[4],
+	      'info': parameterPoints[5] + ' at ' + parameterPoints[6]
         });
       }
     }

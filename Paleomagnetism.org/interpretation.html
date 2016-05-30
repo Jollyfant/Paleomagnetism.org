@@ -32,6 +32,8 @@
 	<script src="./src/paldir/graphs.js"></script> <!-- Graphing module for Interpretation Portal -->
 	<script src="./src/paldir/importing.js"></script> <!-- Format importing module for Interpretation Portal -->
 	<script src="./src/paldir/exporting.js"></script> <!-- Exporting module for Interpretation Portal -->
+	
+	<script src="./src/db/pubs.js"></script>
 
 	<link rel="shortcut icon" type="image/x-icon" href="images/icon.ico" />
 	<title> Paleomagnetism.org - Interpretation Portal </title>
@@ -82,8 +84,7 @@
 			<li class="menuLink"><a class="link" href="./miscellaneous.html"> Miscellaneous Portal </a> 
 			<li class="menuLink"><a class="link" href="./cite.html"> References </a>
 			<li class="menuLink"><a class="link" href="./team.html"> Team and Code </a>
-		<!-- <li class="menuLink"><a class="link" href="mailto:fort@paleomagnetism.org"> Contact </a> -->
-		<li class="menuLink"><a class="link" href="mailto:paleomagnetism.org@gmail.com" title="temporary address"> Contact </a>
+			<li class="menuLink"><a class="link" href="./pubs.html"> Verified Publications </a>
 		</div>
 		<div id="control" style="border: 1px dotted rgb(119, 152, 191); margin: 5px; padding: 0px; font-size: 10px;">
 			<table class="sample">
@@ -108,10 +109,6 @@
 					<div style="text-align: center;">
 						<button id="add" style="margin: 10px; height: 50px; width: 200px; border: 1px solid; " title="Load new data to the application"> Add Demagnetization Data </button>
 					</div>
-					<h2> Example Data </h2>
-					<p> <b> Note: </b> Currently, the only supported format for direct input is the <a href="./examples/Utrecht_Example.AF" download>Utrecht Format</a>. This file can be used as an example to test the application usage.
-					<p> An example for an exported data file from the application can be found <a href="./examples/IR19.dir" download> here</a>. This file can be imported in the advanced options tab.
-					<p> If you wish your format to be added, please send us an example of your input format or write your own data parser. Multiple parameters are required: <b> name, step, dec, inc, int (x, y, z) </b> and we recommend adding core and bedding orientations for rotation between specimen/geographic/tectonic coordinates.
 				</div>
 			</div>
 			<div id="interpretationTab">
@@ -231,12 +228,12 @@
 		<hr>
 			
 		<div id="forwardInterpretations" title="Save Directions to Statistics Portal" style="display: none;">
-			<p> Please select the parameters you wish to export
+			<p> Please select the parameters you wish to forward
 			<div id="inputOptions">		<p>
 			<input id="includeBedding" type="checkbox"> <label for="includeBedding"> Bedding </label>
 			<input id="includeName" type="checkbox"> <label for="includeName"> Sample Name </label>
 			<input id="includeStrat" type="checkbox"> <label for="includeStrat"> Stratigraphic Level </label>
-            <p><b> Site name: <input id="saveSiteName" type="text">
+            <p><b> Site name: </b><input id="saveSiteName" type="text">
 			<button id="saveInterpretationButton">Save</button>
 			</div>
 		   <p><b>Interpreted directions are forwarded to the statistics portal</b></p>

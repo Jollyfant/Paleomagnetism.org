@@ -434,7 +434,8 @@ var addInterpretations = function () {
   var settings = interpretations[index].settings;
   
   $("#interpretationInfo").html('Directions in ' + interpretations[index].coordType + ' coordinates.');
-	
+  $("#includeBedding, #includeName, #includeStrat").prop('checked', false);
+  
   // Generate line from dec, inc, bedding, sample name, and stratigraphy
   // Only put the bedding if the site has been interpreted in GEOGRAPHIC coordinates WITHOUT fitted great circles
   // Otherwise, just put directions without beddings
@@ -445,15 +446,18 @@ var addInterpretations = function () {
       input += capture[i].dec + ", " + capture[i].inc
 	  
 	  if(settings.bedding) {
+		$("#includeBedding").prop('checked', true);
 		input += ", " + capture[i].bedStrike + ", " + capture[i].bedDip;
 	  }
 	  
 	  if(settings.sampleName) {
+		$("#includeName").prop('checked', true);
 		input += ", " + capture[i].sample;
 	  }
 	  
 	  if(settings.stratigraphy) {
-		 input += ", " + capture[i].strat; 
+		 $("#includeStrat").prop('checked', true);
+		 input += ", " + capture[i].strat || 0; 
 	  }
 	  
       input += '\n';
@@ -461,12 +465,17 @@ var addInterpretations = function () {
     }
 	
   } else {
+	  
     for(var i = 0; i < capture.length; i++) {
+		
       input += [capture[i].dec, capture[i].inc, capture[i].sample].join(", ");
+	  
       if(capture[i].strat !== null) {
-        input += ', ' + capture[i].strat;
+        input += ', ' + capture[i].strat || 0;
       }
+	  
       input += '\n';
+	  
     }
   }
 		
