@@ -31,7 +31,7 @@ var li, liSelected;
 var data;
 var globalSticky = new Array();
 var exportData = new Array();
-var version = 'vALPHA.1613.5';
+var version = 'vBETA.1605.01';
 
 var group = 'None';
 var PATCH_NUMBER = 1.1;
@@ -1639,9 +1639,9 @@ function showDataInformation() {
   }
 
   if(specimen.data[step].visible) {
-    var information = [specimen.data[step].step, direction.dec, direction.inc, direction.R, specimen.coreAzi, specimen.coreDip, specimen.bedStrike, specimen.bedDip, specimen.strat, specimen.format];
+    var information = [specimen.data[step].step, direction.dec, direction.inc, direction.R, specimen.data[step].a95, specimen.coreAzi, specimen.coreDip, specimen.bedStrike, specimen.bedDip, specimen.strat, specimen.format];
   } else {
-    var information = ['---', '---', '---', '---', '---', '---', '---', '---', '---', '---'];
+    var information = ['---', '---', '---', '---', '---', '---', '---', '---', '---', '---', '---'];
   }
 
   // Reduce numbers to decimals
@@ -1652,7 +1652,7 @@ function showDataInformation() {
 
   // Update the parameter table
   var tableHeader = '<table class="sample" id="specimenTable"><tr><th>'
-  tableHeader += ['Step', 'Declination', 'Inclination', 'Intensity', 'Core Azimuth', 'Core Plunge', 'Bedding Strike', 'Bedding Dip', 'Strat Level', 'Format'].join("</th><th>");
+  tableHeader += ['Step', 'Declination', 'Inclination', 'Intensity', 'a95', 'Core Azimuth', 'Core Plunge', 'Bedding Strike', 'Bedding Dip', 'Strat Level', 'Format'].join("</th><th>");
 
   $("#specimenInformation").html(tableHeader + "</th></tr><td>" + information.join('</td><td>') + "</td></tr></table>");
 
