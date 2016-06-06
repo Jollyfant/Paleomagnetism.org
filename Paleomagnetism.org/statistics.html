@@ -519,11 +519,17 @@ $(function () {
 	<div id="addAPWP" class="dialog">
 		<h2> Add Custom APWP <small> Apparant Polar Wander Path </small> </h2>
 		<div style="border: 1px dotted rgb(119, 152, 191); padding-left: 20px;">
-			<p> In this window please input the specified parameters if you wish to add your own APWP. The APWP should already be transformed to your site coordinates.
+			<p> In this window please input the specified parameters if you wish to add your own APWP. Euler poles can also be added with respect to the African plate.
 			<p><b> Input parameters: </b>
-			<br> Latitude, longitude, A95, age
+			<div id="APWPInputInfo"></div>
 			<p>
 		</div>
+                <p>
+                <select id="APWPCoordinates">
+	          <option value="site"> Site Coordinates </option>
+                  <option value="euler"> Rotation Poles </option>
+                </select>
+
 		<p>
 		<textarea id="APWPZone" rows="5" style="width: 570px;"></textarea>
 		<small>Input parameters must be delimited by a comma or tab character.</small>

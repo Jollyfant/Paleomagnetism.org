@@ -303,32 +303,66 @@ var addAPWP = function () {
   var A95 = new Array();
   var lon = new Array();
   var lat = new Array();
+  var rot = new Array();
 	
   // Split by lines and remove white lines
   var lines = APWPdata.split('\n').filter(function(x) {
     return x !== "";
   });
 	
+
+  var coordinateFrame = $("#APWPCoordinates").val();
+
   // Loop over all the lines and put the proper parameters in the proper bucket
   for(var i = 0; i < lines.length; i++) {
-	
-    var p = lines[i].split(/[,\t]+/);
-    age.push(Number(p[3]));
-    A95.push(Number(p[2]));
-    lon.push(Number(p[1]));
-    lat.push(Number(p[0]));
 
+    var p = lines[i].split(/[,\t]+/);
+
+    lat.push(Number(p[0]));
+    lon.push(Number(p[1]));
+
+    // Check if user wants an Euler pole
+    if(coordinateFrame === 'euler') {	
+      rot.push(Number(p[2]));
+    } else {
+      A95.push(Number(p[2]));
+    }
+
+    age.push(Number(p[3]));
+
+  }	
+
+  if(coordinateFrame === 'euler') {
+    var next = 0;
+    for(var i = 0; i < age.length; i++) {
+      if(age[i] !== next) {
+        notify('failure', 'For compatibility with the African reference frames, all Euler Poles must start at 0 Myr and have 10 Myr increments.');
+        return;
+      }
+      next += 10;
+    }
   }
-	
-  APWPs[name] = {
-    'age': age, 
-    'A95': A95, 
-    'lon': lon, 
-    'lat': lat
+
+  if(coordinateFrame === 'euler') {
+    APWPs[name] = {
+      'lat': lat,
+      'lon': lon,
+      'rot': rot,
+      'age': age,
+      'type': 'Euler Pole'
+    }
+  } else {
+    APWPs[name] = {
+      'age': age, 
+      'A95': A95, 
+      'lon': lon, 
+      'lat': lat,
+      'type': 'APWP'
+    }
   }
-	
+
   // Post-processing; update user and force update for multiselect
-  notify('success', 'APWP ' + name + ' has been added.');
+  notify('success', 'APWP ' + name + ' has been added');
 	
   $('#plateNames').append("<option custom=\"true\" value=\"" + name + "\">" + name + "</option>");
   $('#plateNames').multiselect('refresh');

@@ -376,6 +376,21 @@ function jQueryInit(page) {
     }
   });
   
+  // Select menu to update info in +Add APWP window
+  $("#APWPCoordinates").selectmenu({
+    'width': '200',
+    'change': function() {
+      var value = $(this).val();
+      if(value === 'euler') {
+        var text = '<b> Euler Poles: </b>Latitude, Longitude, Rotation, Age';
+      } else {
+        var text = '<b> APWP: </b>Latitude, Longitude, A95, Age';
+      }
+      $("#APWPInputInfo").html(text)
+    }
+  });
+
+
   // Adds selected number of bootstraps to spinner
   $('.bootstrapButtons').click(function() {
     $("#spinner").spinner("value", $(this).attr("val"));
