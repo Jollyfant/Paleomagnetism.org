@@ -12,14 +12,22 @@
 module.map = {				
 	mapInit: false,
 	gmarkers: new Array(),
-	markers: new Array()
+	markers: new Array(),
+        grid: null
 }	
 
 $(function () {
   $('#overlay').prop('checked', false);
+  $('#grid').prop('checked', true);
+
   $('#overlay').change(function () {
     toggleOverlay($("#overlay").is(':checked'));
   });
+
+  $('#grid').change(function() {
+    toggleGrid($("#grid").is(':checked'));
+  });
+
 });
 
 /*
@@ -28,6 +36,10 @@ $(function () {
  */
 function toggleOverlay(bool) {
   bool ? plateLayer.setMap(module.map.map) : plateLayer.setMap(null);
+}
+
+function toggleGrid(bool) {
+  bool ? grid.show() : grid.hide();
 }
 
 module.map.initialize = function() {
@@ -51,13 +63,16 @@ module.map.initialize = function() {
       'stylers': [{ visibility: "off" }]
     }, {
       'featureType': "water",
-      'stylers': [{ visibility: "on" }]
+      'elementType': "labels",
+      'stylers': [{ visibility: "off" }]
     }]
   };
   
   // Initialize the map with the specified map options
   module.map.map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
   
+  grid = new Graticule(module.map.map, true);
+
   // Add listener for a click event
   google.maps.event.addListener(module.map.map, "click", function(e) {
   		
