@@ -2004,7 +2004,7 @@ function plotExpectedLocation(data, container, title, lat, lon) {
     'tooltip': {
       'formatter': function(evt) {
         if(this.series.name === 'Selected Site Data') {
-          return getSelectedSiteTooltip(this);
+          return getSelectedSiteTooltip(this, title);
         } else {
           return getReferenceFrameTooltip(this, title);
         }
@@ -2026,7 +2026,7 @@ function plotExpectedLocation(data, container, title, lat, lon) {
  * FUNCTION getSelectedSiteTooltip
  * Description: returns the tooltip for selected sites in APWP module (lower graph)
  */
-function getSelectedSiteTooltip(self) {
+function getSelectedSiteTooltip(self, title) {
 
   return [
     '<b>Site: </b>'+ self.point.name,
