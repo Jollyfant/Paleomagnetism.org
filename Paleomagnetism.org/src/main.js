@@ -231,20 +231,17 @@ function addSite(edit) {
   $(".linedwrap").animate().stop();
   $(".linedtextarea").animate().stop();
 	
-  // Obtain site meta data (name, location, age)
+  // Obtain site meta data (name, location, age) from input boxes
   var metaData = new constructMetaData();
   if(!metaData.sanitized) {
     notify('failure', 'An unexpected error while parsing site meta data. Please check location and age information.');
     return;
   }
 
-  // Extend newly constructed metadata with the old
+  // Extend newly constructed metadata with the old, then add metaData from the input boxes
   if(edit) {
-    $.extend(metaData, sites[edit].userInput.metaData);
-  }
-
-  // If we are editing, skip name check (we wish to overwrite)
-  if(!edit) {
+    var metaData = $.extend({}, sites[edit].userInput.metaData, metaData);
+  } else {
     if(!checkName(metaData.name)) {
       return;
     }		
@@ -260,7 +257,7 @@ function addSite(edit) {
   // If the input is cleared, add a new site and close the data input window
   if(!inputData.sanitized) {
     notify('failure', 'Site input did not pass sanitization. Breaking procedure; please check input at line ' + inputData.line + '.');
-    return;
+    module.options.editName = ""; return;
   }
 
   // If we are editing, first delete the site with the old name (if it exists)
