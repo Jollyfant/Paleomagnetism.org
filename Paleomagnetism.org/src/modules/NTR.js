@@ -10,6 +10,21 @@ isRunning = false;
  //Fire on DOM ready
 $(function() {
 
+    Highcharts.SVGRenderer.prototype.symbols.vertLine = function (x, y, w, h) {
+        return ['M', x + 0.5 * w, y + h, 'L', x + 0.5 * w, y - 0.25 * h];
+    };
+    if (Highcharts.VMLRenderer) {
+        Highcharts.VMLRenderer.prototype.symbols.vertLine = Highcharts.SVGRenderer.prototype.symbols.vertLine;
+    }
+
+    Highcharts.SVGRenderer.prototype.symbols.horLine = function (x, y, w, h) {
+        return ['M', x + 1.25 * w, y + 0.5 * h, 'L', x - 0.25 * w, y + 0.5 * h];
+    };
+    if (Highcharts.VMLRenderer) {
+        Highcharts.VMLRenderer.prototype.symbols.horLine = Highcharts.SVGRenderer.prototype.symbols.horLine;
+    }
+
+
 	$("button:not(.ui-multiselect)").button()
     .bind('mouseup', function() {
         $(this).blur();   
@@ -48,8 +63,6 @@ $(function() {
 			notify('failure', 'Please fill in the required input.');
 			return;
 		}
-		
-		console.log(this);
 		
 		isRunning = true;
 		
@@ -637,6 +650,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 		if(!iterate) {
 			plotSeries.push({
 			name: 'Reference Pole',
+                        'zIndex': 10,
 			type: 'scatter',
 			data: [{x: referencePole.dec, y: eqArea(referencePole.inc), inc: referencePole.inc}],
 			marker: {
@@ -649,6 +663,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 		}, {
 			name: 'Magnetization Vector',
 			type: 'scatter',
+                        'zIndex': 10,
 			data: [{x: magnetizationVector.dec, y: eqArea(magnetizationVector.inc), inc: magnetizationVector.inc}],
 			marker: {
 				symbol: 'circle',
@@ -660,6 +675,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 		}, {
 			name: 'Pole to Dyke',
 			type: 'scatter',
+                        'zIndex': 10,
 			data: [{'x': dykePole.dec, 'y': eqArea(dykePole.inc), 'inc': dykePole.inc}],
 			marker: {
 				symbol: 'circle',
@@ -923,7 +939,47 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate, con
 	timed();
 }
 
+function getTickMarks(plotSeries) {
+
+  var tickMarkersV = new Array();
+  var tickMarkersH = new Array();
+  for(var i = 10; i < 90; i += 10) {
+    var proj = eqArea(i);
+    tickMarkersV.push([270, proj], [90, proj]);
+    tickMarkersH.push([0, proj], [180, proj]);
+  }
+
+  plotSeries.push({
+    'data': tickMarkersH,
+    'type': 'scatter',
+    'enableMouseTracking': false,
+    'zIndex': 1,
+    'showInLegend': false,
+    'marker': {
+      'symbol': 'horLine',
+      'lineWidth': 1,
+      'lineColor': 'lightgrey'
+    }
+  })
+
+  plotSeries.push({
+    'data': tickMarkersV,
+    'type': 'scatter',
+    'enableMouseTracking': false,
+    'zIndex': 1,
+    'showInLegend': false,
+    'marker': {
+      'symbol': 'vertLine',
+      'lineWidth': 1,
+      'lineColor': 'lightgrey'
+    }
+  })
+
+}
+
 function drawGraph( plotSeries, container ) {
+
+  getTickMarks(plotSeries);
 
 	//Specify chart options for equal area projection
 	var chartOptions = {
@@ -931,7 +987,7 @@ function drawGraph( plotSeries, container ) {
 			backgroundColor: 'rgba(255, 255, 255, 0)',
 			id: container,
 			polar: true,
-			animation: false,
+			animation: true,
         	renderTo: container, //Container that the chart is rendered to.
 		},
 		tooltip: {
@@ -1014,7 +1070,7 @@ function drawGraph( plotSeries, container ) {
         },
         plotOptions: {
 			series: {
-				animation: false,
+				animation: true,
 			}
        	 },
 
