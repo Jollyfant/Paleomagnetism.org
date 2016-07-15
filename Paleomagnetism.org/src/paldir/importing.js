@@ -11,87 +11,6 @@
 "use strict"
 
 /*
- * Importer for Enkin format (.PMD)
- */
-function importEnkin(text) {
-
-  var lines = text.split(/[\n\r]/).filter(Boolean);
-
-  var header = lines[1].split(/[,\s\t]+/);
-  var sampleName = header[0];
-  
-  // Get header values
-  // values will be [a, b, s, d, [v]]
-  var parameters = lines[1].split('=');
-  var values = new Array();
-  for(var i = 1; i < parameters.length; i++) {
-    var value = parameters[i].match(/[+-]?\d+(\.\d+)?/g);
-    values.push(value);
-  }
-
-  // Get the timing info from the header
-  var info = parameters[parameters.length - 1].split(' ');
-  info.shift();
-  info.shift();
-  info = info.join('T') + ':00Z';
-  
-  var specimenVolume = Number(values[4][0]) * Math.pow(10, Number(values[4][1]));
-
-  // core hade is measured, we use plunge (90 - hade)
-  var coreAzi = Number(values[0]);	
-  var coreDip = 90 - Number(values[1]);
-  var bedStrike = Number(values[2]);
-  var bedDip = Number(values[3]);
-
-  var parsedData = new Array();
-  
-  for(var i = 3; i < lines.length - 1; i++) {
-			
-    // Empty parameters as 0
-    var parameters = lines[i].split(/[,\s\t]+/).map(function(x) {
-	  if(x === "") {
-		  return "0";
-	  }
-	  return x;
-	});
-    
-
-   // Skip these
-    if(Number(parameters[4]) === 0) continue;
-
-    parsedData.push({
-      'visible': true, 
-      'include': false,
-      'step': parameters[0],
-      'x': 1e6 * Number(parameters[1]) / specimenVolume,
-      'y': 1e6 * Number(parameters[2]) / specimenVolume,
-      'z': 1e6 * Number(parameters[3]) / specimenVolume,
-      'a95': Number(parameters[9]),
-      'info': info
-    });	
-  }
-
-  // Add the data to the application
-  data.push({
-    'added': new Date(),
-    'format': "Enkin",
-    'strat': null,
-    'demagType': "Unknown",
-    'GEO': new Array(),
-    'TECT': new Array(),
-    'patch': PATCH_NUMBER,
-    'interpreted': false,
-    'name': sampleName,
-    'coreAzi': coreAzi,
-    'coreDip': coreDip,
-    'bedStrike': bedStrike,
-    'bedDip': bedDip,
-    'data': parsedData
-  });	
-}
-
-
-/*
  * Importing parser for Munich format
  * One sample per file, multiple files can be selected during importing
  */
@@ -351,15 +270,14 @@ function importUtrecht(text) {
 	
 }
 
+
 /*
  * Importing function for PaleoMac
  */
 function importMac(text) {
 	
   var lines = text.split(/[\n\r]/);
-  lines = $.grep(lines, function(n) { 
-    return n;
-  });
+  lines.shift();
 
   var header = lines[0].split(/[,\s\t]+/);
   var sampleName = header[0];
@@ -374,7 +292,7 @@ function importMac(text) {
   }
 
   // Get specimenVolume from file or default to 10cc (in m3)
-  var specimenVolume = Number(values[4][1]) * Math.pow(10, Number(values[4][1])) || 10e-6;
+  var specimenVolume = Number(values[4][0]) * Math.pow(10, Number(values[4][1])) || 10e-6;
 
   // core hade is measured, we use plunge (90 - hade)
   var coreAzi = Number(values[0]);	
@@ -387,7 +305,13 @@ function importMac(text) {
   // Skip first two and last line
   for(var i = 2; i < lines.length - 1; i++) {
 
-    var parameters = lines[i].split(/[,\s\t]+/);
+    // Empty parameters as 0
+    var parameters = lines[i].split(/[,\s\t]+/).map(function(x) {
+      if(x === "") {
+        return "0";
+      }
+      return x;
+    });
 
     // Skip these
     if(Number(parameters[4]) === 0) continue;
