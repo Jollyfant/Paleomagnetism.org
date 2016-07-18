@@ -278,6 +278,9 @@ function importMac(text) {
 	
   var lines = text.split(/[\n\r]/);
   lines.shift();
+  lines = $.grep(lines, function(n) { 
+    return n;
+  });	
 
   var header = lines[0].split(/[,\s\t]+/);
   var sampleName = header[0];
