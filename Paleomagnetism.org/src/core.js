@@ -550,6 +550,10 @@ function invPoles(siteLat, siteLong, data) {
   var poleLong = data[0]
   var poleLat = data[1];
 
+  // Make sure the sites are floats
+  var siteLat = Number(siteLat);
+  var siteLong = Number(siteLong);
+
   // Get some standard variables
   var sinlats = Math.sin(RADIANS * siteLat);
   var coslats = Math.cos(RADIANS * siteLat);
