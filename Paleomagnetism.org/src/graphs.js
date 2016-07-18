@@ -2393,14 +2393,14 @@ function plotFoldtestCDF (cdfdat, data, lower, upper, begin, end, sub, input ) {
         }
       }
     },
-        'legend': {
-            'layout': 'vertical',
-            'align': 'right',
-            'verticalAlign': 'middle',
-            'borderWidth': 0
-        },
-        'series': mySeries
-    }
+    'legend': {
+      'layout': 'vertical',
+      'align': 'right',
+      'verticalAlign': 'middle',
+      'borderWidth': 0
+    },
+    'series': mySeries
+  }
   
   //Initialize chart with specified options.
   new Highcharts.Chart(chartOptions);   

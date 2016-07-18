@@ -54,12 +54,12 @@ ga('send', 'pageview');
 	<!-- MENU CONTACT -->
 	<div style="background-color: #7798BF; color: white; padding: 10px;">
 		<li class="menuLink"><a class="link" href="./index.html"> Home </a>
-		<li class="menuLink"><a class="link" href="./interpretation.html"> Interpretation Portal </a>
-		<li class="menuLink"><a class="link" href="./statistics.html"> Statistics Portal </a> 
-		<li class="menuLink"><a class="link" style="background: #DED;"><img src="./images/icon.ico" height="16" width="16" style="vertical-align: middle;">&nbsp Miscellaneous Portal </a> 
+		<li class="menuLink"><a class="link" href="./interpretation.html"> Interpretation </a>
+		<li class="menuLink"><a class="link" href="./statistics.html"> Statistics </a> 
+                <li class="menuLink"><a class="link" href="./miscellaneous.html" style="background: #DED;"><img src="./images/icon.ico" height="16" width="16" style="vertical-align: middle;">&nbsp Miscellaneous: Palpole</a>
 		<li class="menuLink"><a class="link" href="./cite.html"> References </a>
 		<li class="menuLink"><a class="link" href="./team.html">Team and Code </a>
-		<li class="menuLink"><a class="link" href="./pubs.html"> Verified Publications </a>
+		<li class="menuLink"><a class="link" href="./pubs.html"> Verified Data </a>
 	</div>
 	
 	<div class="information" style="margin: 10px; font-size: 12px; font-family: Helvetica,Arial,sans-serif;">
@@ -97,6 +97,7 @@ ga('send', 'pageview');
 		</tr>		
 		</table>
 		</div>
+		<button id="downloadTable">Download Table</button>
 	</div>
 	<hr>
 	
@@ -120,6 +121,8 @@ ga('send', 'pageview');
 </style>
 <script>
 $(function () {
+
+  downloadAttrSupported = document.createElement('a').download !== undefined;
 
   $("#VGP2DIR, #DIR2VGP, #LATLON").linedtextarea();
   
@@ -233,6 +236,52 @@ $(function () {
 
 	return location;
   }
+
+  $("#downloadTable").click(function() {
+
+    var itemDelimiter = '","';
+    var lineDelimiter = '\n';
+
+    var siteLocation = getLatLong();
+
+    var VGPdata = $("#VGP2DIR").val().split('\n');
+    var DIRdata = $("#DIR2VGP").val().split('\n');
+
+    var csv = '"' + ["Site Latitude", "Site Longitude", "Pole Latitude", "Pole Longitude", "Declination", "Inclination"].join(itemDelimiter) + '"' + lineDelimiter;
+
+    for(var i = 0; i < VGPdata.length; i++) {
+
+      var printLocation = siteLocation.length === 1 ? siteLocation[0] : siteLocation[i];
+      var vgps = VGPdata[i].split(/[\s\t,]+/);
+      var dirs = DIRdata[i].split(/[\s\t,]+/);
+      csv += '"' + [printLocation.lat, printLocation.lon, vgps[0], vgps[1], dirs[0], dirs[1]].join(itemDelimiter) + '"' + lineDelimiter;
+
+    }
+
+  var blob = new Blob([csv], {'type': 'data:text/csv;charset=utf-8,'});
+  var csvUrl = URL.createObjectURL(blob);
+
+  // Download attribute supported
+  if (downloadAttrSupported) {
+    a = document.createElement('a');
+    a.href = csvUrl;
+    a.target      = '_blank';
+    a.download    = 'palpole.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } else if (window.Blob && window.navigator.msSaveOrOpenBlob) {
+    window.navigator.msSaveOrOpenBlob(blob, 'palpole.csv');
+  } else {
+    Highcharts.post('http://www.highcharts.com/studies/csv-export/download.php', {
+      'data': csv,
+      'type': 'txt',
+      'extension': 'csv'
+    });
+  }
+
+
+  });
   
 });
 

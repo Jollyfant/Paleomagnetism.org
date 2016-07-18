@@ -28,75 +28,59 @@ var nBootstraps = 1000;
 //Some jQuery UI initializations
 $(function() {
 
-	/*
-	$("#weighed").button({
-		icons: { 
-			primary: "ui-icon-play" 
-		}
-	}).click( function () {
-		if(applicationHasData) {
-			weighedData(false);
-		} else {
-			notify('failure', 'Found no data in the application. Please load some.');
-		}
-	});
-	*/
+  $("#initializeOroclinal").button().click(function() {
+    initializeSampling();
+  });
 	
-	$("#initializeOroclinal").button().click( function () {
-		initializeSampling();
-	});
+  $("#residualsWhich").multiselect({
+    'multiple': false, 
+    'height': 50,
+    'noneSelectedText': 'Select a parameter',
+    'selectedList': 1,
+    'close': function () {
+      switchStuff();
+    }
+  });
 	
-	$("#residualsWhich").multiselect({
-		multiple: false, 
-		height: 50,
-		noneSelectedText: 'Select a parameter',
-		selectedList: 1,
-		close: function () {
-			switchStuff();
-		}
-	});
+  // On button click: [?]
+  $("#inputHelp").button({
+    'icons': {
+      'primary': "ui-icon-help",
+    },
+    'text': false
+  }).click( function() {
+    $("#inputHelpDialog").dialog({
+      'draggable': false,
+      'resizable': false,
+      'width': 600,
+    });
+  });
 	
-	//On button click: [?]
-	$( "#inputHelp" ).button({
-		icons: {
-			primary: "ui-icon-help",
-		},
-		text: false
-	}).click( function() {
-		$( "#inputHelpDialog" ).dialog({
-			draggable: false,
-			resizable: false,
-			width: 600,
-		});
-	});
+  $('#tabs').tabs();
+  $('#importData').button();
 	
-    $('#tabs').tabs();
+  $("#progressBar").progressbar({'value': 0 });
 
-	$('#importData').button();
-	
-	$("#progressBar").progressbar({ value: 0 });
-	$('#sampleType').buttonset();
-	$('#sampleType2').buttonset();
+  $('#sampleType').buttonset();
+  $('#sampleType2').buttonset();
 
 });
 
 function getPearsonsPear(x, y) {
 	
-	var N = x.length;
-	
-	var averageX = average(x);
-	var averageY = average(y);
-	var xSum = 0;
-	var ySum = 0;
-	var nSum = 0;
+  var xAverage = average(x);
+  var yAverage = average(y);
+  var xSum = 0;
+  var ySum = 0;
+  var nSum = 0;
 
-	for(var i = 0; i < N; i++) {
-		xSum += Math.pow(x[i] - averageX, 2)
-		ySum += Math.pow(y[i] - averageY, 2)
-		nSum += (y[i] - averageY) * (x[i] - averageX)
-	}
+  for(var i = 0; i < x.length; i++) {
+    xSum += Math.pow(x[i] - xAverage, 2)
+    ySum += Math.pow(y[i] - yAverage, 2)
+    nSum += (y[i] - yAverage) * (x[i] - xAverage)
+  }
 	
-	return nSum/Math.sqrt(xSum * ySum);
+  return (nSum / Math.sqrt(xSum * ySum));
 	
 }
 /*
@@ -107,31 +91,31 @@ function getPearsonsPear(x, y) {
  */
 function plotWindRose(newDatArray, container) {
 
-	//This algorithm sorts declinations in the newDatArray to bins of binSize degrees
-	//Notice: 360 % binSize must be 0 
-	var sortedArr = new Object();
-	var binSize = 12;
+  // This algorithm sorts declinations in the newDatArray to bins of binSize degrees
+  // Notice: 360 % binSize must be 0 
+  var sortedArr = new Object();
+  var binSize = 12;
 
-	if(360 % binSize !== 0) {
-		notify('failure', 'Cannot plot wind rose: bin size must be a factor of 360.');
-		return;
-	}
+  if(360 % binSize !== 0) {
+    notify('failure', 'Cannot plot wind rose: bin size must be a factor of 360.'); return;
+  }
 	
-	for(var i = 0; i < newDatArray.length; i++) {
+  for(var i = 0; i < newDatArray.length; i++) {
 	
-		//Round to the nearest 10 degrees
-		var declination = Math.abs(Math.round(newDatArray[i][0] / binSize) * binSize)%360;
+    // Round to the nearest 10 degrees
+    var declination = Math.abs(Math.round(newDatArray[i][0] / binSize) * binSize)%360;
 		
-		//If the bin already exists, increment by one, otherwise create the bin starting at 1
-		sortedArr[declination] ? sortedArr[declination] += 1 : sortedArr[declination] = 1;
-	}
+    //If the bin already exists, increment by one, otherwise create the bin starting at 1
+    sortedArr[declination] ? sortedArr[declination] += 1 : sortedArr[declination] = 1;
+
+  }
 	
-	//Define bucket for data to be used in the chart, and define a max variable to find the maximum declinations in any bin
-	var dataList = new Array();
-	var max = 0;
+  // Define bucket for data to be used in the chart, and define a max variable to find the maximum declinations in any bin
+  var dataList = new Array();
+  var max = 0;
 	
-	//Go over all 36 bins in the 0 - 350 range
-	for(var i = 0; i <= (360 - binSize); i+= binSize) {
+  // Go over all 36 bins in the 0 - 350 range
+  for(var i = 0; i <= (360 - binSize); i+= binSize) {
 	
 		//If we have declinations in the particular bin, put the y value to the sqrt of this number (to prevent linear stretching if one bin becomes very large)
 		//Otherwise, push a y value of 0, which will be added to the series but is invisible to the user
@@ -231,17 +215,19 @@ function plotWindRose(newDatArray, container) {
  * Input: data array containing declinations
  * Output: The circular variance (from 0 [perfect] to 1 [scatter])
  */
-function calcCircularVariance( data ) {
+function calcCircularVariance(data) {
 	
-	var xCoord = 0;
-	var yCoord = 0;
+  var xCoord = 0;
+  var yCoord = 0;
 	
-	for(var i = 0; i < data.length; i++) {
-		var declination = data[i][0]*rad;
-		xCoord += Math.cos(declination);
-		yCoord += Math.sin(declination);
-	}
-	return 1 - Math.sqrt(xCoord*xCoord + yCoord*yCoord)/data.length;
+  for(var i = 0; i < data.length; i++) {
+    var declination = data[i][0] * RADIANS;
+    xCoord += Math.cos(declination);
+    yCoord += Math.sin(declination);
+  }
+
+  return (1 - Math.sqrt(xCoord * xCoord + yCoord * yCoord) / data.length);
+
 }
 
 /*
@@ -252,71 +238,69 @@ function calcCircularVariance( data ) {
  */
 function varianceFoldtest() {
 
-	if(!applicationHasData) {
-		notify('failure', 'No data has been loaded to the application.');
-		return;
-	}
+  if(!applicationHasData) {
+    notify('failure', 'No data has been loaded to the application.'); return;
+  }
 	
-	//(Gaussian or Standard sampling)
-	var typeStrike = $("#sampleType input[name='radio1']:checked").val();
-	var typeDec = $("#sampleType input[name='radio2']:checked").val();
-	var type = {
-		'strike': typeStrike,
-		'dec': typeDec
-	}
+  // (Gaussian or Standard sampling)
+  var typeStrike = $("#sampleType input[name='radio1']:checked").val();
+  var typeDec = $("#sampleType input[name='radio2']:checked").val();
+  var type = {
+    'strike': typeStrike,
+    'dec': typeDec
+  }
 
-	var timeInit = Date.now();
+  var timeInit = Date.now();
 	
-	if(type.dec === undefined || type.strike === undefined) {
-		notify('failure', 'Cannot complete the variance foldtest.');
-		return;
-	}
+  if(type.dec === undefined || type.strike === undefined) {
+    notify('failure', 'Cannot complete the variance foldtest.'); return;
+  }
 	
-	var unfoldingMin = -50;
-	var unfoldingMax = 150;
+  var unfoldingMin = -50;
+  var unfoldingMax = 150;
 
-	var data = new Array();
-	var taus = new Array();
-	var untilt = new Array();
-	var bootTaus = new Array();
+  var data = new Array();
+  var taus = new Array();
+  var untilt = new Array();
+  var bootTaus = new Array();
 	
-	//Construct our original data array that we use to show when the red line is clicked
-	for(var i = 0; i < dec.length; i++) {
-		data.push([dec[i], strike[i]]);
-	}
+  // Construct our original data array that we use to show when the red line is clicked
+  for(var i = 0; i < dec.length; i++) {
+    data.push([dec[i], strike[i]]);
+  }
 	
-	//Do for the specified amount of bootstraps
-	for(var i = 0; i < nBootstraps; i++) {
+  // Do for the specified amount of bootstraps
+  for(var i = 0; i < nBootstraps; i++) {
 		
-		var sampleDec = new Array();
-		var sampleStrike = new Array();
-		var taus = new Array();
+    var sampleDec = new Array();
+    var sampleStrike = new Array();
+    var taus = new Array();
 		
-		//For each point, draw a random point from within the confidence interval
-		//for the first bootstrap we use the actual data
-		for(var j = 0; j < dec.length; j++) {
-			if(i > 0) {
-				sampleDec.push(getRandom(dec[j], decErr[j], type.dec));
-				sampleStrike.push(getRandom(strike[j], strikeErr[j], type.strike));	
-			} else {
-				sampleDec.push(dec[j]);
-				sampleStrike.push(strike[j]);
-			}
-		}
+    // For each point, draw a random point from within the confidence interval
+    // for the first bootstrap we use the actual data
+    for(var j = 0; j < dec.length; j++) {
+      if(i > 0) {
+        sampleDec.push(getRandom(dec[j], decErr[j], type.dec));
+	sampleStrike.push(getRandom(strike[j], strikeErr[j], type.strike));	
+      } else {
+        sampleDec.push(dec[j]);
+        sampleStrike.push(strike[j]);
+      }
+    }
 
-		var max = 1;
+    var max = 1;
 		
-		//Unfold over range in increments of 10 degrees
-		for(var j = unfoldingMin; j <= unfoldingMax; j+=10) {	
+    // Unfold over range in increments of 10 degrees
+    for(var j = unfoldingMin; j <= unfoldingMax; j+=10) {	
 		
-			var tilts = new Array();
+      var tilts = new Array();
 			
-			//Do the unfolding of the declination
-			//The inclination is assumed to be 0
-			for(var k = 0; k < sampleDec.length; k++) {
-				var unfoldedDeclination = (sampleDec[k] - (sampleStrike[k]-90)*0.01*j);
-				tilts.push([unfoldedDeclination, 0]);		
-			}
+      // Do the unfolding of the declination
+      // The inclination is assumed to be 0
+      for(var k = 0; k < sampleDec.length; k++) {
+        var unfoldedDeclination = (sampleDec[k] - (sampleStrike[k] - 90) * 0.01 * j);
+        tilts.push([unfoldedDeclination, 0]);
+      }
 						
 			//Obtain the circular variance of these directions
 			var variance = calcCircularVariance(tilts);

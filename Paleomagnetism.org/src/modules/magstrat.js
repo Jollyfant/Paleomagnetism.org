@@ -24,33 +24,33 @@ function importing (event) {
   reader.readAsText(input.files[0]);
   reader.onload = function() {
   
-  	var savingArray = new Array();
-  	var text = reader.result;
-  	var lines = text.split("\n");
+    var savingArray = new Array();
+    var text = reader.result;
+    var lines = text.split("\n");
   
-  	lines = $.grep(lines, function(n) { 
-  	  return n;
-  	});
+    lines = $.grep(lines, function(n) { 
+      return n;
+    });
   
-  	// Get the stratigraphy from the requested format e.g.
-  	// Areas between those levels will be colored BLACK
-  	var strat = new Array()
+    // Get the stratigraphy from the requested format e.g.
+    // Areas between those levels will be colored BLACK
+    var strat = new Array()
   
-  	for(var i = 0; i < lines.length; i++) {
-  	  var parameters = lines[i].split(/[,\s\t]+/)
-  	  parameters = $.grep(parameters, function(n) { 
-  	    return n;
-  	  });
+    for(var i = 0; i < lines.length; i++) {
+      var parameters = lines[i].split(/[,\s\t]+/)
+      parameters = $.grep(parameters, function(n) { 
+        return n;
+    });
       
-  	  var bottom = Number(parameters[0]);
-  	  var top = Number(parameters[1]);
-  	  savingArray.push([bottom, top]);
-  	}
+    var bottom = Number(parameters[0]);
+    var top = Number(parameters[1]);
+    savingArray.push([bottom, top]);
+  }
   
-  	sites[siteName].userInput.metaData.strat = savingArray;
-  	showBW(formatBinaryColumn(savingArray));
-  	notify('success', 'Stratigraphy has succesfully been added.');
-  	setStorage();
+  sites[siteName].userInput.metaData.strat = savingArray;
+  showBinaryColumn(formatBinaryColumn(savingArray));
+  notify('success', 'Stratigraphy has succesfully been added.');
+  setStorage();
 	
   }
 
@@ -72,8 +72,9 @@ function removeStrat () {
   }
   
   sites[siteName].userInput.metaData.strat = new Array();	
+
   setStorage();
-  showBW(new Array())
+  showBinaryColumn(new Array())
   notify('success', 'Stratigraphy has been cleared succesfully.');
 	
 }
@@ -108,11 +109,9 @@ function getSiteName() {
   var siteName = $("#stratSel").val();
   
   if(siteName === null) {
-  	$("#stratPlots").hide();
-  	return false;
+    $("#stratPlots").hide(); return false;
   } else if(typeof(siteName) === 'object') {
-  	notify('failure', 'Please select a single site.');
-  	return false;
+    notify('failure', 'Please select a single site.'); return false;
   }
   
   return siteName;
@@ -134,14 +133,14 @@ function plotStrat() {
   // Get all accepted/rejected directions and sort by strat. level
   var parsingData = new Array();
   for(var i = 0; i < sites[siteName].data.dir.accepted.length; i++) {
-  	parsingData.push(sites[siteName].data.dir.accepted[i]);
+    parsingData.push(sites[siteName].data.dir.accepted[i]);
   }
   for(var i = 0; i < sites[siteName].data.dir.rejected.length; i++) {
-  	parsingData.push(sites[siteName].data.dir.rejected[i]);
+    parsingData.push(sites[siteName].data.dir.rejected[i]);
   }
-  console.log(parsingData)
+
   parsingData.sort(function(a, b){
-  	return a[5] > b[5] ? 1 : (a[5] < b[5] ? -1 : 0);
+    return a[5] > b[5] ? 1 : (a[5] < b[5] ? -1 : 0);
   })
   
   // Format Highcharts data arrays (dec between -180, 180)
@@ -151,31 +150,36 @@ function plotStrat() {
   
   var dataDec = new Array();
   var dataInc = new Array();
+
   for(var i = 0; i < parsingData.length; i++) {
-  	var declination = parsingData[i][0] > 180 ? parsingData[i][0] - 360 : parsingData[i][0];
-  	var inclination = parsingData[i][1];
-  	var sample = parsingData[i][4];
-  	var stratLevel = parsingData[i][5] || 0;
-   	  dataDec.push({
-  	  'sample': sample,
-  	  'x': declination, 
-  	  'y': stratLevel,
-  	  'marker': {
-  	  	'fillColor': inclination < 0 ? 'white' : pointColor,
-  	  	'lineColor': pointColor,
-  	  	'lineWidth': 1
-  	  }
-  	});
-  	dataInc.push({
-  	  'sample': sample,
-  	  'x': inclination,
-  	  'y': stratLevel,
-  	  'marker': {
-  	  	'fillColor': inclination < 0 ? 'white' : pointColor,
-  	  	'lineColor': pointColor,
-  	  	'lineWidth': 1
-  	  }
-  	});
+
+    var declination = parsingData[i][0] > 180 ? parsingData[i][0] - 360 : parsingData[i][0];
+    var inclination = parsingData[i][1];
+    var sample = parsingData[i][4];
+    var stratLevel = parsingData[i][5] || 0;
+
+    dataDec.push({
+      'sample': sample,
+      'x': declination, 
+      'y': stratLevel,
+      'marker': {
+    	'fillColor': inclination < 0 ? 'white' : pointColor,
+    	'lineColor': pointColor,
+    	'lineWidth': 1
+      }
+    });
+
+    dataInc.push({
+      'sample': sample,
+      'x': inclination,
+      'y': stratLevel,
+      'marker': {
+    	'fillColor': inclination < 0 ? 'white' : pointColor,
+    	'lineColor': pointColor,
+    	'lineWidth': 1
+      }
+    });
+
   }
   
   // Request plots
@@ -184,9 +188,9 @@ function plotStrat() {
   
   // Plot binary
   if(sites[siteName].userInput.metaData.strat) {
-  	showBW(formatBinaryColumn(sites[siteName].userInput.metaData.strat));
+    showBinaryColumn(formatBinaryColumn(sites[siteName].userInput.metaData.strat));
   } else {
-  	showBW(new Array());
+    showBinaryColumn(new Array());
   }
   
   $("#stratPlots").show();
@@ -203,15 +207,14 @@ function updateStratigraphicLevel () {
 
   // Get the extremes, sanity check and update
   try {
-  	var extremesInc = $("#magstratInclination").highcharts().yAxis[0].getExtremes();
-  	var extremesDec = $("#magstratDeclination").highcharts().yAxis[0].getExtremes();
+    var extremesInc = $("#magstratInclination").highcharts().yAxis[0].getExtremes();
+    var extremesDec = $("#magstratDeclination").highcharts().yAxis[0].getExtremes();
   } catch (e){
-  	return;
+    return;
   }
   
   if(extremesInc.max !== extremesDec.max) {
-  	notify('Failure', 'Error: minimum and maximum of declination/inclinations chart is different');
-  	return;
+    notify('Failure', 'Error: minimum and maximum of declination/inclinations chart is different'); return;
   }
   
   // Set new extremes and check new extremes
@@ -220,7 +223,7 @@ function updateStratigraphicLevel () {
   // Ok let's make sure the charts have exactly the same scale.
   var extremesBinary = $("#magstratSet").highcharts().yAxis[0].getExtremes();
   if(extremesBinary.max !== extremesDec.max) {
-  	notify('failure', "Error: scale of binary plot does not match inclination/declination. Contact us!");
+    notify('failure', "Fatal: scale of binary plot does not match inclination/declination. This should NEVER happen.");
   }
   
   return;
@@ -236,9 +239,9 @@ function dlStrat(type) {
 
   // Get the different graphs
   var charts = [
-  	$('#magstratDeclination').highcharts(), 
-  	$('#magstratSet').highcharts(),
-  	$('#magstratInclination').highcharts()
+    $('#magstratDeclination').highcharts(), 
+    $('#magstratSet').highcharts(),
+    $('#magstratInclination').highcharts()
   ];
   
   var widths = [50, 335, 470];
@@ -246,10 +249,10 @@ function dlStrat(type) {
   
   //Loop over charts
   for(var i = 0; i < charts.length; i++) {
-  	var svg = charts[i].getSVG();
-  	svg = svg.replace('<svg', '<g transform="translate('+widths[i]+',0)" ');
-  	svg = svg.replace('</svg>', '</g>');
-  	svgArr.push(svg);
+    var svg = charts[i].getSVG();
+    svg = svg.replace('<svg', '<g transform="translate('+widths[i]+',0)" ');
+    svg = svg.replace('</svg>', '</g>');
+    svgArr.push(svg);
   }
   
   var svg = '<svg height="800" width="' + 795 + '" version="1.1" xmlns="http://www.w3.org/2000/svg">' + svgArr.join('') + '</svg>';
@@ -258,10 +261,10 @@ function dlStrat(type) {
   // merge the options
   var options = Highcharts.merge(Highcharts.getOptions().exporting, options);
   var form = Highcharts.createElement('form', {
-     'method': 'post',
-     'action': options.url
+    'method': 'post',
+    'action': options.url
   }, {
-     'display': 'none'
+    'display': 'none'
   }, document.body);
   
   // Add the values
@@ -283,153 +286,173 @@ function dlStrat(type) {
   
 }
 
-function showBW (strat) {
+function showBinaryColumn (strat) {
 
-	// Only if charts exist
-	// Get the tick positions from dec/inc chart and copy manually to binary chart.
-	// We need everythign on the exact same level, and highcharts is weird with ticks sometimes.
-	try {
-		var ticks = $("#magstratDeclination").highcharts().yAxis[0].tickPositions;
-	} catch(e) {
-		return;
-	}
+  // Only if charts exist
+  // Get the tick positions from dec/inc chart and copy manually to binary chart.
+  // We need everythign on the exact same level, and highcharts is weird with ticks sometimes.
+  try {
+    var ticks = $("#magstratDeclination").highcharts().yAxis[0].tickPositions;
+  } catch(e) {
+    return;
+  }
 
-	if(!strat) {
-		return;
-	}
+  if(!strat) {
+    return;
+  }
 
-	$('#magstratSet').highcharts({
-        	'title': {
-				useHTML: true,
-            	'text': '<a style="cursor: crosshair;" onClick="pp()">⊶</a>',
-        	},
-
-       		'xAxis': {
-               		'min': 0,
-                	'max': 1,
-			'labels': {
-				'style': {
-					'color': 'white'
-				}
-			},
-			'lineColor': 'white',
-			'tickColor': 'white'
-        	},
-        	'yAxis': [{
-			'tickPositions': ticks,
-			'lineWidth': 1,
-			'lineColor': 'black',
-			'title': {
-				'text': '',			
-			},
-			'labels': {
-				'enabled': false
-			},
-			'min': 0,
-			'gridLineWidth': 0,
-        	}, {
-			'opposite': true,
-			'tickPositions': ticks,
-			'lineWidth': 1,
-			'lineColor': 'black',
-			'title': {
-				'text': '',			
-			},
-			'labels': {
-				'enabled': false
-			},
-			'min': 0,
-			'gridLineWidth': 0,
-		}],
-		'plotOptions': {
-			'series': {
-				'events': {
-					'legendItemClick': function () {
-						var color = this.yAxis.axisLine.stroke === 'black' ? 'white' : 'black'
-						for(var i = 0; i < 2; i++) {
-							this.chart.yAxis[i].update({
-								lineColor: color
-							});
-						}
-					}
-				}
-			}
-		},
-		'credits': {
-			'enabled': false,
-		},
-        	'series': [{
-			'enableMouseTracking': false,
-                'type': 'arearange',
-                'name': 'MagStrat',
-                'data': strat,
-                'lineWidth': 0,
-                'color': 'rgb(0, 0, 0)',
-			'zIndex': 0,
-        states: {
-            hover: {
-                enabled: false
-            }
+  $('#magstratSet').highcharts({
+    'title': {
+      'useHTML': true,
+      'text': '<a style="cursor: crosshair;" onClick="danceParty()">⊶</a>',
+    },
+    'xAxis': {
+      'min': 0,
+      'max': 1,
+      'labels': {
+        'style': {
+          'color': 'white'
         }
-        	}]
-    	});
+      },
+      'lineColor': 'white',
+      'tickColor': 'white'
+    },
+    'yAxis': [{
+      'tickPositions': ticks,
+      'lineWidth': 1,
+      'lineColor': 'black',
+      'title': {
+        'text': '',			
+      },
+      'labels': {
+        'enabled': false
+      },
+      'min': 0,
+      'gridLineWidth': 0,
+    }, {
+      'opposite': true,
+      'tickPositions': ticks,
+      'lineWidth': 1,
+      'lineColor': 'black',
+      'title': {
+        'text': '',			
+      },
+      'labels': {
+        'enabled': false
+      },
+      'min': 0,
+      'gridLineWidth': 0,
+    }],
+    'plotOptions': {
+      'series': {
+        'events': {
+          'legendItemClick': function() {
+            var color = this.yAxis.axisLine.stroke === 'black' ? 'white' : 'black'
+            for(var i = 0; i < 2; i++) {
+              this.chart.yAxis[i].update({
+                'lineColor': color
+              });
+            }
+          }
+        }
+      }
+    },
+    'credits': {
+      'enabled': false,
+    },
+    'series': [{
+      'enableMouseTracking': false,
+      'type': 'arearange',
+      'name': 'MagStrat',
+      'data': strat,
+      'lineWidth': 0,
+      'color': 'rgb(0, 0, 0)',
+      'zIndex': 0,
+      'states': {
+        'hover': {
+          'enabled': false
+        }
+      }
+    }]
 
-	// Update y-	axis for binary graph to match dec/inc plots
-	updateStratigraphicLevel();
+  });
+
+  // Update y-Axis for binary graph to match dec/inc plots
+  updateStratigraphicLevel();
+
 }
 
+/*
+ * function getRandomColor
+ * description returns random HEX color
+ */
 function getRandomColor() {
+
     var letters = '0123456789ABCDEF'.split('');
     var color = '#';
+
     for (var i = 0; i < 6; i++ ) {
         color += letters[Math.floor(Math.random() * 16)];
     }
+
     return color;
+
 }
 
 var party = false;
 var reversed = true;
 var partyLoop;
 
-function pp() {
+function danceParty() {
 		
-	if(party) {
-		
-		$("#um")[0].pause();	
-		clearInterval(partyLoop);
-		party = false;
-		var reversed = false;
-			$("#magstratSet").highcharts().series[0].update({
-				'color': 'rgb(0,0,0)'
-		});
-			$("#magstratDeclination").highcharts().yAxis[0].update({
-           reversed: reversed
-       }); 
-	   	$("#magstratInclination").highcharts().yAxis[0].update({
-           reversed: reversed
-       }); 
-		return;
-	}
+  if(party) {
+
+    $("#partyMusic")[0].pause();	
+    clearInterval(partyLoop);
+
+    party = false;
+    reversed = false;
+
+    // Back to black, and not reversed
+    $("#magstratSet").highcharts().series[0].update({
+      'color': 'rgb(0, 0, 0)'
+    });
+
+    $("#magstratDeclination").highcharts().yAxis[0].update({
+      'reversed': reversed
+    }); 
+
+    $("#magstratInclination").highcharts().yAxis[0].update({
+      'reversed': reversed
+    }); 
+
+    return;
+
+  }
 	
-	party = true;
-	
-	$("#um")[0].play();
-	
-	partyLoop = setInterval(function (x) {
-	reversed = !reversed;
-	$("#magstratDeclination").highcharts().yAxis[0].update({
-           reversed: reversed
-       }); 
-	   	$("#magstratInclination").highcharts().yAxis[0].update({
-           reversed: reversed
-       }); 
+  party = true;
+  $("#partyMusic")[0].play();
+
+  // Party tick every 250ms
+  partyLoop = setInterval(function (x) {
+
+    reversed = !reversed;
+
+    $("#magstratDeclination").highcharts().yAxis[0].update({
+      'reversed': reversed
+    });
+
+    $("#magstratInclination").highcharts().yAxis[0].update({
+      'reversed': reversed
+    }); 
 	   
-	$("#magstratSet").highcharts().series[0].update({
-		'color': (function() { return getRandomColor(); })()
-	});
+    $("#magstratSet").highcharts().series[0].update({
+      'color': (function() { return getRandomColor(); })()
+    });
 	
-	}, 250);	
-	}
+  }, 250);	
+
+}
 
 /*
  * FUNCTION showStratigraphy
@@ -438,62 +461,65 @@ function pp() {
  * Output: VOID (calls Highcharts constructor)
  */
 function showStratigraphy(container, title, xRange, plotData) {
-	$('#' + container).highcharts({
-        	'title': {
-            		'text': title
-        	},
-		'credits': {
-			'enabled': true,
-			'text': 'Paleomagnetism.org [Magnetostratigraphy]',
-			'href': ''
-		},
-       		'xAxis': {
-               	'min': xRange.min,
-                'max': xRange.max,
-			'tickInterval': title === 'Declination' ? 90 : 45,
-			'labels': {
-				'format': '{value}°'
-			}
-        	},
-			'exporting': {
-				'enabled': false
-			},
-		'tooltip': {
-			'formatter': function () {
-				var tooltip = 
-					'<b>Sample: </b>' + this.point.sample + '<br>' +
-					'<b>' + title + ': </b>' + this.x.toFixed(2) + '<br>' +
-					'<b>Stratigraphic Level: </b>' + this.y;
-				return tooltip;			
-			}
-		},
-        	'yAxis': {
-			'opposite': title === 'Declination' ? false : true,
-			'gridLineDashStyle': 'Dot',
-			'title': {
-				'text': ''
-			}
-        	},
-        	'series': [{
-            		'type': 'line',
-			'linkedTo': 'data',
-			'showInLegend': false,
-			'dashStyle': 'Dot',
-            		'name': title,
-                	'lineWidth': 1,
-			'color': 'grey',
-			'enableMouseTracking': false,
-            		'data': plotData,
-        	}, {
-			'id': 'data',
-			'color': 'rgb(119, 152, 191)',
-			'name': title,
-                    	'type': 'scatter',
-            		'data': plotData,
-                	'marker': {
-                        	'symbol': 'circle',
-                	}
-        	}]
-    	});
+
+  $('#' + container).highcharts({
+    'title': {
+      'text': title
+    },
+    'credits': {
+      'enabled': true,
+      'text': 'Paleomagnetism.org [Magnetostratigraphy]',
+      'href': ''
+    },
+    'xAxis': {
+      'min': xRange.min,
+      'max': xRange.max,
+      'tickInterval': title === 'Declination' ? 90 : 45,
+      'labels': {
+        'format': '{value}°'
+      }
+    },
+    'exporting': {
+      'enabled': false
+    },
+    'tooltip': {
+      'formatter': function () {
+        return [
+          '<b>Sample: </b>' + this.point.sample,
+          '<b>' + title + ': </b>' + this.x.toFixed(2),
+          '<b>Stratigraphic Level: </b>' + this.y
+        ].join("<br>");
+      }
+    },
+    'yAxis': {
+      'opposite': title === 'Declination' ? false : true,
+      'gridLineDashStyle': 'Dot',
+      'title': {
+        'text': ''
+      }
+    },
+    'series': [{
+      'type': 'line',
+      'linkedTo': 'data',
+      'showInLegend': false,
+      'dashStyle': 'Dot',
+      'name': title,
+      'lineWidth': 1,
+      'color': 'grey',
+      'enableMouseTracking': false,
+      'data': plotData,
+    }, {
+      'id': 'data',
+      'color': 'rgb(119, 152, 191)',
+      'name': title,
+      'type': 'scatter',
+      'data': plotData,
+      'marker': {
+        'symbol': 'circle',
+      }
+    }]
+
+  });
+
 }
 
