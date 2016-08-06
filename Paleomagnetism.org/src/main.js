@@ -152,7 +152,7 @@ var showGeomagneticDirections = function () {
   // Create a temporary site for the selected sites and cutoff
   var selectedCutoff = $("#cutoffSelectorDirections").val()[0];
 
- $('#saveGroupButton span').text("Save");
+  $('#saveGroupButton span').text("Save");
   createTemporarySite(siteNames, selectedCutoff);
 
   // Set the siteNames to the newly created TEMP site
@@ -254,7 +254,7 @@ function addSite(edit) {
   // If the input is cleared, add a new site and close the data input window
   if(!inputData.sanitized) {
     notify('failure', 'Site input did not pass sanitization. Breaking procedure; please check input at line ' + inputData.line + '.');
-    module.options.editName = ""; return;
+    return;
   }
 
   // If we are editing, first delete the site with the old name (if it exists)

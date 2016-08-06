@@ -220,6 +220,7 @@ function jQueryInit(page) {
     'buttons': {
       'Cancel': function () {
         $(this).dialog("close");
+		module.options.editName = ""; 
       }
     }
   });
