@@ -252,7 +252,7 @@ $(function () {
 				<!-- Option Box (top left) -->
 				<div id="KMLbox">
 					<p><label><input type="checkbox" id="overlay" value="boundaries"> Show plates </label>			
-					<p><label><input type="checkbox" id="grid" value="grid"> Show grid </label>			
+					<!-- <p><label><input type="checkbox" id="grid" value="grid"> Show grid </label> -->	
 					<p><button id="addKMLButton" type="button" onClick="$('#addKML').click();" title="Import a .KML file">Import KML file</button>
 					<input style="display: none" id="addKML" type="file" size="4" name="file" onChange="module.map.addKML(event)"/>
 				</div>
@@ -322,13 +322,9 @@ $(function () {
 					</div>
 					<div id="decTab">
 						<div id="decContainer" style="height: 600px;"></div>
-						<b> Calculated rotation and confidence excluding age error (needs to be reworked) </b>
-						<p><div id="tableDeclination" class="tableBorder"></div>
 					</div>
 					<div id="incTab">
 						<div id="incContainer" style="height: 600px;"></div>
-						<b> Calculated flattening and confidence excluding age error </b>
-						<p><div id="tableInclination" class="tableBorder"></div>
 					</div>
 					<div id="mapTab">
 						<div id="polePath" style="height: 1200px;"></div>
