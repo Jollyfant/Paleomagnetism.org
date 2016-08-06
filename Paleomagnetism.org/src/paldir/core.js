@@ -619,10 +619,10 @@ $(function() {
 	var unique;
 	if(type === 'great circles') {
 	  var beddings = exportData.map(function(x) {
-	  return x.bedStrike + '/' + x.bedDip;
+	    return x.bedStrike + '/' + x.bedDip;
 	  });
 	  unique = (beddings.filter(function(value, index, self) {
-	  return self.indexOf(value) === index;
+	    return self.indexOf(value) === index;
 	  }).length === 1);
 	} else {
 	  unique = true;
@@ -632,7 +632,7 @@ $(function() {
 	  notify('failure', 'Cannot add fitted great circles with non-unique beddings');
 	  return 	
 	}
-	
+
     parsedObj.push({
       'name': name,
       'data': exportData, 
@@ -1167,13 +1167,13 @@ function fitCirclesToDirections() {
         }					
 				
         var dec = data[i][coordType][j].dec;
-	var inc = data[i][coordType][j].inc;
-	var bedStrike = data[i].bedStrike;
-	var bedDip = data[i].bedDip;
-	var sample = data[i].name;
-	var strat = data[i].strat;
+	    var inc = data[i][coordType][j].inc;
+	    var bedStrike = data[i].bedStrike;
+	    var bedDip = data[i].bedDip;
+	    var sample = data[i].name;
+	    var strat = data[i].strat;
 
-	// Collect the declination, inclinations (poles for great circles) and pass the type
+	    // Collect the declination, inclinations (poles for great circles) and pass the type
         var row = {
           'sample': sample,
           'dec': dec,
@@ -1193,7 +1193,7 @@ function fitCirclesToDirections() {
           isSet = true;
 
 	  exportData.push(row);
-	
+
 	  //Highcharts data array for plotting the set points, these can be used directly
 	  pointsSet.push({
             'x': dec,

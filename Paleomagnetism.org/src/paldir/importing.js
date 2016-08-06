@@ -29,6 +29,7 @@ function importMunich(text) {
 			
     // Get the header
     if(i === 0) {
+		
       var name = parameters[0];
 				
       // Check if sample with name exists -> append copy text
@@ -44,8 +45,9 @@ function importMunich(text) {
       var coreDip = 90 - Number(parameters[2]);
 				
       // Bedding strike needs to be decreased by 90 for input convention
-      var bedStrike = (parameters[3] + 270) % 360;
-      var bedDip = parameters[4];
+      var bedStrike = (Number(parameters[3]) + 270) % 360;
+
+      var bedDip = Number(parameters[4]);
       var info = parameters[5];
 
     } else {
@@ -119,12 +121,14 @@ function importBeijing(text) {
   var bedDip = Number(coreParameters[4]);
   
   // Parse the demagnetization information
-  // For now multiply by 10.5 (this will be fixed in a later patch)
+  // Specimen volume for PGL Beijing is 10cc
   var parsedData = new Array();
   for(var i = 2; i < text.length; i++) {
 
     var stepData = text[i];
-    var coordinates = cart(stepData[3], stepData[4], stepData[9] * 1e6 / 10e-6);
+	
+	// Coordinates from dec, inc, intensity
+    var coordinates = cart(Number(stepData[3]), Number(stepData[4]), Number(stepData[9]) * 1e11);
   	
     parsedData.push({
       'visible': true, 
@@ -238,7 +242,7 @@ function importUtrecht(text) {
 	      'x': Number(-parameterPoints[2]) / sampleVolume,
 	      'y': Number(parameterPoints[3]) / sampleVolume,
 	      'z': Number(-parameterPoints[1]) / sampleVolume,
-	      'a95': parameterPoints[4],
+	      'a95': Number(parameterPoints[4]),
 	      'info': parameterPoints[5] + ' at ' + parameterPoints[6]
         });
       }
@@ -260,10 +264,10 @@ function importUtrecht(text) {
       'TECT': new Array(),
       'interpreted': false,
       'name': name,
-      'coreAzi': Number(coreAzi),
-      'coreDip': Number(coreDip),
-      'bedStrike': Number(bedStrike),
-      'bedDip': Number(bedDip),
+      'coreAzi': coreAzi,
+      'coreDip': coreDip,
+      'bedStrike': bedStrike,
+      'bedDip': bedDip,
       'data': parsedData
     })
   }
