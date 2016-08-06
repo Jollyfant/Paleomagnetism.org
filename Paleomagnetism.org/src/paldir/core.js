@@ -814,7 +814,19 @@ $(function() {
       }
       return;
     }
-		
+	
+	// If only two points are specified and a GC fit is requested
+	// only the direction of t1 is reliable. t2 and t3 are both 0 but due
+	// to floating point precision may vary. Sometimes t2 is picked, other times t3.
+	// So disable.
+    if(nSteps < 3 && typeFit === 'PCAGC') {
+      if(tcFlag) {
+        notify('failure', 'Cannot adequately differentiate between τ2 and τ3. Three points are required.');
+        drawInterpretations();
+      }
+      return;
+    }
+	
     // For specimen get core parameters
     // Reduce the core dip to -hade that is equal to -(90 - plunge)
     var coreAzi = sampleData.coreAzi;
@@ -846,7 +858,7 @@ $(function() {
       X.push([coords.x, coords.y, coords.z]);
 
     }
-		
+
     // Preparation for orientation matrix A.3.5, Lisa Tauxe book
     // Calculate the coordinates of the “center of mass” (x) of the data points: 
     for(var i = 0; i < X.length; i++) {
@@ -854,7 +866,7 @@ $(function() {
         cm[j] += X[i][j]/nSteps;
       }
     }
-
+	
     // Transform the origin of the data cluster to the center of mass
     // If anchored, the cm is (0, 0, 0) so we don't do this
     if(!anchor) {
@@ -869,12 +881,12 @@ $(function() {
     // TMatrix subroutine takes this format as input.
     var tempFormat = new Array();
     for(var i = 0; i < X.length; i++) {
-      tempFormat.push({'x': X[i][0], 'y': X[i][1], 'z': X[i][2]});
+      tempFormat.push({'x': X[i][0]*10.5, 'y': X[i][1]*10.5, 'z': X[i][2]*10.5});
     }
-		
-    // Get principle components from TMatrix through numeric.js library
-    var eig = numeric.eig(TMatrix(tempFormat)); 
 
+    // Get principle components from TMatrix through numeric.js library
+    var eig = numeric.eig(TMatrix(tempFormat));
+	
     // Normalize eigenvectors to unit length
     var trace = 0;
     for(var i = 0; i < 3; i++) {
@@ -883,7 +895,7 @@ $(function() {
     for(var i = 0; i < 3; i++) {
       eig.lambda.x[i] = eig.lambda.x[i] / trace;
     }
-
+	
     // Sort eigenvectors/eigenvalues (copied from PmagPy lib.)
     var eig = sortEig(eig);
 
