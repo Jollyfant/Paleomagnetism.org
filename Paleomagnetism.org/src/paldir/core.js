@@ -305,215 +305,220 @@ $(function() {
    */
   $(document).keydown(function(e) {
 
-  // Global button "g" for setting a group
-  switch(e.which) {
-    case 71:
-      e.preventDefault();
-      setGroup();
-    break;			
-  }
-		
-  // Return if not in interpretation tab
-  if($("#tabs").tabs('option', 'active') !== 1) return;
-
-  // Allow left and right to be moved
-  // Delegate to the clicking the < (left) and > (right) button
-  switch(e.which) {
-			
-    //Left Arrow Key and A button
-    case 37: 
-    case 65:
-      e.preventDefault();
-      $("#left").click();
-    break;
-			
-    //Right Arrow Key and D button
-    case 39:
-    case 68:
-      e.preventDefault();
-      $("#right").click();
-    break;
-		
-  }
-		
-  var index = getSelectedStep();
-  var sample = getSampleIndex();
-
-  // Block all other keys until index and sample are both defined
-  // Undefined means that no specimen has been selected yet
-  if(index === undefined || sample === undefined) return;
-		
-  // Switch the other keys 
-  switch(e.which) {
-
-    // Keys: Numpad 3 and upper row 3
-    // Toggle the projection flag (Up/North - Up/West)
-    case 51:
-    case 99:
-      e.preventDefault();
-      $("#nFlag").prop("checked", !$("#nFlag").prop("checked")).change(); 
-    break;
-			
-    // Keys: Numpad 7 and 7
-    // Toggle the specimen coordinate flag
-    case 55:
-    case 53:
-      e.preventDefault();
-      $("#specFlag").prop("checked", !$("#specFlag").prop("checked")).change(); 
-    break;
-			
-    // Keys: Numpad 8 and 8
-    // Toggle the tilt correction view flag
-    case 56:
-    case 104:
-      e.preventDefault();
-      $("#tcViewFlag").prop("checked", !$("#tcViewFlag").prop("checked")).change(); 
-    break;
-
-    // Keys: Up Arrow Key and W button
-    // Move the demagnetization step up
-    case 38:
-    case 87:
-      e.preventDefault();
-      moveDemagnetizationStep("up");
-    break;
+	// Disable keyboard handler when typing
+    if ($(e.target).closest("input")[0]) {
+      return;
+    }
 	
-    // Keys: Down Arrow Key and S button
-    // Move the demagnetization step down
-    case 40:
-    case 83:
-      e.preventDefault();
-      moveDemagnetizationStep("down");
-    break;
-			
-    // Keys: Z button and - (numpad)
-    // Hide a step
-    case 90:
-    case 173:
-    case 109:
-
-      e.preventDefault();
-				
-      // If step is not hidden, hide it showing "···" and set step visibility to false
-      // If it is hidden, replace the dots with the default text (demagnetization step)
-      if(!$(liSelected).hasClass('hidden')) {
-        liSelected.addClass('hidden');
-        $(liSelected).text('···');
-        data[sample].data[index].visible = false;
-      } else {
-        var defaultText = $(liSelected).attr('value');
-        liSelected.removeClass('hidden');
-        $(liSelected).text(defaultText);
-        data[sample].data[index].visible = true;
-      }
-				
-      // If the demagnetization step has class use, remove this class (we don't want hidden points to be included)
-      if($(liSelected).hasClass('use')) {
-        liSelected.removeClass('use');
-        data[sample].data[index].include = false;
-      }
-				
-      // Redraw all the charts when hiding steps
-      plotZijderveldDiagram();
-      plotIntensityDiagram();
-      eqAreaProjection();
-      drawInterpretations();
-
-      // Move step down for convenience
-      moveDemagnetizationStep("down");
-      setStorage();
-
-    break;
-			
-    //Keys: X button (and +)
-    case 88:
-    case 107:
-    case 61:
-			
-      e.preventDefault();
-				
-      // Step currently not included and is not hidden, add a star (*) to the step and set include to true
-      // If the step is currently included, remove the star by resetting to the default value and set include to false
-      if(!$(liSelected).hasClass('use')) {
+    // Global button "g" for setting a group
+    switch(e.which) {
+      case 71:
+        e.preventDefault();
+        setGroup();
+      break;			
+    }
+	 	
+    // Return if not in interpretation tab
+    if($("#tabs").tabs('option', 'active') !== 1) return;
+    
+    // Allow left and right to be moved
+    // Delegate to the clicking the < (left) and > (right) button
+    switch(e.which) {
+	  		
+      //Left Arrow Key and A button
+      case 37: 
+      case 65:
+        e.preventDefault();
+        $("#left").click();
+      break;
+	  		
+      //Right Arrow Key and D button
+      case 39:
+      case 68:
+        e.preventDefault();
+        $("#right").click();
+      break;
+	  	
+    }
+	  	
+    var index = getSelectedStep();
+    var sample = getSampleIndex();
+    
+    // Block all other keys until index and sample are both defined
+    // Undefined means that no specimen has been selected yet
+    if(index === undefined || sample === undefined) return;
+	  	
+    // Switch the other keys 
+    switch(e.which) {
+    
+      // Keys: Numpad 3 and upper row 3
+      // Toggle the projection flag (Up/North - Up/West)
+      case 51:
+      case 99:
+        e.preventDefault();
+        $("#nFlag").prop("checked", !$("#nFlag").prop("checked")).change(); 
+      break;
+	  		
+      // Keys: Numpad 7 and 7
+      // Toggle the specimen coordinate flag
+      case 55:
+      case 53:
+        e.preventDefault();
+        $("#specFlag").prop("checked", !$("#specFlag").prop("checked")).change(); 
+      break;
+	  		
+      // Keys: Numpad 8 and 8
+      // Toggle the tilt correction view flag
+      case 56:
+      case 104:
+        e.preventDefault();
+        $("#tcViewFlag").prop("checked", !$("#tcViewFlag").prop("checked")).change(); 
+      break;
+    
+      // Keys: Up Arrow Key and W button
+      // Move the demagnetization step up
+      case 38:
+      case 87:
+        e.preventDefault();
+        moveDemagnetizationStep("up");
+      break;
+	  
+      // Keys: Down Arrow Key and S button
+      // Move the demagnetization step down
+      case 40:
+      case 83:
+        e.preventDefault();
+        moveDemagnetizationStep("down");
+      break;
+	  		
+      // Keys: Z button and - (numpad)
+      // Hide a step
+      case 90:
+      case 173:
+      case 109:
+    
+        e.preventDefault();
+	  			
+        // If step is not hidden, hide it showing "···" and set step visibility to false
+        // If it is hidden, replace the dots with the default text (demagnetization step)
         if(!$(liSelected).hasClass('hidden')) {
-          liSelected.addClass('use').append('*');
-          data[sample].data[index].include = true;
+          liSelected.addClass('hidden');
+          $(liSelected).text('···');
+          data[sample].data[index].visible = false;
+        } else {
+          var defaultText = $(liSelected).attr('value');
+          liSelected.removeClass('hidden');
+          $(liSelected).text(defaultText);
+          data[sample].data[index].visible = true;
         }
-      } else {
-        liSelected.removeClass('use');
-        var defaultText = $(liSelected).attr('value');
-        $(liSelected).text(defaultText);
-        data[sample].data[index].include = false;
-      }
-				
-      // Move step down for convenience
-      moveDemagnetizationStep("down");
-      setStorage();
+	  			
+        // If the demagnetization step has class use, remove this class (we don't want hidden points to be included)
+        if($(liSelected).hasClass('use')) {
+          liSelected.removeClass('use');
+          data[sample].data[index].include = false;
+        }
+	  			
+        // Redraw all the charts when hiding steps
+        plotZijderveldDiagram();
+        plotIntensityDiagram();
+        eqAreaProjection();
+        drawInterpretations();
+    
+        // Move step down for convenience
+        moveDemagnetizationStep("down");
+        setStorage();
+    
+      break;
+	  		
+      //Keys: X button (and +)
+      case 88:
+      case 107:
+      case 61:
+	  		
+        e.preventDefault();
+	  			
+        // Step currently not included and is not hidden, add a star (*) to the step and set include to true
+        // If the step is currently included, remove the star by resetting to the default value and set include to false
+        if(!$(liSelected).hasClass('use')) {
+          if(!$(liSelected).hasClass('hidden')) {
+            liSelected.addClass('use').append('*');
+            data[sample].data[index].include = true;
+          }
+        } else {
+          liSelected.removeClass('use');
+          var defaultText = $(liSelected).attr('value');
+          $(liSelected).text(defaultText);
+          data[sample].data[index].include = false;
+        }
+	  			
+        // Move step down for convenience
+        moveDemagnetizationStep("down");
+        setStorage();
+    
+      break;
+	  		
+      // When an interpretation is made we have four options: (line + great circle) x ( anchor + no anchor )
+      // Whether to include origin is included needs to be checked manually by the user in the advanced options tab
+      // Furthermore, we do and save the interpretation in Geographic and Tectonic coordinates
+      // Procedure is as follows:
+      // 1. Set anchor to selected (true or false)
+      // 2. Interpret in Geographic coordinates through PCA routine (set tcFlag to false)
+      // 3. Interpret in Tectonic coordinates PCA routine (set tcFlag to true)
+    
+      // Floating direction analysis
+      case 49:
+      case 97:
+        e.preventDefault();
+        $("#anchor").prop("checked", false);
+        $("#tcFlag").prop("checked", false);
+        $("#PCA").click();	
+        $("#tcFlag").prop("checked", true);
+        $("#PCA").click();
+        setStorage();
+      break;
+    
+      // Forced direction analysis
+      case 50:
+      case 98:
+        e.preventDefault();
+        $("#anchor").prop("checked", true);
+        $("#tcFlag").prop("checked", false);
+        $("#PCA").click();
+        $("#tcFlag").prop("checked", true);
+        $("#PCA").click();
+        setStorage();
+      break;	
+    
+      // Floating great circle analysis
+      case 57:
+      case 105:
+        e.preventDefault();
+        $("#anchor").prop("checked", false);
+        $("#tcFlag").prop("checked", false);
+        $("#PCAGC").click();
+        $("#tcFlag").prop("checked", true);
+        $("#PCAGC").click();
+        setStorage();
+      break;
+    
+      // Forced great circle analysis
+      case 48:
+      case 96:
+        e.preventDefault();
+        $("#anchor").prop("checked", true);
+        $("#tcFlag").prop("checked", false);
+        $("#PCAGC").click();
+        $("#tcFlag").prop("checked", true);
+        $("#PCAGC").click();
+        setStorage();
+      break;		
+    
+      // Exit this handler for other keys
+      default: return; 
+    
+    }
 
-    break;
-			
-    // When an interpretation is made we have four options: (line + great circle) x ( anchor + no anchor )
-    // Whether to include origin is included needs to be checked manually by the user in the advanced options tab
-    // Furthermore, we do and save the interpretation in Geographic and Tectonic coordinates
-    // Procedure is as follows:
-    // 1. Set anchor to selected (true or false)
-    // 2. Interpret in Geographic coordinates through PCA routine (set tcFlag to false)
-    // 3. Interpret in Tectonic coordinates PCA routine (set tcFlag to true)
- 
-    // Floating direction analysis
-    case 49:
-    case 97:
-      e.preventDefault();
-      $("#anchor").prop("checked", false);
-      $("#tcFlag").prop("checked", false);
-      $("#PCA").click();	
-      $("#tcFlag").prop("checked", true);
-      $("#PCA").click();
-      setStorage();
-    break;
-
-    // Forced direction analysis
-    case 50:
-    case 98:
-      e.preventDefault();
-      $("#anchor").prop("checked", true);
-      $("#tcFlag").prop("checked", false);
-      $("#PCA").click();
-      $("#tcFlag").prop("checked", true);
-      $("#PCA").click();
-      setStorage();
-    break;	
-
-    // Floating great circle analysis
-    case 57:
-    case 105:
-      e.preventDefault();
-      $("#anchor").prop("checked", false);
-      $("#tcFlag").prop("checked", false);
-      $("#PCAGC").click();
-      $("#tcFlag").prop("checked", true);
-      $("#PCAGC").click();
-      setStorage();
-    break;
-
-    // Forced great circle analysis
-    case 48:
-    case 96:
-      e.preventDefault();
-      $("#anchor").prop("checked", true);
-      $("#tcFlag").prop("checked", false);
-      $("#PCAGC").click();
-      $("#tcFlag").prop("checked", true);
-      $("#PCAGC").click();
-      setStorage();
-    break;		
-
-    // Exit this handler for other keys
-    default: return; 
-
-  }
-
-});
+  });
 	
   //Call procedure to fit circles to directions
   $("#fitCircles").click( function () {
