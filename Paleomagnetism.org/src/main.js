@@ -229,7 +229,7 @@ function addSite(edit) {
   $(".linedtextarea").animate().stop();
 	
   // Obtain site meta data (name, location, age) from input boxes
-  var metaData = new constructMetaData();
+  var metaData = new constructMetaData(edit);
   if(!metaData.sanitized) {
     notify('failure', 'An unexpected error while parsing site meta data. Please check location and age information.');
     return;
@@ -1398,35 +1398,46 @@ var processUserInput = function(data, type, name) {
  * Input: NULL
  * Output: site meta data object
  */
-var constructMetaData = function( ) {
+var constructMetaData = function(edit) {
 
   var siteName = $('#siteName').val();
   var latitude = $('#siteLat').val();
   var longitude = $('#siteLng').val();
+  
   var age = $('#siteAge').val();
   var minAge = $('#siteBoundMin').val();
   var maxAge = $('#siteBoundMax').val();
+  
   var author = $("#authorID").val();
   var description = $("#siteDesc").val();
 	
   // Escape illegal characters (backslash and double quotes)
   this.name = siteName.replace(/[\\"]/g,''); 
 
-  var date = new Date();
-  this.dateAdded = date.toISOString();
-  this.version = version;
-  this.markerColor = 'orange';	
-
-  this.cutoff = $("#cutoffSelector").val()[0];
+  // If editing, 
+  if(edit) {
+	  
+	this.edited = true;
+	this.timeEdited = new Date().toISOString();
 	
-  // Get the type of data (sampled, input, or from interpretation portal)
-  var type = $('#siteType').val();
-  if(type === 'lit') {
-    this.type = 'Simulated';
-  } else if(type === 'dir') {
-    this.type = 'Input';
-  } else if(type === 'int') {
-    this.type = 'Interpretation';
+  } else {
+  
+    this.dateAdded = new Date().toISOString();
+    this.version = version;
+    this.markerColor = 'orange';	
+
+    this.cutoff = $("#cutoffSelector").val()[0];
+	
+    // Get the type of data (sampled, input, or from interpretation portal)
+    var type = $('#siteType').val();
+    if(type === 'lit') {
+      this.type = 'Simulated';
+    } else if(type === 'dir') {
+      this.type = 'Input';
+    } else if(type === 'int') {
+      this.type = 'Interpretation';
+    }
+	
   }
 
   // Data specified in the advanced options tab (if unspecified fall back to default values)

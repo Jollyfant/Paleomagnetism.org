@@ -465,7 +465,7 @@ function jQueryInit(page) {
       if(!confirm('This action will overwrite the original site data.')) {
         return;
       }
-      addSite(module.options.editName)
+      addSite(module.options.editName);
     } else {    
       addSite();
     }
