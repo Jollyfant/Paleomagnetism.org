@@ -78,7 +78,8 @@ function importMunich(text) {
 	
   // Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
   data.push({
-    'added': new Date(),
+	'volume': null,
+    'added': new Date().toISOString(),
     'format': "Munich",
     'demagType': "Unknown",
     'strat': null,
@@ -117,7 +118,7 @@ function importBeijing(text) {
   var coreParameters = text[1];
   var coreAzi = Number(coreParameters[1]);	
   var coreDip = Number(coreParameters[2]);
-  var bedStrike = Number(coreParameters[3]) - 90;
+  var bedStrike = (Number(coreParameters[3]) + 270) % 360;
   var bedDip = Number(coreParameters[4]);
   
   // Parse the demagnetization information
@@ -143,7 +144,8 @@ function importBeijing(text) {
   }
   
   data.push({
-    'added': new Date(),
+	'volume': 10,
+    'added': new Date().toISOString(),
     'format': "PGL Beijing",
     'demagType': "Unknown",
     'strat': null,
@@ -255,7 +257,8 @@ function importUtrecht(text) {
 		
     // Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
     data.push({
-      'added': new Date(),
+	  'volume': sampleVolume,
+      'added': new Date().toISOString(),
       'format': "Utrecht",
       'demagType': "Unknown",
       'strat': stratLevel || null,
@@ -337,7 +340,8 @@ function importMac(text) {
 
   // Add the data to the application
   data.push({
-    'added': new Date(),
+	'volume': specimenVolume * 1e6,
+    'added': new Date().toISOString(),
     'format': "PaleoMac",
     'strat': null,
     'demagType': "Unknown",

@@ -1,6 +1,6 @@
 /* PALEOMAGNETISM.ORG MAIN FRAMEWORK FUNCTIONS
  * 
- * VERSION: 1.2.0
+ * VERSION: 1.1.0
  * LAST UPDATED: 2016-08-14
  *
  * JavaScript file containing main functionality procedures for the Paleomagnetism.org statistics portal.

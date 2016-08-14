@@ -1,6 +1,6 @@
 /* PALEOMAGNETISM.ORG INTERPRETATION PORTAL
  * 
- * VERSION: 1.2.0
+ * VERSION: 1.1.0
  * LAST UPDATED: 2016-08-14
  *
  * Description: Application that allows for the interpretation of laboratory obtained demagnetization data

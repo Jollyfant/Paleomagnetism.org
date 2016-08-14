@@ -1,6 +1,6 @@
 /* PALEOMAGNETISM.ORG CORE FUNCTIONS
  * 
- * VERSION: 1.2.0
+ * VERSION: 1.1.0
  * LAST UPDATED: 2016-08-14
  *
  * JavaScript file containing core functions for the Paleomagnetism.org application.

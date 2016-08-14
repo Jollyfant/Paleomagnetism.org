@@ -1,6 +1,6 @@
 /* PALEOMAGNETISM.ORG JQUERY INITIALIZATION
  * 
- * VERSION: 1.2.0
+ * VERSION: 1.1.0
  * LAST UPDATED: 2016-08-14
  *
  * JavaScript file containing jQuery DOM elements to be initialized. These elements often link to functions found in main.js
