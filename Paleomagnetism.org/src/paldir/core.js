@@ -2352,8 +2352,8 @@ function importing(event, format) {
           importMunich(text);
         } else if(format === 'PALEOMAC') {
           importMac(text);
-        } else if(format === 'ENKIN') {
-		  importEnkin(text);
+        } else if(format === 'OXFORD') {
+		  importOxford(text);
 		}
       } catch (ex) {
          notify('failure', 'An exception occured during importing, is the format correct?');

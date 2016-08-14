@@ -10,6 +10,80 @@
 
 "use strict"
 
+function importOxford(text) {
+	
+  var lines = text.split(/[\n]/).filter(Boolean);
+  var parsedData = new Array();
+ 
+  // Get specimen metadata from the first second line
+  var parameters = lines[2].split(/[\t]+/);
+
+  var coreAzi = Number(parameters[13]);
+  var coreDip = Number(parameters[14]);
+  
+  var bedStrike = (Number(parameters[15]) + 270) % 360;
+  var bedDip = Number(parameters[16]);
+  
+  var sampleName = parameters[0];
+  var sampleVolume = Number(parameters[18]);
+
+  // Determine what column to use
+  // Assume anything with 'Thermal' is TH, and 'Degauss' is AF.
+  if(/Thermal/.test(parameters[2])) {
+    var stepIndex = 4;
+    var demagType = 'TH';
+  } else if(/Degauss/.test(parameters[2])) {
+    var stepIndex = 3;
+    var demagType = 'AF';	  
+  } else {
+	notify('failure', 'Could not determine type of demagnetization');
+	return;
+  }
+  
+  for(var i = 1; i < lines.length; i++) {
+	
+	// Oxford is delimted by tabs
+	var parameters = lines[i].split(/[\t]+/);
+
+	var intensity = Number(parameters[6]);	
+	var dec = Number(parameters[11]);
+	var inc = Number(parameters[12]);
+
+    var cartesianCoordinates = cart(dec, inc, intensity);
+
+    parsedData.push({
+      'visible': true, 
+      'include': false,
+      'step': parameters[stepIndex],
+      'x': cartesianCoordinates.x / (sampleVolume * 1e-6),
+      'y': cartesianCoordinates.y / (sampleVolume * 1e-6),
+      'z': cartesianCoordinates.z / (sampleVolume * 1e-6),
+      'a95': null,
+      'info': null
+     });
+	 
+  }
+ 
+  data.push({
+	'volume': sampleVolume,
+    'added': new Date().toISOString(),
+    'format': "Oxford",
+    'demagType': demagType,
+    'strat': null,
+    'patch': PATCH_NUMBER,
+    'GEO': new Array(),
+    'TECT': new Array(),
+    'interpreted': false,
+    'name': sampleName,
+    'coreAzi': Number(coreAzi),
+    'coreDip': Number(coreDip),
+    'bedStrike': Number(bedStrike),
+    'bedDip': Number(bedDip),
+    'data': parsedData
+  });
+    
+}
+
 /*
  * Importing parser for Munich format
  * One sample per file, multiple files can be selected during importing
