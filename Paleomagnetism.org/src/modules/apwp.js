@@ -1,8 +1,8 @@
 /* PALEOMAGNETISM.ORG STATISTICS PORTAL
  * APWP AND MAP MODULE 
  * 
- * VERSION: 1.1.0
- * LAST UPDATED: 2016-07-18
+ * VERSION: 1.2.0
+ * LAST UPDATED: 2016-08-14
  *
  * JavaScript file containing functionality for the APWP module (map is disabled in offline mode - needs to communicate with the Google Maps v3 API)
  *

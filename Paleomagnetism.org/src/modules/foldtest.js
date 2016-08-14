@@ -1,7 +1,7 @@
 /* PALEOMAGNETISM.ORG STATISTICS PORTAL
  * FOLDTEST MODULE
  * 
- * VERSION: 1.1.0
+ * VERSION: 1.2.0
  * LAST UPDATED: 2016-07-18
  *
  * Description: Module Foldtest using the eigenvalue approach (Tauxe and Watson, 1991)

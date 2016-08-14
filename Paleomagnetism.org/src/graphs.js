@@ -1,7 +1,7 @@
 /* PALEOMAGNETISM.ORG GRAPHING FUNCTIONS
  * 
- * VERSION: ALPHA.1604
- * LAST UPDATED: 20/04/2016
+ * VERSION: 1.2.0
+ * LAST UPDATED: 2016-08-14
  *
  * JavaScript file containing Highcharts functions for the Paleomagnetism.org applications.
  * Highcharts is an open-source graphing tool for JavaScript (http://www.highcharts.com/)
@@ -1456,7 +1456,7 @@ function translateToSite(direction, from, to) {
   var expectedInc = siteDirectionsTransformed[1];
   var expectedPalat = diPalat(expectedInc);
 
-    return {'dec': expectedDec, 'inc': expectedInc, 'palat': expectedPalat}
+  return {'dec': expectedDec, 'inc': expectedInc, 'palat': expectedPalat}
 
 }
 

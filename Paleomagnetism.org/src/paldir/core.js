@@ -1,7 +1,7 @@
 /* PALEOMAGNETISM.ORG INTERPRETATION PORTAL
  * 
- * VERSION: ALPHA.1603
- * LAST UPDATED: 03/25/2016
+ * VERSION: 1.2.0
+ * LAST UPDATED: 2016-08-14
  *
  * Description: Application that allows for the interpretation of laboratory obtained demagnetization data
  * Components (great circles and directions) can be interpreted following the principle component analysis of Kirschvink, 1981
@@ -31,7 +31,7 @@ var li, liSelected;
 var data;
 var globalSticky = new Array();
 var exportData = new Array();
-var version = 'vBETA.1605.01';
+var version = 'v1.2.0';
 
 var group = 'None';
 var PATCH_NUMBER = 1.1;
@@ -55,7 +55,7 @@ function getSampleIndex() {
  * Input: NULL
  * Output: integer of selected step (from 0 to N steps)
  */
-var getSelectedStep = function () {
+var getSelectedStep = function() {
   return parseInt($(liSelected).index());
 }
 
@@ -557,7 +557,7 @@ $(function() {
 		notify('failure', 'Cannot include bedding in tectonic coordinates');
 		return;
 	}
-	
+
     forwardInts(settings);
 	
   });
@@ -577,7 +577,7 @@ $(function() {
 				
     //Has not been fitted
     if(exportData.length === 0) {
-		
+	
       var type = 'directions';
       for(var i = 0; i < data.length; i++) {
         if(data[i].interpreted) {
@@ -1185,7 +1185,7 @@ function fitCirclesToDirections() {
           'inc': inc,
           'bedStrike': bedStrike,
           'bedDip': bedDip,
-          'strat': strat,
+          'strat': strat || 0,
           'type': data[i][coordType][j].type
         }
 
@@ -1301,11 +1301,11 @@ function fitCirclesToDirections() {
   //This v vector represents the first 'guess'
   //If no set points are specified we take the anchor that is specified above under 'fake' as the mean vector
   if(nPoints > 0) {
-    var R = Math.sqrt(xSum*xSum + ySum*ySum + zSum*zSum);
+    var R = Math.sqrt(xSum * xSum + ySum * ySum + zSum * zSum);
     var unitMeanVector = {
-      'x': xSum/R, 
-      'y': ySum/R, 
-      'z': zSum/R
+      'x': xSum / R, 
+      'y': ySum / R, 
+      'z': zSum / R
     }
   }
 
@@ -1401,25 +1401,25 @@ function fitCirclesToDirections() {
       var direction = new dir(fittedCircleCoordinates[i].x, fittedCircleCoordinates[i].y, fittedCircleCoordinates[i].z);
       exportData.push({
         'sample': circleInfo[i].sample,
-	'dec': direction.dec, 
-	'inc': direction.inc,
-	'bedStrike': circleInfo[i].bedStrike,
-	'bedDip': circleInfo[i].bedDip,
-	'strat': circleInfo[i].strat,
-	'type': 'gc'
+	    'dec': direction.dec, 
+	    'inc': direction.inc,
+	    'bedStrike': circleInfo[i].bedStrike,
+	    'bedDip': circleInfo[i].bedDip,
+	    'strat': circleInfo[i].strat,
+	    'type': 'gc'
       });
 
       //Data array for points fitted on great circle
       pointsCircle.push({
         'x': direction.dec, 
-	'sample': circleInfo[i].sample,
-	'y': eqArea(direction.inc), 
-	'inc': direction.inc,
-	'marker': {
-	  'fillColor': (direction.inc < 0) ? 'white' : 'rgb(191, 119, 152)',
-	  'lineColor': 'rgb(191, 119, 152)',
+	    'sample': circleInfo[i].sample,
+	    'y': eqArea(direction.inc), 
+	    'inc': direction.inc,
+	    'marker': {
+	      'fillColor': (direction.inc < 0) ? 'white' : 'rgb(191, 119, 152)',
+	      'lineColor': 'rgb(191, 119, 152)',
           'lineWidth': 1,
-	}
+	    }
       });
     }
 
@@ -1693,7 +1693,7 @@ function showData() {
  * Input: type@string of sorting
  * Output: VOID (sorts global data array)
  */
-function sortBy (type) {
+function sortBy(type) {
 
   if(type === 'stratigraphy') {
     data = data.sort(function(a,b) {
@@ -2190,7 +2190,7 @@ function setHoverRadius(index) {
  * Input: NULL
  * Output: VOID (calls dlItem to start download of formatted CSV)
  */
-function exportInterpretation () {
+function exportInterpretation() {
 		
   var csv = '';
   var noData = true;
@@ -2237,38 +2237,41 @@ function exportInterpretation () {
  * The application needs to be backwards compatible so we needs
  * to update data that is not compatible with recent versions ._.
  */
-function patch () {
+function patch() {
 	
   if(!data || data.length === 0) return;
 
   var patched = false;
+ 
+  // Loop over all specimens 
   for(var i = 0; i < data.length; i++) {
 		
   // First Paleomagnetism.org Patch (patch === undefined)
   // Set patch attribute, group attribute
   // Reduce the intensities by 10.5 (this was hardcoded before)
-  // Loop over all specimens
   if(data[i].patch === undefined) {
 
     patched = true;
     for(var j = 0; j < data[i].data.length; j++) {
-      data[i].data[j].x = data[i].data[j].x/10.5;
-      data[i].data[j].y = data[i].data[j].y/10.5;
-      data[i].data[j].z = data[i].data[j].z/10.5;
+      data[i].data[j].x = data[i].data[j].x / 10.5;
+      data[i].data[j].y = data[i].data[j].y / 10.5;
+      data[i].data[j].z = data[i].data[j].z / 10.5;
     }
 			
-    // Reduce the center of mass of interpreted directions and circles
+    // Reduce the center of mass of floating 
+	// interpreted directions and circles
+	// and set group to None
     for(var j = 0; j < data[i]['GEO'].length; j++) {
       data[i]['GEO'][j].group = "None";
       data[i]['GEO'][j].cm = data[i]['GEO'][j].cm.map(function(x) {
-        return x/10.5;
+        return x / 10.5;
       });
     }
 
     for(var j = 0; j < data[i]['TECT'].length; j++) {
       data[i]['TECT'][j].group = "None";
       data[i]['TECT'][j].cm = data[i]['TECT'][j].cm.map(function(x) {
-        return x/10.5;
+        return x / 10.5;
       });
     }
 			
@@ -2298,7 +2301,7 @@ function patch () {
  * UTRECHT - Utrecht
  * APP - Application (standard)
  */
-function importing (event, format) {
+function importing(event, format) {
 		
   $("#appBody").hide();
   $("#input").dialog("close");
@@ -2375,6 +2378,7 @@ function importing (event, format) {
       }
     }
   })(0);
+  
 }
 
 /*
