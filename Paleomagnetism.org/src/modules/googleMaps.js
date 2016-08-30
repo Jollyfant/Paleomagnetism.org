@@ -102,7 +102,7 @@ module.map.initialize = function() {
    * using ORFEUS path, whatever ;)
    */
   plateLayer = new google.maps.KmlLayer({
-    url: 'http://www.orfeus-eu.org/mathijs/newWeb/docs/examples/offcanvas/extra/tectonic_plates.kml',
+    url: '../db/tectonic_plates.kml',
     suppressInfoWindows: true,
     preserveViewport: true,
   });

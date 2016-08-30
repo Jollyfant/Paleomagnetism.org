@@ -215,11 +215,11 @@ function getExpectedLocation(skip) {
       // Get custom attribute for plate (is the reference frame default or added by the user)
       var custom = eval($('#plateNames option[value="' + plateName + '"]').attr('custom'));
       var refFrame = $("#refFrame").val();
-  	  	
+
       //For one selected plate, loop over all selected reference frames
       for(var numFrames = 0; numFrames < refFrame.length; numFrames++) {
-  	  		
-        //Get the real plate name for displaying
+
+	    //Get the real plate name for displaying
         var realPlateName = $("#plateNames option[value='" + plateName + "']").text();	
         var realRefName = refFrame[numFrames];
         var realRefName2 = $("#refFrame option[value='" + realRefName + "']").text();
@@ -379,7 +379,6 @@ function getExpectedLocation(skip) {
           
           }
         }
-      }
   	  
       // Construct error boundaries ([x, yMin, yMax])
       // The skip variable makes sure we put the errors on the right ages
@@ -494,7 +493,7 @@ function getExpectedLocation(skip) {
       });
     }
   }
-  
+        }
   $("#poleTabs").show();
   $("#poleTabCaption").show();
   
