@@ -102,7 +102,7 @@ module.map.initialize = function() {
    * using ORFEUS path, whatever ;)
    */
   plateLayer = new google.maps.KmlLayer({
-    url: '../db/tectonic_plates.kml',
+    url: 'http://paleomagnetism.org/src/db/tectonic_plates.kml',
     suppressInfoWindows: true,
     preserveViewport: true,
   });

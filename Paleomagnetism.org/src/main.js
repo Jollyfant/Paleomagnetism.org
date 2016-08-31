@@ -152,12 +152,14 @@ var showGeomagneticDirections = function () {
   // Create a temporary site for the selected sites and cutoff
   var selectedCutoff = $("#cutoffSelectorDirections").val()[0];
 
-  $('#saveGroupButton span').text("Save");
   createTemporarySite(siteNames, selectedCutoff);
 
   // Set the siteNames to the newly created TEMP site
-  var siteNames = 'TEMP';
-		
+  if(siteNames.length > 1 || selectedCutoff !== sites[siteNames].userInput.metaData.cutoff) {
+    var siteNames = 'TEMP';
+    $('#saveGroupButton span').text("Save");
+  }
+  
   // Call plot functions for equal area projection and virtual geomagnetic poles
   eqAreaDirections(siteNames);
   eqAreaVGPs(siteNames);

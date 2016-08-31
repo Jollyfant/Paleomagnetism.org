@@ -715,7 +715,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate) {
           'marker': {
             'enabled': false
           },
-          'data': k.data.two
+          'data': k.data.upper
         }, {
           'name': 'Bisector (Site Pole - Reference Direction)',
           'type': 'line',
@@ -727,7 +727,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate) {
           'marker': {
             'enabled': false
           },
-          'data': k.data.one
+          'data': k.data.lower
         }, {
           'name': 'Bisector (Solution 1 - Dyke Pole)',
           'type': 'line',
@@ -737,7 +737,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate) {
           'marker': {
             'enabled': false
           },
-          'data': m.data.two
+          'data': m.data.upper
         }, {
           'type': 'line',
           'linkedTo': ':previous',

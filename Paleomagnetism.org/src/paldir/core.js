@@ -886,7 +886,7 @@ $(function() {
     // TMatrix subroutine takes this format as input.
     var tempFormat = new Array();
     for(var i = 0; i < X.length; i++) {
-      tempFormat.push({'x': X[i][0]*10.5, 'y': X[i][1]*10.5, 'z': X[i][2]*10.5});
+      tempFormat.push({'x': X[i][0], 'y': X[i][1], 'z': X[i][2]});
     }
 
     // Get principle components from TMatrix through numeric.js library
