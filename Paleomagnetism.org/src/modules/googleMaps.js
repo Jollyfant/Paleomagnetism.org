@@ -17,8 +17,9 @@ module.map = {
 }	
 
 $(function () {
+	
   $('#overlay').prop('checked', false);
-  $('#grid').prop('checked', false);
+  $('#grid').prop('checked', true);
 
   $('#overlay').change(function () {
     toggleOverlay($("#overlay").is(':checked'));
@@ -71,8 +72,8 @@ module.map.initialize = function() {
   // Initialize the map with the specified map options
   module.map.map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
   
-  //grid = new Graticule(module.map.map, true);
-
+  grid = new Graticule(module.map.map, true);
+  
   // Add listener for a click event
   google.maps.event.addListener(module.map.map, "click", function(e) {
   		
