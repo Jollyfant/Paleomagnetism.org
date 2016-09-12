@@ -2,3 +2,5 @@ List of names & MD5 hashes
 
 "Vissers et al., 2016" - c440d9d38fe0ee981c8b8719c026c55d
 "Example dir, 2016" - 1a79a4d60de6718e8e5b326e338ae533
+"Sangri Paper: Li, Z.*, Ding, L., Lippert, P.C., Song, P., Yue, Y. and, van Hinsbergen, D.J.J., 2016, Paleomagnetic constraints on the Mesozoic drift of the Lhasa terrane (Tibet) from Gondwana to Eurasia, Geology 44, p. 727-730" - 3dddfe075333c3d451a813a5cfad1b31
+"Tibet Paper: Li, Z.*, Ding, L., Lippert, P.C., Song, P., Yue, Y. and, van Hinsbergen, D.J.J., 2016, Paleomagnetic constraints on the Mesozoic drift of the Lhasa terrane (Tibet) from Gondwana to Eurasia, Geology 44, p. 727-730" - c64b185ccb115f30d452c89008cb6bb0
