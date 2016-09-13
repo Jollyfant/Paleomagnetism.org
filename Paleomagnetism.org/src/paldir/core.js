@@ -60,6 +60,19 @@ var getSelectedStep = function() {
 }
 
 /*
+ * FUNCTION globalRemark
+ * sets global variable with remark to be used in interpretation notes
+ */
+var globalRemark = '';
+function setRemark() {
+  if($('#commentFlag').prop('checked')) {
+    globalRemark = prompt("Enter a remark.") || ''
+  } else {
+    globalRemark = ''
+  }
+}
+
+/*
  * FUNCTION moveStep
  * Description: moves the selected demagnetization step "up" or "down"
  * Input: direction@string for direction to move ("up" or "down")
@@ -469,6 +482,7 @@ $(function() {
       case 49:
       case 97:
         e.preventDefault();
+        setRemark();
         $("#anchor").prop("checked", false);
         $("#tcFlag").prop("checked", false);
         $("#PCA").click();	
@@ -481,6 +495,7 @@ $(function() {
       case 50:
       case 98:
         e.preventDefault();
+        setRemark();
         $("#anchor").prop("checked", true);
         $("#tcFlag").prop("checked", false);
         $("#PCA").click();
@@ -493,6 +508,7 @@ $(function() {
       case 57:
       case 105:
         e.preventDefault();
+        setRemark();
         $("#anchor").prop("checked", false);
         $("#tcFlag").prop("checked", false);
         $("#PCAGC").click();
@@ -505,6 +521,7 @@ $(function() {
       case 48:
       case 96:
         e.preventDefault();
+        setRemark();
         $("#anchor").prop("checked", true);
         $("#tcFlag").prop("checked", false);
         $("#PCAGC").click();
@@ -750,6 +767,7 @@ $(function() {
 	
     // Get the flags
     var tcFlag = $('#tcFlag').prop('checked');
+    var commentFlag = $('#commentFlag').prop('checked');
     var anchor = $('#anchor').prop('checked');
     var specFlag = $('#specFlag').prop('checked');
     var includeOrigin = $("#originFlag").prop('checked');
@@ -945,7 +963,7 @@ $(function() {
         v1[i] = -v1[i];
       }
     }
-	
+
     // This is where we split the PCA for lines and great circles
     // For lines, we use the maximum eigenvalue
     // For planes, we use the minimum eigenvalue (that is perpendicular to the plane defined by tau1 and tau2)
@@ -974,7 +992,7 @@ $(function() {
         'intensity': intensity,
         'type': setType,
         'forced': anchor,
-        'remark': '',
+        'remark': globalRemark || '',
         'origin': includeOrigin,
         'nSteps': steps.length,
         'minStep': steps[0],
@@ -1016,7 +1034,7 @@ $(function() {
         'type': setType,
         'origin': includeOrigin,
         'forced': anchor,
-        'remark': '',
+        'remark': globalRemark || '',
         'nSteps': steps.length,
         'minStep': steps[0],
         'maxStep': steps[steps.length - 1],
@@ -1041,9 +1059,7 @@ $(function() {
       sampleData[coordType].push(dataObj);
     }
 		
-    // Only redraw once (this function is automatically called in both Geographic and Tectonic coordinates)
-    // So reduce to just firing when interpreting in Tectonic coordinates
-   if(tcFlag) {
+    if(tcFlag) {
       drawInterpretations();
       setHoverRadius();
     }
@@ -2021,7 +2037,7 @@ var changeRemark = function (event) {
 	
   // Capture specimen in samples variable
   var sample = getSampleIndex();
-  var text = prompt("Please enter a note below.");
+  var text = prompt("Please enter a note below.", data[sample]['GEO'][index].remark);
 	
   // Don't change note is cancel is pressed.
   if(text === null) return;
