@@ -11,7 +11,7 @@ function dlItem (string, extension) {
 	
   var blob = new Blob([string], {'type': 'data:text/csv;charset=utf-8'});
   var csvUrl = URL.createObjectURL(blob);
-  var name = 'export';
+  var name = data[0].name + ' et al.';
 
   // Download attribute supported
   if (downloadAttrSupported) {
@@ -25,14 +25,8 @@ function dlItem (string, extension) {
   } else if (window.Blob && window.navigator.msSaveOrOpenBlob) {
     // Falls to msSaveOrOpenBlob if download attribute is not supported
     window.navigator.msSaveOrOpenBlob(blob, name + '.' + extension);
-  } else {
-    // Fall back to server side handling (Highcharts)
-    Highcharts.post('http://www.highcharts.com/studies/csv-export/download.php', {
-      data: string,
-      type: 'txt',
-      extension: extension
-    });
   }
+
 }
 
 /* 
