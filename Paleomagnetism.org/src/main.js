@@ -1233,6 +1233,10 @@ var processUserInput = function(data, type, name) {
       sanitized = false;
       notify('failure', 'A minimum of two magnetic directions are required.');
     } 
+
+    lines = lines.filter(function(x) {
+      return Boolean(lines);
+    });
 		
     // Start sanity check for all lines
     for(var i = 0; i < lines.length; i++) {
@@ -1250,6 +1254,10 @@ var processUserInput = function(data, type, name) {
       var p = lines[i].split(/[,\t]+/).filter(function(x) {
         return x !== "";
       });
+
+      if(p.length === 0) {
+        continue;
+      }
 
       var numberInput = p.length;
 
