@@ -117,6 +117,9 @@ $(function () {
 	The source code is open and available as a repository on GitHub and can be found <a href="https://github.com/Jollyfant/Paleomagnetism.org">here</a>.
 	<h1> Offline (Local) Version </h1>
 	A local version of the Paleomagnetism.org application can be downloaded <a href="https://github.com/Jollyfant/Paleomagnetism.org/archive/master.zip">here</a> (.zip). To run the application locally, unpack the files and open the <i> index.html </i> file in your browser. Features that require an internet connection (e.g. figure exporting) cannot be used in offline mode.
+	<h1> Hard Reset </h1>
+	Some users may experience freezing of the browser (especially Chrome) after an update. The application can be resetted by clicking here:
+	<p> <button id="hardReset">Reset Full Local Storage</button>
 	</div>
 
 	<hr>
@@ -133,6 +136,15 @@ $(function () {
 		</div>
 	</div>
 </div>
+
+<script>
+$(function() {
+  $("#hardReset").click(function() {
+    localStorage.clear();
+	location.reload();
+  })
+})
+</script>
 
 
 </BODY>
