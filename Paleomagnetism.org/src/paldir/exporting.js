@@ -9,7 +9,7 @@ function dlItem (string, extension) {
   // Check if supported
   var downloadAttrSupported = document.createElement('a').download !== undefined;
 	
-  var blob = new Blob([string], {'type': 'data:text/csv;charset=utf-8'});
+  var blob = new Blob([string], {'type': 'data:application/json;charset=utf-8'});
   var csvUrl = URL.createObjectURL(blob);
   var name = data[0].name + ' et al.';
 
@@ -25,6 +25,12 @@ function dlItem (string, extension) {
   } else if (window.Blob && window.navigator.msSaveOrOpenBlob) {
     // Falls to msSaveOrOpenBlob if download attribute is not supported
     window.navigator.msSaveOrOpenBlob(blob, name + '.' + extension);
+  } else {
+    Highcharts.post('http://www.highcharts.com/studies/csv-export/download.php', {
+      'data': string,
+      'type': 'txt',
+      'extension': extension
+    });	  
   }
 
 }

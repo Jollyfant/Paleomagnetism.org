@@ -25,7 +25,7 @@ function importOxford(text) {
   var bedDip = Number(parameters[16]);
   
   var sampleName = parameters[0];
-  var sampleVolume = Number(parameters[18]);
+  var sampleVolume = Math.abs(Number(parameters[18]));
 
   // Determine what column to use
   // Assume anything with 'Thermal' is TH, and 'Degauss' is AF.
@@ -281,8 +281,8 @@ function importUtrecht(text) {
         // Remove quotes (for TH-demag, samples are written as ""SS1.1"". Not very nice.);
 		// Default to 10.5cc
         var name = parameterPoints[0].replace(/['"]+/g, ''); 
-        var sampleVolume = Number(parameterPoints[4]) || 10.5;
-				
+        var sampleVolume = Math.abs(Number(parameterPoints[4])) || 10.5;
+		
         // Check if sample with name exists -> append copy text
         for(var k = 0; k < data.length; k++) {
           if(name === data[k].name) {
@@ -376,7 +376,7 @@ function importMac(text) {
   }
 
   // Get specimenVolume from file or default to 10cc (in m3)
-  var specimenVolume = Number(values[4][0]) * Math.pow(10, Number(values[4][1])) || 10e-6;
+  var specimenVolume = Math.abs(Number(values[4][0]) * Math.pow(10, Number(values[4][1]))) || 10e-6;
 
   // core hade is measured, we use plunge (90 - hade)
   var coreAzi = Number(values[0]);	
