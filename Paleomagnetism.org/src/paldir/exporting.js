@@ -26,10 +26,10 @@ function dlItem (string, extension) {
     // Falls to msSaveOrOpenBlob if download attribute is not supported
     window.navigator.msSaveOrOpenBlob(blob, name + '.' + extension);
   } else {
-    Highcharts.post('http://www.highcharts.com/studies/csv-export/download.php', {
+    Highcharts.post('http://www.orfeus-eu.org/scripts/exporting.php', {
       'data': string,
-      'type': 'txt',
-      'extension': extension
+      'type': 'application/json',
+      'extension': name = '.' + extension
     });	  
   }
 

@@ -230,10 +230,10 @@ module.IO.dlItem = function(data, name, extension) {
   } else if (window.Blob && window.navigator.msSaveOrOpenBlob) {
     window.navigator.msSaveOrOpenBlob(blob, name + '.' + extension);
   } else {
-    Highcharts.post('http://www.highcharts.com/studies/csv-export/download.php', {
+    Highcharts.post('http://www.orfeus-eu.org/scripts/exporting.php', {
       'data': data,
       'type': 'txt',
-      'extension': extension
+      'extension': name + '.' + extension
     });
   }
 
