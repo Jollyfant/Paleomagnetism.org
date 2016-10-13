@@ -258,7 +258,10 @@ function getExpectedLocation(skip) {
 
           // Throw error if ages do not match
           if(APWP.age[i] !== APWP.africanPolePath.age[i]) {
-            notify('failure', 'Fatal: ages for Euler Poles does not match increments of 10 Myr starting from 0.'); return; 
+            if(APWP.africanPolePath.age[i] !== undefined) {
+              notify('failure', 'Fatal: ages for Euler Poles does not match increments of 10 Myr starting from 0.');
+            }
+            break; 
           }
 
           // Check if within age bounds
@@ -384,7 +387,7 @@ function getExpectedLocation(skip) {
       // The skip variable makes sure we put the errors on the right ages
       // Paleolatitude has non-symmetrical errors
       var skipAge = 0
-      for( var i = 0; i < APWP.lon.length; i++) {
+      for( var i = 0; i < paleoLats.length; i++) {
       	if(APWP.age[i] >= ageMin && APWP.age[i] <= ageMax) {
       	  decErrors.push([APWP.age[i], (paleoDecs[i - skipAge].y - paleoDecs[i - skipAge].error), (paleoDecs[i - skipAge].y + paleoDecs[i - skipAge].error)]);	
       	  incErrors.push([APWP.age[i], (paleoIncs[i - skipAge].y - paleoIncs[i - skipAge].error), (paleoIncs[i - skipAge].y + paleoIncs[i - skipAge].error)]);
