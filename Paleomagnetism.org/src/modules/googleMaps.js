@@ -197,19 +197,19 @@ module.map.mapAddSites = function() {
   		  var textContent = contentString;
   		  	contentString += '<hr>';
   		  	contentString += '<b> Marker color: </b><br>';
-  		  	contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'red\')"><u>red</u></a>&nbsp'
-  		  	contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'orange\')"><u>orange</u></a>&nbsp'
-  		  	contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'blue\')"><u>blue</u></a>&nbsp'
-  		  	contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'green\')"><u>green</u></a>&nbsp'
-  		  	contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'purple\')"><u>purple</u></a>'
-			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'yellow\')"><u>Yellow</u></a>&nbsp'
+  		  	contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'#FF0000\')"><u>red</u></a>&nbsp'
+  		  	contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'#FFA500\')"><u>orange</u></a>&nbsp'
+  		  	contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'#0000FF\')"><u>blue</u></a>&nbsp'
+  		  	contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'#008000\')"><u>green</u></a>&nbsp'
+  		  	contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'#800080\')"><u>purple</u></a>'
+			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'#FFFF00\')"><u>Yellow</u></a>&nbsp'
 			contentString += '<br>'
-			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'black\')"><u>Black</u></a>&nbsp'
-			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'cyan\')"><u>Cyan</u></a>&nbsp'
-			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'DeepPink \')"><u>Pink</u></a>&nbsp'
-			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'violet\')"><u>Violet</u></a>&nbsp'
-			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'lime \')"><u>Lime</u></a>&nbsp'
-			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'brown \')"><u>Brown</u></a>&nbsp'
+			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'#000000\')"><u>Black</u></a>&nbsp'
+			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'#00FFFF\')"><u>Cyan</u></a>&nbsp'
+			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'#F660AB\')"><u>Pink</u></a>&nbsp'
+			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'#8D38C9\')"><u>Violet</u></a>&nbsp'
+			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'#32CD32\')"><u>Lime</u></a>&nbsp'
+			contentString += '<a onClick="module.map.changeColor(module.map.markers['+i+'], \'#A52A2A\')"><u>Brown</u></a>&nbsp'
 			
   		  //Add sites to map
   		  //We use a custom SVG marker (path) to create the confidence envelope.
