@@ -1,7 +1,7 @@
 /* PALEOMAGNETISM.ORG MAIN FRAMEWORK FUNCTIONS
  * 
- * VERSION: 1.1.0
- * LAST UPDATED: 2016-08-14
+ * VERSION: 1.1.1
+ * LAST UPDATED: 2016-10-14
  *
  * JavaScript file containing main functionality procedures for the Paleomagnetism.org statistics portal.
  *
@@ -9,7 +9,7 @@
  */
  
  //Current application version
-version = 'v1.1.0';
+version = 'v1.1.1';
 
 //Create the modules object that will carry all functional modules
 module = new Object();

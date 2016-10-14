@@ -27,9 +27,10 @@ function dlItem (string, extension) {
     window.navigator.msSaveOrOpenBlob(blob, name + '.' + extension);
   } else {
     Highcharts.post('http://www.orfeus-eu.org/scripts/exporting.php', {
+	  'extension': extension,
       'data': string,
       'type': 'application/json',
-      'extension': name = '.' + extension
+      'name': name
     });	  
   }
 
