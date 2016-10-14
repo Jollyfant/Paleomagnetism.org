@@ -277,7 +277,7 @@ module.CTMD.monte = function (N, R, K, X, Y, Z) {
   
   var angleBetween = angle(directionOne.dec, directionOne.inc, directionTwo.dec, directionTwo.inc);
   if(angleBetween > 90) {
-    X[0] = -X[1];
+    X[1] = -X[1];
     Y[1] = -Y[1];
     Z[1] = -Z[1];
   }
