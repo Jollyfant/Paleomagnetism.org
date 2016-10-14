@@ -164,6 +164,111 @@ function getRotatedPole (APWP, i) {
 	
 }
 
+function getMovingAverage() {
+
+  // Get the site names
+  var siteNames = $('#mapSel').val();
+  if(siteNames === null) {
+    return new Array();
+  }
+
+  var coordRef  = ($("#mapRadio input[type='radio']:checked").val() === 'TECT') ? 'dataTC' : 'data';
+
+  var movingData = new Array();
+  for(var i = 0; i < siteNames.length; i++) {
+
+    var age = sites[siteNames[i]].userInput.metaData.age;
+    var minAge = sites[siteNames[i]].userInput.metaData.minAge;
+    var maxAge = sites[siteNames[i]].userInput.metaData.maxAge;
+
+    if(minAge === null) {
+      minAge = age;
+    }
+    if(maxAge === null) {
+      maxAge = age;
+    }
+
+    if(minAge === null || maxAge === null) {
+      notify('failure', 'ages not ok');
+      continue;
+    }
+
+    var siteVGPData = sites[siteNames[i]][coordRef].poles.accepted;
+
+    for(var j = 0; j < siteVGPData.length; j++) {
+
+      movingData.push({
+        'lon': Number(siteVGPData[j][0]),
+        'lat': Number(siteVGPData[j][1]),
+        'ageMin': Number(minAge),
+        'ageMax': Number(maxAge),
+        'name': siteVGPData[j][4]
+      });
+
+    }
+
+  }
+
+  var startAverage = 0;
+  var endAverage = 250;
+  var increment = 10;
+  var windowLength = 10;
+
+  if((endAverage - startAverage) % increment !== 0) {
+    notify('failure', 'Age increment not good');
+  }
+
+  var current;
+  var poleData = new Array(null);
+  for(var i = 0; i < endAverage; i+=increment) {
+
+    var dataAgeRange = movingData.filter(function(x) {
+      return x.ageMin > (i - windowLength) && x.ageMax < (i + windowLength);
+    }).map(function(x) {
+      return [x.lon, x.lat];
+    }); 
+
+    if(dataAgeRange.length !== 0) {
+      var av = new fisher(dataAgeRange, 'vgp');
+      poleData.push({
+        'x': av.mLon,
+        'y': eqArea(av.mLat),
+        'inc': av.mLat,
+        'age': i,
+        'A95': av.A95
+      });
+    }
+
+  }
+  
+  var movingAverageData = [{
+    'name': 'Data',
+    'data': poleData,
+    'type': 'scatter',
+    'marker': {
+      'symbol': 'circle',
+     }
+  }, {
+    'data': poleData,
+    'type': 'line',
+    'linkedTo': ':previous',
+    'enableMouseTracking': false
+  }, {
+    'name': 'Error',
+    'data': new Array()
+  }];
+
+  plotPole(movingAverageData, 'polePathAverage');
+
+}
+
+function getAverage(arr) {
+
+  for(var i = 0; i < arr.length; i++) {
+
+  }
+
+}
 /*
  * FUNCTION getExpectedLocation
  * Description: Calcualtes expected declinations, inclinations, and paleolatitudes for site location, reference frame(s), and plates(s)
@@ -426,13 +531,13 @@ function getExpectedLocation(skip) {
       }, {
       	'name': realPlateName + ' (A95)', 
       	'type': 'line', 
-      	'id': 'ellipse', 
+        'linkedTo': realPlateName,
       	'color': color, 
       	'data': ellyDat, 
       	'enableMouseTracking': false
       }, {
       	'type': 'line', 
-      	'linkedTo': 'ellipse', 
+        'linkedTo': realPlateName,
       	'color': color, 
       	'data': ellyDat2, 
       	'enableMouseTracking': false
@@ -511,7 +616,7 @@ function getExpectedLocation(skip) {
   plotExpectedLocation(incData, 'incContainer', 'Inclination', latitude, longitude);
   
   //Polar plot for pole positions (also add selected data)
-  plotPole(polePos);
+  plotPole(polePos, 'polePath');
   plotSiteDataExpected('poles');
 		
 }

@@ -667,6 +667,10 @@ function jQueryInit(page) {
     'overflow': 'auto'
   });
   
+  $("#calcMovingAverage").click(function() {
+    getMovingAverage();
+  });
+
   //SITE SELECTOR: Mean Directions
   $('#meanSel').click(function() {
     showMeanDirections();

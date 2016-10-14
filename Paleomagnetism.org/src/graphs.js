@@ -1510,34 +1510,22 @@ function plotSiteDataExpected(type) {
         continue;
       }
       
-      //Get mean inclination/declination from site
-      var mInc = Number(sites[siteNames[i]][coordRef].params.mInc);
-      var mDec = Number(sites[siteNames[i]][coordRef].params.mDec);
+      //Get mean pole from the site
       var A95 = Number(sites[siteNames[i]][coordRef].params.A95);
+      var meanPole = sites[siteNames[i]][coordRef].params.meanPole;
 
-      //See if inversionflag -> convert to N polarity
-      if(inversionFlag) {
-        if(mInc < 0) {
-          var mInc = Math.abs(mInc);
-          var mDec = (mDec+180)%360;
-        }
-      }
-
-      if(latitude != null && longitude != null) {
-      
-        //Convert mean declination/inclination to pole position
-        var polePosition = poles(latitude, longitude, [mDec, mInc, 0, 0, 0]);
+      if(meanPole) {
         
-        var fillColor = (polePosition[1] < 0) ? 'white' : markerColor;
+        var fillColor = (meanPole.lat < 0) ? 'white' : markerColor;
         
         //Push particular site lat/lon pair to data array
         data.push({
-          'x': polePosition[0], 
-          'y': eqArea(polePosition[1]), 
+          'x': meanPole.lon,
+          'y': eqArea(meanPole.lat), 
           'name': name,
           'age': age,
           'A95': A95,
-          'inc': polePosition[1], 
+          'inc': meanPole.lat, 
           'marker': { 
             'radius': 4, 
             'symbol': 'circle', 
@@ -1549,11 +1537,11 @@ function plotSiteDataExpected(type) {
         
         //Construct ellipse parameters and request the ellipse
         var ellipseParameters = {
-          'xDec'   : polePosition[0],
-          'xInc'  : polePosition[1],
-          'yDec'  : polePosition[0],
-          'yInc'  : polePosition[1] - 90,
-          'zDec'  : polePosition[0] + 90,
+          'xDec'   : meanPole.lon,
+          'xInc'  : meanPole.lat,
+          'yDec'  : meanPole.lon,
+          'yInc'  : meanPole.lat - 90,
+          'zDec'  : meanPole.lon + 90,
           'zInc'  : 0,
           'beta'  : A95,
           'gamma'  : A95
@@ -1746,28 +1734,29 @@ function plotSiteDataExpected(type) {
  *
  *
  */
-function plotPole ( plotData ) {
+function plotPole(plotData, container) {
 
   "use strict";
   
+  var title = (container === 'polePath') ? 'Apparent Polar Wander Paths' : 'Moving Average';
+
   //Specify plot options
   var chartOptions = {
     'chart': {
-      'id': 'plotPole',
+      'id': container,
       'polar': true,
       'animation': false,
-          'renderTo': 'polePath'
+          'renderTo': container
       },
     'title': {
-            'text': 'Apparent Polar Wander Paths',
+            'text': title,
       'style': { 
         'fontSize': '32px'
       }
         },
     'legend': {
-      'maxHeight': 45,
-            'enabled': true,
-        },
+       'enabled': true,
+      },
         'pane': {
       'startAngle': 0,
       'endAngle': 360
