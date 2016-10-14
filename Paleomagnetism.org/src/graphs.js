@@ -1807,7 +1807,7 @@ function plotPole(plotData, container) {
         if(this.series.name === 'Selected Site Data') {
           return '<b>Site name: </b>' + this.point.name + '<br><b>Site age: </b>' + this.point.age + ' Ma<br><b>Longitude: </b>' + this.x.toFixed(2) + '<br><b>Latitude: </b>' + this.point.inc.toFixed(2) + '<br><b>A95: </b>' + this.point.A95.toFixed(1);
         } else {
-          return '<b>Apparent Polar Wander Path</b><br><b>Plate: </b>'+ this.series.name + '<br><b>Age: </b>' + this.point.age + ' Ma<br><b>Latitude: </b>' + this.point.inc.toFixed(2) + '° <br><b> Longitude: </b>' + this.x.toFixed(2) + '° <br><b> Confidence Interval (A95): </b>' + this.point.A95 +'°';
+          return '<b>Apparent Polar Wander Path</b><br><b>Plate: </b>'+ this.series.name + '<br><b>Age: </b>' + this.point.age + ' Ma<br><b>Latitude: </b>' + this.point.inc.toFixed(2) + '° <br><b> Longitude: </b>' + this.x.toFixed(2) + '° <br><b> Confidence Interval: </b>' + this.point.A95.toFixed(1) + '°';
         }
       }
     },

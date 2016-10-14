@@ -1129,7 +1129,10 @@ var processInput = function(inputData, metadata) {
  
   // If we have the site location we will calculate the actual poles
   // per direction for this site	
-  if(metadata.latitude !== null & metadata.longitude !== null) {
+  if(metadata.latitude === null || metadata.longitude === null) {
+    this.params.meanPole = null;
+    this.poles = null;
+  } else {
 
     this.poles = {
       accepted: new Array(),
@@ -1139,14 +1142,13 @@ var processInput = function(inputData, metadata) {
     for(var i = 0; i < this.dir.accepted.length; i++) {
       this.poles.accepted.push(poles(metadata.latitude, metadata.longitude, this.dir.accepted[i]));
     }
-
     for(var i = 0; i < this.dir.rejected.length; i++) {
       this.poles.rejected.push(poles(metadata.latitude, metadata.longitude, this.dir.rejected[i]));
     }
 
     // Get the average of the accepted poles
     var fisherPole = new fisher(this.poles.accepted, 'vgp');
-    this.params.meanPole= {
+    this.params.meanPole = {
       'lon': fisherPole.mLon,
       'lat': fisherPole.mLat
     }

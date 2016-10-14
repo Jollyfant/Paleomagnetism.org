@@ -166,6 +166,13 @@ function getRotatedPole (APWP, i) {
 
 function getMovingAverage() {
 
+  // Moving average settings
+  var startAverage = 0;
+  var endAverage = 200;
+  var increment = 5;
+  var windowLength = 5;
+  var averageType = 'directions';
+
   // Get the site names
   var siteNames = $('#mapSel').val();
   if(siteNames === null) {
@@ -175,12 +182,20 @@ function getMovingAverage() {
   var coordRef  = ($("#mapRadio input[type='radio']:checked").val() === 'TECT') ? 'dataTC' : 'data';
 
   var movingData = new Array();
+
+  // Go over all the selected sites
   for(var i = 0; i < siteNames.length; i++) {
 
+    if(!sites[siteNames[i]][coordRef].params.meanPole) {
+      continue;
+    }
+
+    // Get the age of the site
     var age = sites[siteNames[i]].userInput.metaData.age;
     var minAge = sites[siteNames[i]].userInput.metaData.minAge;
     var maxAge = sites[siteNames[i]].userInput.metaData.maxAge;
 
+    // If no minimum and maximum are specified just take the age
     if(minAge === null) {
       minAge = age;
     }
@@ -189,60 +204,101 @@ function getMovingAverage() {
     }
 
     if(minAge === null || maxAge === null) {
-      notify('failure', 'ages not ok');
       continue;
     }
 
-    var siteVGPData = sites[siteNames[i]][coordRef].poles.accepted;
+    if(averageType === 'directions') {
 
-    for(var j = 0; j < siteVGPData.length; j++) {
+      // Get the corrected site poles and push relevant info
+      var siteVGPData = sites[siteNames[i]][coordRef].poles.accepted;
+
+      for(var j = 0; j < siteVGPData.length; j++) {
+
+        movingData.push({
+          'lon': Number(siteVGPData[j][0]),
+          'lat': Number(siteVGPData[j][1]),
+          'ageMin': Number(minAge),
+          'ageMax': Number(maxAge),
+          'name': siteVGPData[j][4]
+        });
+
+      }
+
+    } else if(averageType === 'sites') {
 
       movingData.push({
-        'lon': Number(siteVGPData[j][0]),
-        'lat': Number(siteVGPData[j][1]),
+        'lon': sites[siteNames[i]][coordRef].params.meanPole.lon,
+        'lat': sites[siteNames[i]][coordRef].params.meanPole.lat,
         'ageMin': Number(minAge),
         'ageMax': Number(maxAge),
-        'name': siteVGPData[j][4]
+        'name': sites[siteNames[i]].userInput.metaData.name
       });
 
+    } else {
+      return notify('failure', 'Unknown type of averaging: expected sites or directions');
     }
 
-  }
-
-  var startAverage = 0;
-  var endAverage = 250;
-  var increment = 10;
-  var windowLength = 10;
-
-  if((endAverage - startAverage) % increment !== 0) {
-    notify('failure', 'Age increment not good');
   }
 
   var current;
   var poleData = new Array(null);
+  var ellipseDataPos = new Array();
+  var ellipseDataNeg = new Array();
+
+  // Go over the window range with incremental steps
   for(var i = 0; i < endAverage; i+=increment) {
 
+    // From all the data filter the pole if it is within the age window
     var dataAgeRange = movingData.filter(function(x) {
       return x.ageMin > (i - windowLength) && x.ageMax < (i + windowLength);
     }).map(function(x) {
       return [x.lon, x.lat];
     }); 
 
+    // Get the average of the direction/sites and push to the graphing array
     if(dataAgeRange.length !== 0) {
+
       var av = new fisher(dataAgeRange, 'vgp');
+
       poleData.push({
         'x': av.mLon,
         'y': eqArea(av.mLat),
         'inc': av.mLat,
         'age': i,
+        'N': av.N,
         'A95': av.A95
       });
+
+      // Do not calculate ellipse when A95 is unknown (1 sample)
+      if(av.N < 2) {
+        continue;
+      }
+
+      var ellipseParameters = {
+        'xDec': av.mLon,
+        'xInc': av.mLat,
+        'yDec': av.mLon,
+        'yInc': av.mLat - 90,
+        'zDec': av.mLon + 90,
+        'zInc': 0,
+        'beta': av.A95,
+        'gamma': av.A95
+      }
+
+      //Call the ellipse subroutine and store the data in the arrays
+      var elly = ellipseData(ellipseParameters, true);
+
+      ellipseDataNeg = ellipseDataNeg.concat(elly.neg);
+      ellipseDataPos = ellipseDataPos.concat(elly.pos)
+
     }
 
   }
-  
+
+  // Create the plot series
   var movingAverageData = [{
-    'name': 'Data',
+    'name': 'Moving Average',
+    'id': 'movAv',
     'data': poleData,
     'type': 'scatter',
     'marker': {
@@ -251,24 +307,27 @@ function getMovingAverage() {
   }, {
     'data': poleData,
     'type': 'line',
-    'linkedTo': ':previous',
+    'linkedTo': 'movAv',
     'enableMouseTracking': false
   }, {
-    'name': 'Error',
-    'data': new Array()
+    'name': 'Confidence Interval (A95)',
+    'type': 'line',
+    'id': 'confidence',
+    'color': 'grey',
+    'data': ellipseDataNeg,
+    'enableMouseTracking': false
+  }, {
+    'type': 'line',
+    'linkedTo': 'confidence',
+    'color': 'grey',
+    'data': ellipseDataPos,
+    'enableMouseTracking': false
   }];
 
   plotPole(movingAverageData, 'polePathAverage');
 
 }
 
-function getAverage(arr) {
-
-  for(var i = 0; i < arr.length; i++) {
-
-  }
-
-}
 /*
  * FUNCTION getExpectedLocation
  * Description: Calcualtes expected declinations, inclinations, and paleolatitudes for site location, reference frame(s), and plates(s)
