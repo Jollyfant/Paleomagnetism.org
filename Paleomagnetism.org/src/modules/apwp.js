@@ -168,10 +168,11 @@ function getMovingAverage() {
 
   // Moving average settings
   var startAverage = 0;
-  var endAverage = 200;
-  var increment = 5;
-  var windowLength = 5;
-  var averageType = 'directions';
+  var endAverage = 1000;
+  
+  var increment = Number($("#movingAverageInc").val());
+  var windowLength = Number($("#movingAverageWidth").val());
+  var averageType = $("#movingAverageType").val().pop();
 
   // Get the site names
   var siteNames = $('#mapSel').val();
@@ -246,7 +247,7 @@ function getMovingAverage() {
   var ellipseDataNeg = new Array();
 
   // Go over the window range with incremental steps
-  for(var i = 0; i < endAverage; i+=increment) {
+  for(var i = startAverage; i < endAverage; i+=increment) {
 
     // From all the data filter the pole if it is within the age window
     var dataAgeRange = movingData.filter(function(x) {
@@ -254,7 +255,7 @@ function getMovingAverage() {
     }).map(function(x) {
       return [x.lon, x.lat];
     }); 
-
+	
     // Get the average of the direction/sites and push to the graphing array
     if(dataAgeRange.length !== 0) {
 
@@ -324,6 +325,10 @@ function getMovingAverage() {
     'enableMouseTracking': false
   }];
 
+  // Show the moving average graph
+  $("#polePathAverage").show();
+  $("#polePathAverage").css('display', 'inline-block');
+  
   plotPole(movingAverageData, 'polePathAverage');
 
 }

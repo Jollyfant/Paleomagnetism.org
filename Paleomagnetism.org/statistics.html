@@ -326,10 +326,22 @@ $(function () {
 					<div id="incTab">
 						<div id="incContainer" style="height: 600px;"></div>
 					</div>
-					<div id="mapTab">
+					<div id="mapTab" style="text-align: center; center; margin: 0 auto">
 						<div id="polePath" style="width: 520px; height: 600px; display: inline-block;"></div>
-						<div id="polePathAverage" style="width: 520px; height: 600px; display: inline-block;"></div>
-                                                <button id="calcMovingAverage"> Calculate Moving Average </button>
+						<div id="polePathAverage" style="width: 520px; height: 600px; display: none;"></div>
+						<hr>
+						<div style="margin: 0xp;">
+						From selected site poles, a moving average APWP can be calculated. Incrementing starts from 0 to 500 Ma, with steps of <i> increment </i> using a moving average window with of <i> width </i>
+						<p>
+                        <b> Window Width:</b> <input style="width: 20px;" type="text" value="5" id="movingAverageWidth">
+					    <b> Increment:</b> <input style="width: 20px;" type="text" value="10" id="movingAverageInc">
+						<p> <button id="calcMovingAverage"> Calculate Moving Average </button>
+						<select multiple id="movingAverageType">
+						  <option value="sites"> Mean of Sites </option>
+						  <option value="directions"> Individual Site Directions </option>
+						</select>
+
+						</div>
 					</div>
 				</div>
 				<div class="caption" id="poleTabCaption" style="display: none;">

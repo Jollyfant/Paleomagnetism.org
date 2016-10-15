@@ -141,6 +141,11 @@ function jQueryInit(page) {
     'noneSelectedText': 'No sites in storage'
   });
   
+  $("#movingAverageType").multiselect({
+	'multiple': false,
+	'selectedList': 1
+  });
+  
   //Function to get interpreted sites from localstorage
   $('#interpretedSites').multiselect({
     'multiple': false, 
