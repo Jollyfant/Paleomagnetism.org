@@ -318,7 +318,7 @@ function jQueryInit(page) {
 	 
 	// Get site longitude/latitude
 	
-	if(!$("#siteLat").val() || $("#siteLng").val()) {
+	if(!$("#siteLat").val() || !$("#siteLng").val()) {
 	  return notify('failure', "Site latitude or longitude is not specified");		
 	}
 	
