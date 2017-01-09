@@ -317,12 +317,13 @@ function jQueryInit(page) {
   $("#assignPlate").button().click(function() {
 	 
 	// Get site longitude/latitude
+	
+	if(!$("#siteLat").val() || $("#siteLng").val()) {
+	  return notify('failure', "Site latitude or longitude is not specified");		
+	}
+	
 	var latitude = Number($("#siteLat").val());
 	var longitude = Number($("#siteLng").val());
-	
-	if(isNaN(latitude) || isNaN(longitude)) {
-	  return notify('failure', "Site latitude or longitude is not specified");	  
-	}
 	
 	var plateId = getPlateFromLocation(latitude, longitude);
 
