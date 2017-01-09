@@ -34,6 +34,7 @@
 	<script src="./src/db/ages.js"></script>
 	<script src="./src/db/paths.js"></script>
 	<script src="./src/db/pubs.js"></script>
+	<script src="./src/db/plate_polygons.js"></script>
 
 	<!-- Google Maps v3 API -->
 	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCvJEx8MlU2o1YwBkDMx-xzZzsw9-8ssDc"></script>
@@ -554,18 +555,29 @@ $(function () {
 		<div style="padding: 5px; padding-left: 20px; border: 1px dotted rgb(119, 152, 191); overflow: hidden;">
 			<h2> Advanced Options <small> (optional)</small> </h2>
 			<br>
-			<div style="padding: 5px; float: left; overflow: auto; text-align: right;">
-				<i> In decimal degrees </i>
-				<p>
-				<b> Site latitude </b><input type="text" size="5" id="siteLat" title="Enter site latitude between -90 and 90 degrees">
-				<p><b> Site longitude </b><input type="text" size="5" id="siteLng" title="Enter site longitude between -180 and 180 degrees">
-			</div>
-			<div style="padding: 5px; float: right; overflow:auto; text-align: right;">
-				<b>Author </b><input type="text" size="20" id="authorID" title="Enter your name/publication">
-				<p><b>Description </b><input type="text" size="20" id="siteDesc" title="Enter a site descrition/additional information">
-				<p><b> Age </b><input type="text" id="siteAge" size="5" title="Enter site age in Myr">			
-				<b>	from </b><input type="text" size="5" id="siteBoundMin" title="Enter site minimum age in Myr"><b> to </b><input type="text" size="5" id="siteBoundMax" title="Enter site maximum age in Myr"><b> (Ma)</b>
-				<p>
+				<i> Enter the site latitude and longitude. A plate ID can be assigned automatically based on site location or entered manually. Plate reconstruction is according to the model of <a href="http://paleolatitude.org/plate-reconstruction">paleolatitude.org</a> </i>
+				<br>
+				<br>
+				<b> Latitude </b><input type="text" size="5" id="siteLat" title="Enter site latitude between -90 and 90 degrees">
+				&nbsp; <b> Longitude </b><input type="text" size="5" id="siteLng" title="Enter site longitude between -180 and 180 degrees">
+				&nbsp; <b> Plate ID </b><input type="text" size="5" id="plateId"> <button id="assignPlate">Assign Plate ID</button> <div style="display: inline-block;" id="plateNameAssigned"></div>
+				<hr>
+				<p><i> Enter additional site meta-data. </i>
+				<p><b> Lithology </b><select id="lithology" title="Enter site lithology">
+				  <option value="volcanic">volcanic</option>
+				  <option value="plutonic">plutonic</option>
+				  <option value="limestone">limestone</option>
+				  <option value="clastic">clastic</option>
+				</select>
+				&nbsp; <b> Magnetic Carriers </b><input type="text" id="carriers" title="Enter the rock magnetic carriers">
+				<p><b>Author </b><input type="text" size="20" id="authorID" title="Enter your name/publication">
+				&nbsp; <b>Description </b><input type="text" size="40" id="siteDesc" title="Enter a site descrition/additional information">
+				<hr>
+				<p><i> Enter site age and uncertainties or select from the geological timescale. </i>
+				<p><b> Age (Ma) </b><input type="text" id="siteAge" size="5" title="Enter site age in Myr">					
+				<b>	min </b><input type="text" size="5" id="siteBoundMin" title="Enter site minimum age in Myr">
+				<b> max </b><input type="text" size="5" id="siteBoundMax" title="Enter site maximum age in Myr">
+
 				<select multiple class="ageNames" id="ageNames" title="Select an age preset">					
 					<option value="Quaternary" class="period">Quaternary</option>
 						<option value="Holocene" class="epoch">Holocene</option>	
@@ -737,7 +749,6 @@ $(function () {
 							<option value="Stage 2" class="age">Stage 2</option>
 							<option value="Fortunian" class="age">Fortunian</option>
 				</select>
-			</div>
 		</div>
 	</div>
 	<p>

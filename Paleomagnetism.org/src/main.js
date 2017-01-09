@@ -1411,16 +1411,20 @@ var processUserInput = function(data, type, name) {
 var constructMetaData = function(edit) {
 
   var siteName = $('#siteName').val();
-  var latitude = $('#siteLat').val();
-  var longitude = $('#siteLng').val();
+  var latitude = Number($('#siteLat').val());
+  var longitude = Number($('#siteLng').val());
   
-  var age = $('#siteAge').val();
-  var minAge = $('#siteBoundMin').val();
-  var maxAge = $('#siteBoundMax').val();
+  var age = Number($('#siteAge').val());
+  var minAge = Number($('#siteBoundMin').val());
+  var maxAge = Number($('#siteBoundMax').val());
   
   var author = $("#authorID").val();
   var description = $("#siteDesc").val();
-	
+
+  var lithology = $("#lithology").val();
+  var plateId = Number($("#plateId").val());
+  var carriers = $("#carriers").val();
+  
   // Escape illegal characters (backslash and double quotes)
   this.name = siteName.replace(/[\\"]/g,''); 
 
@@ -1451,8 +1455,13 @@ var constructMetaData = function(edit) {
   }
 
   // Data specified in the advanced options tab (if unspecified fall back to default values)
-  this.description = description ? description : 'Unspecified';
-  this.author = author ? author : 'Unknown';
+  this.description = description ? description : null;
+  
+  this.plateId = plateId ? plateId : null;
+  this.lithology = lithology ? lithology : null;
+  this.carriers = carriers ? carriers : null;
+  
+  this.author = author ? author : null;
   this.age = age ? age : null;
   this.minAge = minAge ? minAge : null;
   this.maxAge = maxAge ? maxAge : null;

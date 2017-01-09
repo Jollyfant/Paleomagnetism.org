@@ -13,6 +13,7 @@ module.map = {
 	mapInit: false,
 	gmarkers: new Array(),
 	markers: new Array(),
+	polygons: new Array(),
     grid: null
 }	
 
@@ -29,7 +30,118 @@ $(function () {
     toggleGrid($("#grid").is(':checked'));
   });
 
+  // Settings
+  var POLYGON_LINE_COLOR = "#FFF";
+  var POLYGON_LINE_OPACITY = 0.5;
+  var POLYGON_LINE_WIDTH = 2;
+  
+  // Reset global
+  PLATE_POLYGONS = new Array();
+
+  // Go over sorted polygon object
+  for(var i = 0; i < POLYGON_DATA.length; i++) {
+  
+    var polygon = POLYGON_DATA[i];
+
+	// Create a google maps polygon
+    var googlePolygon = new google.maps.Polygon({
+      paths: polygon.path,
+      strokeColor: POLYGON_LINE_COLOR,
+      strokeOpacity: POLYGON_LINE_OPACITY,
+      strokeWeight: POLYGON_LINE_WIDTH,
+      fillOpacity: 0,
+      clickable: false
+    });
+    
+	// Save a reference to the polygon
+	// Plate Antarctica (802) has reversed true
+    module.map.polygons.push({
+	  "id": polygon.id,
+	  "reverse": getPlateInversion(polygon.id),
+      "priority": polygon.priority,
+      "polygon": googlePolygon,
+      "name": polygon.name	  
+    });
+	
+  }
+  
 });
+
+/*
+ * Function plateContainsLocation
+ *
+ * Returns boolean whether location falls within plate
+ *
+ * @param location {google.maps.LatLng} - location to be checked
+ * @param plate {object} - plate polygon object
+ *
+ */
+function plateContainsLocation(location, plate) {
+
+  // Use XOR to invert result if necessary
+  // The plate Antarctica (802) is interpreted by google maps as everything
+  // except for the plate itself. Therefore we check if the location falls inside the polygon
+  // it actually falls outside of the Antarctic plate.
+  return plate.reverse ^ google.maps.geometry.poly.containsLocation(location, plate.polygon);
+  
+}
+
+/*
+ * Function getPlateInversion
+ *
+ * Hardcoded boolean determining inversion of polygon
+ * returns true if polygon needs to be inversed (e.g. Antarctica, 802)
+ *
+ * @param id {int} - plate id
+ *
+ */
+function getPlateInversion(id) {
+
+  switch(id) {
+    case 802: return true;
+	default: return false;
+  }
+  
+}
+
+/*
+ * Function getPlateFromLocation
+ *
+ * Assigns a plate to a given location earth
+ *
+ * @param latitude {float} - latitude of location
+ * @param longitude {float} - longitude of location
+ *
+ */
+function getPlateFromLocation(latitude, longitude) {
+  
+  // No plates were loaded
+  if(module.map.polygons.length === 0) {
+    return null;
+  }
+  
+  var plate;
+  
+  // Conver to google.maps.LatLng
+  var location = new google.maps.LatLng(latitude, longitude);
+
+  // Go over all polygons sorted by priority
+  // Polygons may overlap so priority is important (e.g. 199 and 101)
+  // This is hardcoded in the getPlatePriority function
+  for(var i = 0; i < module.map.polygons.length; i++) {
+  
+    plate = module.map.polygons[i];
+	
+	if(plateContainsLocation(location, plate)) {
+	  return {"id": plate.id, "name": plate.name};
+	}
+
+  }
+  
+  // No intersection
+  return null;
+  
+}
 
 /*
  * fn toggleOverlay

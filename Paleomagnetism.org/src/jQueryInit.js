@@ -314,6 +314,24 @@ function jQueryInit(page) {
     sortSiteSelector('bogo');
   });  
   
+  $("#assignPlate").button().click(function() {
+	 
+	// Get site longitude/latitude
+	var latitude = Number($("#siteLat").val());
+	var longitude = Number($("#siteLng").val());
+	
+	if(isNaN(latitude) || isNaN(longitude)) {
+	  return notify('failure', "Site latitude or longitude is not specified");	  
+	}
+	
+	var plateId = getPlateFromLocation(latitude, longitude);
+
+	notify('success', 'Plate ' + plateId.name + ' has been assigned!')
+	$("#plateNameAssigned").html(plateId.name);
+	$("#plateId").val(plateId.id);
+	
+  });
+  
   function sortSiteSelector(type) {
     
     var capture = $(".siteSelector");
@@ -580,6 +598,10 @@ function jQueryInit(page) {
     $("#authorID").val(metaData.author);
     $("#siteDesc").val(metaData.description || "");
     $("#siteName").val(siteName);
+	
+	$("#plateId").val(metaData.plateId);
+	$("#lithology").val(metaData.lithology);
+	$("#carriers").val(metaData.carriers);
     
     $("#cutoffSelector").val(metaData.cutoff || "45");
     $("#cutoffSelector").multiselect("refresh");
