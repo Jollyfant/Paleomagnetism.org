@@ -1,0 +1,1480 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<HTML>
+<HEAD>
+<meta charset="utf-8"/>
+<meta name="description" content="Paleomagnetism.org: An open source tool for paleomagnetic analysis">
+<meta name="keywords" content="Paleomagnetism, Palaeomagnetism, Statistics, Analysis, Javascript, Magnetic, Zijderveld">
+<meta name="author" content="Paleomagnetism.org">
+
+<!-- Supporting Libraries -->
+<link href="./src/libs/jQuery/jquery-ui.css" rel="stylesheet"> <!-- jQuery UI stylesheet -->
+
+<link href="./css/paldir.css" type="text/css" rel="stylesheet" /> <!-- paleomagnetism.org stylesheet -->
+<link href="./css/pMagJS.css" type="text/css" rel="stylesheet" /> <!-- paleomagnetism.org stylesheet -->
+
+<link href="./src/libs/notiny-master/src/notiny.css" rel="stylesheet"> <!-- Notification style sheet (Notiny) -->
+<script src="./src/libs/jQuery/jquery-1.11.1.js"></script> <!-- jQuery -->
+<script src="./src/libs/jQuery/jquery-ui.js"></script> <!-- jQuery UI -->
+<script src="./src/libs/notiny-master/src/notiny.js"></script> <!-- (notiny) notification plugin -->
+<script src="./src/libs/Highcharts/highcharts.src.js"></script> <!-- Highcharts Main -->
+<script src="./src/libs/Highcharts/highcharts-more.src.js"></script> <!-- Highcharts plugin for extra graphs -->
+<script src="./src/libs/Highcharts/exporting.src.js"></script> <!-- Highcharts figure exporting -->
+	
+<link rel="shortcut icon" type="image/x-icon" href="icon.ico" />
+<title> Paleomagnetism.org - GaPWAP Tool </title>
+
+<!-- Google Analytics -->
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-68024347-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+<style>
+
+#data-status {
+  font-family: Roboto,Arial,sans-serif;
+  font-size: 11px;
+  box-shadow: 0px 1px 4px -1px rgba(0, 0, 0, 0.3);
+  padding: 8px;
+  background-color: #fff;
+  position: absolute;
+  margin: 10px;
+  border-radius: 2px;
+  color: rgb(86, 86, 86);
+}
+
+</style>
+</HEAD>
+
+<BODY>
+<div id="body_container" style="text-align: justify;">
+
+	<!-- HEADER -->
+	<div id="title" style="margin: 0 auto; padding: 5px; background-color: #fff">
+		<div style="width: 300px; font-size: 10px; color: #aaa; margin: 5px; float: right;"><b>Reference:</b> Koymans, M.R., Langereis, C.G., Pastor-Galan, D., and van Hinsbergen, D.J.J., Paleomagnetism.org: An online multi-platform open source environment for paleomagnetic data analysis, Computers and Geosciences, Volume 93, Pages 127–137 (2016)</div>
+		<div style="display: inline-block; padding-right: 10px;">
+			<img style="margin: 0px; height: 60px;" src="./images/icon.png">
+		</div>
+	</div>
+	
+	<!-- MENU CONTACT -->
+	<div style="background-color: #7798BF; color: white; padding: 10px;">
+		<li class="menuLink"><a class="link" href="./index.html"> Home </a>
+		<li class="menuLink"><a class="link" href="./interpretation.html"> Interpretation </a>
+		<li class="menuLink"><a class="link" href="./statistics.html"> Statistics </a> 
+		<li class="menuLink"><a class="link" style="background: #DED;"><img src="./images/icon.ico" height="16" width="16" style="vertical-align: middle;">&nbsp Miscellaneous </a> 
+		<li class="menuLink"><a class="link" href="./cite.html"> References </a>
+		<li class="menuLink"><a class="link" href="./team.html">Team and Code </a>
+		<li class="menuLink"><a class="link" href="./pubs.html"> Published Data </a>
+	</div>
+	
+	<!-- Uploading of plate information to application -->
+	<div style="padding: 20px; text-align: center;">
+
+	  <button class="button-input" id="import-rotation-data" type="button" onClick="$('#import-rotation-data-defer').click();">Import Euler Poles</button>
+	  <input style="display: none" id="import-rotation-data-defer" type="file" size="4" name="file" onChange="importData(event, 'euler')"/>
+	  
+	  <button class="button-input" id="import-plate-data" type="button" onClick="$('#import-plate-data-defer').click();">Import GPML Plate Boundaries</button>
+	  <input style="display: none" id="import-plate-data-defer" type="file" size="4" name="file" onChange="importData(event, 'plates')"/>
+
+	  <button class="button-input" id="import-pmag-data" type="button" onClick="$('#import-pmag-data-defer').click();">Import .pmag</button>
+	  <input style="display: none" id="import-pmag-data-defer" type="file" size="4" name="file" onChange="importData(event, 'pmag')"/>
+	  
+	</div>
+
+    <div style="position: relative;">
+	  <div id="map" style="border: 1px solid rgb(119, 152, 191); height: 600px; width: 100%;"></div>
+	  <div id="data-status" style="top: 0; right: 0; text-align: center;"></div>
+    </div>
+	
+	<button id="start">start</button>
+	
+	<div id="polar-chart" style="height: 800px;"></div>
+	
+	<hr>
+	
+	<!-- FOOTER -->
+	<div id="footer" class="textplot" style="margin: 10px;">
+		<small> © 2016 Paleomagnetism.org. Please <a href="./cite.html">cite</a> all contributors if you use this application for your research.
+		<p><b>Disclaimer:</b> Paleomagnetism.org is an open-source initiative licensed under the <a href="https://www.gnu.org/licenses/gpl.html">GNU General Public License v3.0</a>. All data processing is handled on the client-side within your browser. Graph exporting is delivered via the Highcharts content delivery network under the Highcharts <a href="http://www.highcharts.com/docs/export-module/privacy-disclaimer/">exporting privacy policy</a>.
+		<hr>
+		<div style="text-align: right; display: inline-block;">
+			<a href="http://www.geo.uu.nl/~forth/"><img style="margin: 0px; height: 60px;" src="./images/UU.png"></a>
+			<a href="http://erc.europa.eu/"><img style="margin: 0px; height: 60px;" src="./images/ERC.png"></a>
+			<a href="http://www.nwo.nl/"><img style="margin: 0px; height: 60px;" src="./images/NWO_logo_plain.png"></a>
+		</div>
+	</div>
+</div>
+
+</BODY>
+
+<script>
+
+var PLATE_POLYGONS, POLYGON_DATA, EULER_ROTATIONS;
+var DATA_CACHE = new Array();
+var RADIANS = Math.PI / 180;
+
+var INPUT_SITES = new Array();
+
+var VERSION = "ALPHA";
+
+var map;
+
+/*
+ * Function updateDataStatus
+ *
+ * Updates data status string indicating whether
+ * Euler poles and plate boundaries are loaded
+ *
+ */
+function updateDataStatus() {
+
+  var eulerStatus = EULER_ROTATIONS ? "<b style='color: green;'>OK</b>" : "<b style='color: red;'>N/A</b>";
+  var plateStatus = PLATE_POLYGONS ? "<b style='color: green;'>OK</b>" : "<b style='color: red;'>N/A</b>";
+  
+  $("#data-status").html("<b>Euler Poles:</b> " + eulerStatus + " - " + "<b>Plate Boundary Definitions:</b> " + plateStatus);
+  
+}
+
+/*
+ * Function importData
+ *
+ * Loads data through the filereader API
+ *
+ * @param event {event} - HTML file read event
+ * @param type {string} - type of data to read
+ *
+ */
+function importData(event, type) {
+
+  var inputFile = event.target.files[0];
+  var Reader = new FileReader();
+
+  Reader.readAsText(inputFile);
+
+  // Callback when loading is complete
+  Reader.onload = function() {
+  	
+	// Call function depending on type of data expected
+	// Catch reading exceptions
+    if(type === "euler") {
+	
+	  // Add the Euler poles
+      try {
+        addEulerPoles(Reader.result);
+	    notify("success", "Euler poles have been added succesfully from file: " + inputFile.name);
+      } catch(ex) {
+	    EULER_ROTATIONS = null;
+        notify("failure", "Exception: Euler poles could not be added.");
+	  }
+	  
+	} else if(type === "plates") {
+	
+	  // Add the plate boundaries
+      try {
+        addPlateBoundaries(Reader.result);
+	    notify("success", "Plate boundary definitions have been added succesfully: " + inputFile.name);
+	  } catch(ex) {
+	    resetPlateBoundaries();
+	    notify("failure", "Exception: plate boundary definitions could not be added.");	
+	  }
+	
+	} else if(type === 'pmag') {
+	
+	  // Add pmag data
+	  try {
+	    addPMAGData(Reader.result);
+	    notify("success", "pmag data have been added succesfully: " + inputFile.name);
+	  } catch(ex) {
+	    resetPMAGData();
+	    notify("failure", "Exception: pmag data could not be added.");		  
+	  }
+	
+	}
+	
+	updateDataStatus();
+	
+  }
+  
+}
+
+function resetPMAGData() {
+
+  // Remove markers from the Google Maps
+  MARKERS.forEach(function(marker) {
+    marker.setMap(null);
+  });
+  
+  // Reset globals
+  MARKERS = new Array();
+  SITES = new Array();
+  
+}
+
+function resetPlateBoundaries() {
+
+  PLATE_POLYGONS.forEach(function(plate) {
+    plate.polygon.setMap(null);
+  });
+  
+  PLATE_POLYGONS = null;
+
+}
+
+var SITES = new Array();
+
+function addPMAGData(json) {
+
+  resetPMAGData();
+  
+  var parsedJSON = JSON.parse(json);
+  var latitude, longitude;
+  var age, ageMin, ageMax;
+  
+  for(var i = 0; i < parsedJSON.data.length; i++) {
+  
+    var site = parsedJSON.data[i];
+	
+    latitude = site.metaData.latitude;
+	longitude = site.metaData.longitude;
+	
+	if(latitude === null || longitude === null) {
+	  continue;
+	}
+	
+	age = site.metaData.age;
+	ageMin = site.metaData.minAge;
+	ageMax = site.metaData.maxAge;
+	
+	// If minimum and maximum are not specified take the age
+	if(ageMin === null) ageMin = age;
+	if(ageMax === null) ageMax = age;
+	
+	if(ageMin === null || ageMax === null) {
+	  continue;
+	}
+	
+	SITES.push({
+	  "latitude": Number(latitude),
+	  "longitude": Number(longitude),
+	  "name": site.metaData.name,
+	  "age": Number(age),
+	  "ageMin": Number(ageMin),
+	  "ageMax": Number(ageMax),
+	  "data": site.data.map(function(x) {
+	    return {"dec": x[0], "inc": x[1]}
+	  })
+	})
+	
+  }
+  
+  publishMapMarkers();
+  
+}
+
+/*
+ * Function addEulerPoles
+ *
+ * Parses Euler Poles from csv file
+ *
+ * @param csv {string} - string containing csv information
+ *
+ */
+function addEulerPoles(csv) {
+
+  // Reset the global
+  EULER_ROTATIONS = new Object();
+  
+  var parameters, plateId;
+  
+  // Split the CSV by new lines
+  var lines = csv.split(/\n/).filter(Boolean);
+	
+  // Go over all lines and parse the rotation CSV file
+  for(var i = 0; i < lines.length; i++) {
+
+    // Split the csv by comma and map to Number, get the plate id
+    parameters = lines[i].split(/,/).map(Number);
+	
+	if(parameters.length !== 6) {
+	  throw("Invalid Euler Pole file.");
+	}
+	
+    plateId = parameters[0];
+    
+    // Group the Euler poles by plate Id
+    if(!EULER_ROTATIONS.hasOwnProperty(plateId)) {
+      EULER_ROTATIONS[plateId] = new Array();
+    }
+    
+	// Push the euler data
+    EULER_ROTATIONS[plateId].push({
+      "age": parameters[1],
+  	  "lat": parameters[2],
+  	  "lon": parameters[3],
+  	  "rot": parameters[4],
+  	  "relativeTo": parameters[5]
+    });
+    
+  }
+	
+}
+
+/*
+ * Function addPlateBoundaries
+ *
+ * Parses GPML file and adds plates to google maps
+ * used to detect locations on plates
+ *
+ */
+function addPlateBoundaries(xml) {
+
+  POLYGON_DATA = new Array();
+  
+  var oParser = new DOMParser();
+  var oDOM = oParser.parseFromString(xml, "text/xml");
+  
+  var documentRoot = oDOM.children[0];
+  var featureRoot;
+  
+  // Go down the XML tree
+  for(var i = 0; i < documentRoot.children.length; i++) {
+  
+    var plateId, plateName, platePath;
+    
+    featureRoot = documentRoot.children[i].children[0];
+    
+    for(var j = 0; j < featureRoot.children.length; j++) {
+    
+      // Check the name of the node and parse accordingly
+      var nodeName = featureRoot.children[j].nodeName;
+  
+  	// Make sure we have the right node names to extract the 
+  	// plate name, id, and polygon latitudes and longitudes
+  	// Is there a better way to recover from such deep XML nesting?
+  	switch(nodeName) {
+	
+  	  case "gml:name":
+  	    plateName = featureRoot.children[j].innerHTML; break
+  	  case "gpml:reconstructionPlateId":
+  	    plateId = parseInt(featureRoot.children[j].children[0].children[0].innerHTML); break;
+  	  case "gpml:unclassifiedGeometry":
+  	    platePath = locationFromString(featureRoot.children[j].children[0].children[0].children[0].children[0].children[0].children[0].innerHTML); break
+		
+  	}
+  	
+    }
+    
+    // Skip if plate could somehow not be identified
+    if(isNaN(plateId)) {
+      continue;
+    }
+	
+    // Save the data to a JSON file
+    POLYGON_DATA.push({
+      "id": plateId,
+  	  "priority": getPlatePriority(plateId),
+  	  "path": platePath,
+  	  "name": plateName
+    });  
+  
+  }
+  
+  // Sort by priority
+  // This step is important in for plates that
+  // lay on top of other plates.
+  POLYGON_DATA.sort(function(a, b) {
+    return a.priority - b.priority;
+  });
+  
+  // Publish polygons on the map
+  publishPolygons();
+	
+}
+
+/*
+ * Function publishPolygons
+ *
+ * Adds google.maps.Polygon from POLYGON_DATA
+ * to Google Maps and PLATE_POLYGONS object.
+ *
+ */
+function publishPolygons() {
+  
+  // Settings
+  var POLYGON_LINE_COLOR = "#FFF";
+  var POLYGON_LINE_OPACITY = 0.5;
+  var POLYGON_LINE_WIDTH = 2;
+  
+  // Reset global
+  PLATE_POLYGONS = new Array();
+
+  // Go over sorted polygon object
+  for(var i = 0; i < POLYGON_DATA.length; i++) {
+  
+    var polygon = POLYGON_DATA[i];
+
+	// Create a google maps polygon
+    var googlePolygon = new google.maps.Polygon({
+      paths: polygon.path,
+      strokeColor: POLYGON_LINE_COLOR,
+      strokeOpacity: POLYGON_LINE_OPACITY,
+      strokeWeight: POLYGON_LINE_WIDTH,
+      fillOpacity: 0,
+      clickable: false
+    });
+    
+	// Save a reference to the polygon
+	// Plate Antarctica (802) has reversed true
+    PLATE_POLYGONS.push({
+	  "id": polygon.id,
+	  "reverse": getPlateInversion(polygon.id),
+      "priority": polygon.priority,
+      "polygon": googlePolygon,
+      "name": polygon.name	  
+    });
+	
+	// Publish to map
+	googlePolygon.setMap(map);
+  
+  }
+    
+}
+
+/*
+ * Function getPlateInversion
+ *
+ * Hardcoded boolean determining inversion of polygon
+ * returns true if polygon needs to be inversed (e.g. Antarctica, 802)
+ *
+ * @param id {int} - plate id
+ *
+ */
+function getPlateInversion(id) {
+
+  switch(id) {
+    case 802: return true;
+	default: return false;
+  }
+  
+}
+
+/*
+ * Function getPlatePriority
+ *
+ * Hardcoded priorities for individual plates
+ * Currently placing some smaller plates on top
+ * and Antarctica at the bottom
+ *
+ * @param id {int} - plate id
+ *
+ */
+function getPlatePriority(id) {
+
+  // Map plate id to priority
+  // This priority is used to check in order if a location
+  // falls within a polygon: higher priority is checked earlier
+  switch(id) {
+	case 199: case 514: case 301: case 401: return 1;
+	default: return 2;
+  }
+
+}
+
+/*
+ * Function locationFromString
+ *
+ * Gets latitude/longitude pairs from a space delimited string
+ * as is returned by GPlates (e.g. 50 40 50 41 50 60)
+ *
+ * @param string {string} - space delimited latitudes & longitudes
+ *
+ */
+function locationFromString(string) {
+
+  // Split the array and filter empty elements, then map to floats
+  var splitArray = string.split(/\s/).filter(Boolean).map(parseFloat);
+  
+  // Must be even length of N pairs
+  if(splitArray.length & 1 === 1) {
+    throw("Fatal exception in parsing latitudes/longitudes in Polygon");
+  }
+  
+  // Collect the latitude/longitude pairs
+  var locations = new Array();
+  for(var i = 0; i < splitArray.length; i += 2) {
+    locations.push({
+	  "lat": splitArray[i],
+	  "lng": splitArray[i + 1]
+	})
+  }
+  
+  return locations;
+
+}
+
+/*
+ * Function getPlateFromLocation
+ *
+ * Assigns a plate to a given location earth
+ *
+ * @param latitude {float} - latitude of location
+ * @param longitude {float} - longitude of location
+ *
+ */
+function getPlateFromLocation(latitude, longitude) {
+  
+  // No plates were loaded
+  if(!PLATE_POLYGONS) {
+    return null;
+  }
+  
+  var plate;
+  
+  // Conver to google.maps.LatLng
+  var location = new google.maps.LatLng(latitude, longitude);
+
+  // Go over all polygons sorted by priority
+  // Polygons may overlap so priority is important (e.g. 199 and 101)
+  // This is hardcoded in the getPlatePriority function
+  for(var i = 0; i < PLATE_POLYGONS.length; i++) {
+  
+    plate = PLATE_POLYGONS[i];
+	
+	if(plateContainsLocation(location, plate)) {
+	  return {"id": plate.id, "name": plate.name}
+	}
+
+  }
+  
+  // No intersection
+  return null;
+  
+}
+
+/*
+ * Function plateContainsLocation
+ *
+ * Returns boolean whether location falls within plate
+ *
+ * @param location {google.maps.LatLng} - location to be checked
+ * @param plate {object} - plate polygon object
+ *
+ */
+function plateContainsLocation(location, plate) {
+
+  // Use XOR to invert result if necessary
+  // The plate Antarctica (802) is interpreted by google maps as everything
+  // except for the plate itself. Therefore we check if the location falls inside the polygon
+  // it actually falls outside of the Antarctic plate.
+  return plate.reverse ^ google.maps.geometry.poly.containsLocation(location, plate.polygon);
+  
+}
+
+/*
+ * Function initMap
+ *
+ * Initializes the google maps V3 map
+ *
+ */
+function initMap() {
+
+  // Create a map object and specify the DOM element for display.
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: {"lat": 0, "lng": 0},
+	streetViewControl: false,
+    zoom: 2,
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  });
+  
+  // Test listener that assigns plate to clicked location
+  map.addListener("click", function(e) {
+    alert(JSON.stringify(getPlateFromLocation(e.latLng.lat(), e.latLng.lng())));
+  })
+
+}
+
+/*
+ * Function getCircleIcon
+ *
+ * returns google maps icon based on color
+ *
+ * @param color {string} - icon color
+ *
+ */
+function getCircleIcon(color) {
+
+  return {
+    "path": google.maps.SymbolPath.CIRCLE,
+    "fillColor": color,
+    "fillOpacity": .25,
+    "scale": 4,
+    "strokeColor": "white",
+    "strokeWeight": 1
+  };
+  
+}
+
+var MARKERS = new Array();
+
+function publishMapMarkers(sites) {
+
+  var infowindow = new google.maps.InfoWindow();
+  
+  var content;
+  var marker;
+  var site;
+  
+  for(var i = 0; i < SITES.length; i++) {
+  
+    site = SITES[i]; 
+
+    marker = new google.maps.Marker({
+      position: new google.maps.LatLng(site.latitude, site.longitude),
+	  icon: getCircleIcon("red")
+	});
+	
+	content = getMarkerTooltipContent(site);
+	
+	// Add content window through closure
+    google.maps.event.addListener(marker, "click", (function(marker, content, infowindow) { 
+      return function() {
+        infowindow.setContent(content);
+        infowindow.open(map, marker);
+      };
+    })(marker, content, infowindow));
+
+    marker.setMap(map);
+	
+	MARKERS.push(marker);
+	
+  }
+
+  
+}
+
+/*
+ * Function getMarkerTooltipContent
+ *
+ * returns tooltip for google marker
+ *
+ * @param site {object} - site object
+ *
+ */
+function getMarkerTooltipContent(site) {
+
+  return [
+    "Site name: " + site.name,
+	"Latitude: " + site.latitude,
+	"Longitude: " + site.longitude,
+	"Age: " + site.age + " (" + site.ageMin +  " - " + site.ageMax + ")",
+	"Number of Samples: " + site.data.length
+  ].join("<br>");
+
+}
+
+function createPolarChart(container, data) {
+
+  // Specify chart options for the VGP chart
+  var chartOptions = {
+    'chart': {
+      'id': 'polar-chart',
+      'polar': true,
+      'renderTo': container
+    },
+    'exporting': {
+      'buttons': {
+        'contextButton': {
+          'symbolStroke': '#7798BF',
+          'align': 'right'
+        }
+      }
+    },
+    'title': {
+	  'text': 'Polar Positions',
+      'style': { 
+        'fontSize': '26px'
+      }      
+    },
+	'subtitle': {
+      'text': '...',
+      'style': { 
+        'fontSize': '16px'
+      }
+    },
+    'pane': {
+      'startAngle': 0,
+      'endAngle': 360
+    },
+    'yAxis': {
+      'min': 0,
+      'max': 90,
+      'type': 'linear',
+	  'tickPositions': [0, 90],
+      'reversed': true,
+      'labels': {
+        'enabled': false
+      }
+    },
+    'credits': {
+      'text': "Paleomagnetism.org (GaPWAP Tool)",
+      'href': ''
+    },
+    'xAxis': {
+      'minorTickPosition': 'inside',
+      'type': 'linear',
+      'min': 0,
+      'max': 360,
+      'minorGridLineWidth': 0,
+      'tickPositions': [0, 90, 180, 270, 360],
+      'minorTickInterval': 10,
+      'minorTickLength': 5,
+      'minorTickWidth': 1,
+      'labels': {
+        'formatter': function () {
+          return this.value + '\u00B0';
+        }
+      }
+    },
+	'tooltip': {
+      'formatter': polarChartTooltip
+    },
+    'plotOptions': {
+      'series': {
+        'turboThreshold': 0,
+        'animation': true,
+      }, 
+      'line': { 
+        'color': 'red', 
+        'dashStyle': 'ShortDash',
+        'lineWidth': 1, 
+        'marker': { 
+          'enabled': false 
+        } 
+      }
+    },
+    'series': [{
+      'name': 'Accepted',
+      'color': 'rgb(119, 152, 191)',
+      'type': 'scatter',
+      'data': data,
+      'marker': {
+        'symbol': 'circle',
+        'lineWidth': 1,
+      }
+    }]
+  };
+  
+  //Initialize chart with options
+  new Highcharts.Chart(chartOptions);
+  
+}
+
+/*
+ * Function getPolesFromDirection
+ *
+ * Converts direction at site to VGP
+ *
+ * @param slat {float} - site latitude
+ * @param slon {float} - site longitude
+ * @param dec {float} - declination of direction
+ * @param inc {float} - inclination of direction
+ *
+ */
+function getPolesFromDirection(siteLatitude, siteLongitude, dec, inc) {
+
+  // If the inclination is 90 return the site location
+  if(inc === 90) {
+    return {
+	  "lat": siteLatitude,
+	  "lon": siteLongitude
+	}
+  }
+
+  // Calculate the position of the VGP
+  var p = 0.5 * Math.PI - Math.atan(0.5 * Math.tan(RADIANS * inc));
+  var poleLatitude = Math.asin(Math.sin(RADIANS * siteLatitude) * Math.cos(p) + Math.cos(RADIANS * siteLatitude) * Math.sin(p) * Math.cos(RADIANS * dec))
+  var beta = Math.asin(Math.sin(p) * Math.sin(RADIANS * dec) / Math.cos(poleLatitude)) || 0;
+
+  // Determine the plate longitude
+  var poleLongitude;
+  if(Math.cos(p) - Math.sin(poleLatitude) * Math.sin(RADIANS * siteLatitude) < 0) {
+    poleLongitude = RADIANS * siteLongitude - beta + Math.PI
+  } else {
+    poleLongitude = RADIANS * siteLongitude + beta;
+  }
+
+  // Add 360 degrees
+  if(poleLongitude < 0) {
+    poleLongitude += 2 * Math.PI;
+  }
+
+  return {
+    "lat": poleLatitude,
+    "lon": poleLongitude
+  }
+
+}
+
+/*
+ * Function getCrossProduct
+ *
+ * Returns cross product between two vectors
+ *
+ * @param first {object} - first vector
+ * @param second {object} - second vector
+ *
+ */
+function getCrossProduct(first, second) {
+
+  var firstCartesian = getCartesianCoordinates(first.lon, first.lat);
+  var secondCartesian = getCartesianCoordinates(second.lon, second.lat);
+  
+  // 3x3 Matrix multiplication
+  var x = firstCartesian.y * secondCartesian.z - secondCartesian.y * firstCartesian.z;
+  var y = -firstCartesian.x * secondCartesian.z + secondCartesian.x * firstCartesian.z;
+  var z = firstCartesian.x * secondCartesian.y - secondCartesian.x * firstCartesian.y;
+
+  return getDirection(x, y, z);
+  
+}
+
+/*
+ * Function getAngleBetween
+ *
+ * Returns angle between two vectors
+ *
+ * @param first {object} - first vector
+ * @param second {object} - second vector
+ *
+ */
+function getAngleBetween(first, second) {
+
+  // Find the Cartesian coordinates of both directions
+  var A = getCartesianCoordinates(first.lon, first.lat);
+  var B = getCartesianCoordinates(second.lon, second.lat);
+
+  // Dot product to find angle (https://en.wikipedia.org/wiki/Dot_product#Geometric)
+  return Math.acos((A.x * B.x) + (A.y * B.y) + (A.z * B.z)) / RADIANS
+
+}
+
+/*
+ * FUNCTION getFractionalEulerPole
+ *
+ * Returns fractional position of pole between two Euler poles
+ *
+ * @param pole {object} - pole to be rotated
+ * @param first {object} - first euler pole
+ * @param second {object} - second euler pole
+ * @param fraction {float} - fraction (0 - 1) between poles from first to second
+ *
+ */ 
+function getFractionalEulerPole(pole, first, second, fraction) {
+  
+  // Get the stage poles
+  var firstRotated = getRotatedPole(pole, first);
+  var secondRotated = getRotatedPole(pole, second);
+  
+  // Get the stage poles in Cartesian coordinates
+  var firstCartesian = getCartesianCoordinates(first.lon, first.lat);
+  var secondCartesian = getCartesianCoordinates(second.lon, second.lat);
+  
+  // Combine Euler poles to single pole
+  // (first pole is reversed)
+  var intermediatePole = getDirection(
+    secondCartesian.x - firstCartesian.x,
+	secondCartesian.y - firstCartesian.y,
+	secondCartesian.z - firstCartesian.z 
+  );
+ 
+  // Determine the rotation angle
+  var angle = getAngleBetween(
+    getCrossProduct(intermediatePole, firstRotated),
+	getCrossProduct(intermediatePole, secondRotated)
+  );
+
+  // The convolved Euler pole
+  var convolvedEuler = {
+    "lat": intermediatePole.lat,
+	"lon": intermediatePole.lon,
+	"rot": fraction * angle
+  }
+  
+  // Rotate to the convolved Euler pole at a given fraction
+  return getRotatedPole(firstRotated, convolvedEuler);
+
+}
+
+function createRotationMatrix(lat, lon, rot) {
+
+  var lat = lat * RADIANS;
+  var lon = lon * RADIANS;
+  var rot = rot * RADIANS;
+
+  var rotationMatrix = [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0]
+  ];
+
+  var ex = Math.cos(lat) * Math.cos(lon);
+  var ey = Math.cos(lat) * Math.sin(lon);
+  var ez = Math.sin(lat);
+
+  rotationMatrix[0][0] = ex * ex * (1 - Math.cos(rot)) + Math.cos(rot);
+  rotationMatrix[0][1] = ex * ey * (1 - Math.cos(rot)) - ez * Math.sin(rot);
+  rotationMatrix[0][2] = ex * ez * (1 - Math.cos(rot)) + ey * Math.sin(rot);
+
+  rotationMatrix[1][0] = ey * ex * (1 - Math.cos(rot)) + ez * Math.sin(rot);
+  rotationMatrix[1][1] = ey * ey * (1 - Math.cos(rot)) + Math.cos(rot);
+  rotationMatrix[1][2] = ey * ez * (1 - Math.cos(rot)) - ex * Math.sin(rot);
+
+  rotationMatrix[2][0] = ez * ex * (1 - Math.cos(rot)) - ey * Math.sin(rot);
+  rotationMatrix[2][1] = ez * ey * (1 - Math.cos(rot)) + ex * Math.sin(rot);
+  rotationMatrix[2][2] = ez * ez * (1 - Math.cos(rot)) + Math.cos(rot);
+
+  return rotationMatrix;
+
+}
+
+function addRotationMatrices(first, second) {
+
+  var convolvedMatrix = [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0]
+  ];
+
+  // Add matrices
+  for(var i = 0; i < 3; i++) {
+    for(var j = 0; j < 3; j++) {
+      for(var k = 0; k < 3; k++) {
+        convolvedMatrix[i][j] += first[i][k] * second[k][j];
+      }
+    }
+  }
+
+  return convolvedMatrix;
+
+}
+
+function poleFromRotationMatrix(matrix) {
+
+  var lon = Math.atan2(matrix[0][2] - matrix[2][0], matrix[2][1] - matrix[1][2]);
+  var term = Math.sqrt(Math.pow(matrix[2][1] - matrix[1][2], 2) + Math.pow(matrix[0][2] - matrix[2][0], 2) + Math.pow(matrix[1][0] - matrix[0][1], 2));
+
+  var lat = Math.asin(matrix[1][0] - matrix[0][1] / term);
+  var rot = Math.atan2(term, matrix[0][0] + matrix[1][1] + matrix[2][2] - 1);
+
+  return {
+    "lon": lon / RADIANS,
+    "lat": lat / RADIANS,
+    "rot": rot / RADIANS
+  }
+
+}
+/*
+ * FUNCTION getRotatedPole
+ *
+ * rotates pole around euler pole with specified rotation
+ * Implemented after the supplementary information of van Hinsbergen et al., 2015 (Paleolatitude.org)
+ *
+ * @param pole {object} - pole to be rotated
+ * @param eulerPole {object} - Euler pole and amount to rotate pole around
+ *
+ */
+function getRotatedPole(pole, eulerPole) {
+		
+  // Find co-latitudes and do conversions to radians
+  var thetaEuler = (90 - eulerPole.lat) * RADIANS;
+  var thetaPole = (90 - pole.lat) * RADIANS;
+  
+  var phiEuler = eulerPole.lon * RADIANS;
+  var phiPole = pole.lon * RADIANS;
+  
+  var rotationAngle = eulerPole.rot * RADIANS;
+  
+  // Construct transformation matrix L
+  var L = [
+    [Math.cos(phiEuler) * Math.cos(thetaEuler), -Math.sin(phiEuler), Math.cos(phiEuler) * Math.sin(thetaEuler)],
+    [Math.sin(phiEuler) * Math.cos(thetaEuler), Math.cos(phiEuler), Math.sin(phiEuler) * Math.sin(thetaEuler)],
+    [-Math.sin(thetaEuler), 0, Math.cos(thetaEuler)]
+  ];
+  
+  // Store reference pole to Cartesian coordinates in P vector
+  var P = [ 
+    Math.cos(phiPole) * Math.sin(thetaPole), 
+    Math.sin(phiPole) * Math.sin(thetaPole), 
+    Math.cos(thetaPole)
+  ];
+  
+  // Construct rotation matrix (forward rotation)
+  var R = [
+    [Math.cos(rotationAngle), -Math.sin(rotationAngle), 0],
+    [Math.sin(rotationAngle), Math.cos(rotationAngle), 0],
+    [0, 0, 1]
+  ];
+  
+ /*
+  * PERFORMING EULER ROTATION
+  * [L] [R] [Lt] <P>
+  * Where L is the transformation Matrix (t - tranpose) [3x3]
+  * R rotation matrix [3x3]
+  * P is the vector containing Cartesian coordinates of the reference pole [1x3]
+  */
+  
+  //Multiply [L] with [R] to [M]
+  var M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  for(var j = 0; j < 3; j++) {
+    for(var k = 0; k < 3; k++) {
+      for(var l = 0; l < 3; l++) {
+        M[j][k] += L[j][l] * R[l][k];
+      }
+    }
+  }
+  
+  //Multiply [M] with [Lt] to [B]
+  var B = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  for(var j = 0; j < 3; j++) {
+    for(var k = 0; k < 3; k++) {
+      for(var l = 0; l < 3; l++) {
+        B[j][k] += M[j][l] * L[k][l];
+      }
+    }
+  }
+  
+  //Multiply [B] with <P> to <X>
+  var X = [0, 0, 0];
+  for(var j = 0; j < 3; j++) {
+    for(var k = 0; k < 3; k++) {
+      X[j] += B[j][k] * P[k];
+    }
+  }
+  	
+  var phiPoleRot = Math.atan(X[1] / X[0]);
+  var thetaPoleRot = Math.acos(X[2]);
+  
+  if(X[0] < 0) {
+    phiPoleRot += Math.PI;
+  } else if (X[0] >= 0 && X[1] < 0) {
+    phiPoleRot += 2 * Math.PI;
+  }
+  
+  var latPoleRot = (0.5 * Math.PI - thetaPoleRot);
+  
+  return {
+    "lat": latPoleRot / RADIANS, 
+    "lon": phiPoleRot / RADIANS
+  }
+	
+}
+
+/*
+ * Function getEulerPole
+ *
+ * Returns euler pole for given plate id and age
+ *
+ * @param id {int} - plate id
+ * @param age {int} - age of euler pole
+ *
+ */
+function getEulerPole(id, age) {
+
+  // Run age list of specific plate
+  var list = EULER_ROTATIONS[id].filter(function(x) {
+    return x.age === age;
+  });
+  
+  // Problem with no intersection or multiple
+  if(list.length !== 1) {
+    return null;
+  }
+  
+  return list.pop();
+  
+}
+
+/*
+ * jQuery document.ready() callback
+ *
+ * Initialize jQuery-UI elements
+ *
+ */
+$(function() {
+
+  updateDataStatus();
+  
+  $(".button-input").button();
+
+  $("#start").click(function() {
+	
+	DATA_CACHE = new Array();
+	
+	// Polygons have not been defined
+	if(!PLATE_POLYGONS) {
+	  return notify("failure", "Plate polygons have not been defined.");	
+	}
+	
+	// Euler poles have not been defined
+	if(!EULER_ROTATIONS) {
+	  return notify("failure", "Euler poles have not been defined.");
+	}
+	
+	var site;
+	var latitude, longitude;
+	var age, ageMin, ageMax;
+	var plate, pole, eulerPole;
+	var declination, inclination;
+	
+	for(var i = 0; i < SITES.length; i++) {
+	
+      site = SITES[i];
+
+      latitude = site.latitude;
+	  longitude = site.longitude;
+	  age = site.age;
+	  ageMin = site.ageMin;
+	  ageMax = site.ageMax;
+	  
+      plate = getPlateFromLocation(latitude, longitude);
+	  
+	  for(var j = 0; j < site.data.length; j++) {
+
+	    point = site.data[j];
+		declination = point.dec;
+		inclination = point.inc;
+
+	    pole = getPolesFromDirection(latitude, longitude, point.dec, point.inc);
+		
+	    eulerPole = getEulerPole(plate.id, age);
+
+	    if(!eulerPole) {
+          continue;
+	    }
+	    
+	    // Rotate the pole
+	    var rotatedPole = getRotatedPole(pole, eulerPole);
+	    
+	    var g = {
+	      "poleLatitude": rotatedPole.lat,
+	      "poleLongitude": rotatedPole.lon,
+	      "age": age,
+	      "ageMin": ageMin,
+	      "ageMax": ageMax,
+	      "plate": plate.name,
+	      "reference": eulerPole.relativeTo
+	    }
+	   	    
+	    DATA_CACHE.push(g);
+		
+	  }
+	  
+	}
+	
+	var data = DATA_CACHE.map(createHighchartsData);
+	
+	createPolarChart('polar-chart', data);
+
+	getMovingAverage(DATA_CACHE);
+	
+  });
+
+});
+
+/*
+ * Function getMovingAverage
+ *
+ * returns moving average based on options
+ * from global DATA_CACHE.
+ *
+ */
+function getMovingAverage(data) {
+
+  // Moving average options
+  STEP_BEGIN = 0;
+  STEP_END = 300;
+  STEP_SIZE = 1;
+  
+  var stepData;
+  var fisher;
+  
+  // Slide the moving window
+  for(var step = STEP_BEGIN; step <= STEP_END; step += STEP_SIZE) {
+
+    // Get poles beloning to a certain age from the data cache
+    stepData = data.filter(function(pole) {
+	  return pole.ageMin < step && step < pole.ageMax;
+	});
+
+    fisher = getFisherParameters(stepData);
+	console.log(fisher, step);
+	
+  } 
+
+}
+
+/*
+ * Function getCartesianCoordinates
+ *
+ * returns Cartesian coordinates of pole
+ *
+ * @param lon {float} - longitude of pole in degrees
+ * @param lat {float} - latitude of pole in degrees
+ * @param intensity {float} - length of vector [DEFAULT: unit weight]
+ *
+ */
+function getCartesianCoordinates(lon, lat, intensity) {
+
+  var lon = lon * RADIANS;
+  var lat = lat * RADIANS;
+
+  // If the intensity is undefined, implicitly assume unit weight
+  if(intensity === undefined) {
+    intensity = 1;
+  }
+
+  // Calculate Cartesian coordinates
+  return {
+    "x": intensity * Math.cos(lon) * Math.cos(lat),
+    "y": intensity * Math.sin(lon) * Math.cos(lat),
+    "z": intensity * Math.sin(lat)
+  };
+
+}
+
+/*
+ * Function getDispersionParameter
+ *
+ * returns dispersion parameter K
+ *
+ * @param N {int} - number of samples
+ * @param R {float} - resultant vector length
+ *
+ */
+function getDispersionParameter(N, R) {
+
+  return (N - 1) / (N - R);
+  
+}
+
+/*
+ * Function vectorLength
+ *
+ * Returns vector length for Cartesian coordinates
+ *
+ * @param x {float} - x-coordinates
+ * @param y {float} - y-coordinates
+ * @param z {float} - z-coordinates
+ *
+ */
+function vectorLength(x, y, z) {
+
+  return Math.sqrt(x * x + y * y + z * z);
+  
+}
+
+/*
+ * Function getConfidenceInterval
+ *
+ * returns confidence interval parameter A95 in degrees
+ *
+ * @param N {int} - number of samples
+ * @param R {float} - resultant vector length
+ *
+ */
+function getConfidenceInterval(N, R) {
+
+  var CONFIDENCE = 95;
+  
+  var p = 0.01 * (100 - CONFIDENCE);
+  
+  return Math.acos(1 - (Math.pow((1 / p), (1 / (N - 1))) - 1) * (N - R) / R) / RADIANS;
+
+}
+
+/*
+ * Function getDirection
+ *
+ * Returns pole representation of Cartesian coordinates in degrees
+ *
+ * @param x {float} - x-coordinates
+ * @param y {float} - y-coordinates
+ * @param z {float} - z-coordinates
+ *
+ */
+function getDirection(x, y, z) {
+
+  // Use Pythagorean Theorem to find R
+  // Use atan2 to find the appropriate quadrant
+  var R = vectorLength(x, y, z); 
+  var lon = (360 + (Math.atan2(y, x) / RADIANS)) % 360; 
+  var lat = Math.asin(z / R) / RADIANS;
+	
+  return {
+    "lon": lon,
+	"lat": lat,
+    "R": R
+  }
+  
+}
+
+/*
+ * Function getMeanDirection
+ *
+ * Returns geometric mean of an array of poles
+ *
+ * @param data {array} - array of latitude/longitude objects pairs
+ *
+ */
+function getMeanDirection(data) {
+  
+  var xSum = 0, ySum = 0, zSum = 0;
+  var longitude, latitude;
+  var cartesian;
+  
+  for(var i = 0; i < data.length; i++) {
+  
+    latitude = data[i].poleLatitude;
+	longitude = data[i].poleLongitude;
+	
+    cartesian = getCartesianCoordinates(longitude, latitude);
+	
+    xSum += cartesian.x;
+    ySum += cartesian.y;
+    zSum += cartesian.z;
+	
+  }
+
+  return getDirection(xSum, ySum, zSum);
+
+}
+
+/*
+ * Function getFisherParameters
+ *
+ * Returns statistical Fisher parameters from data object
+ *
+ * @param data {array} - array of data objects
+ *
+ */
+function getFisherParameters(data) {
+
+  var N = data.length;
+  
+  // Stop if N is less than 2
+  if(N < 2) {
+    return null;
+  }
+  
+  // Get the mean and statistical parameters
+  var mean = getMeanDirection(data);
+  var K = getDispersionParameter(N, mean.R);
+  var A95 = getConfidenceInterval(N, mean.R);
+  
+  return {
+    "N": N,
+	"lat": mean.lat,
+	"lon": mean.lon,
+	"A95": A95,
+	"K": K
+  }
+
+}
+
+/*
+ * FUNCTION polarChartTooltip
+ *
+ * Returns the tooltip for the VGP polar plot
+ * references by Highcharts bind to "this"
+ *
+ */
+function polarChartTooltip() {
+
+  return [
+    '<b>Longitude: </b>' + this.x.toFixed(2),
+    '<b>Latitude: </b>' + this.point.lat.toFixed(2),
+	'<b>Age: </b>' + this.point.age,
+	'<b>Plate: </b>' + this.point.plate,
+	'<b>Reference: </b>' + this.point.reference
+  ].join("<br>");
+  
+}
+
+function getSeriesColor(id) {
+
+  switch(id) {
+    case 701: return "#C03"
+	default: return "#000"
+  }
+  
+}
+
+function createHighchartsData(entry) {
+
+  return {
+    "x": entry.poleLongitude,
+	"y": projectedInclination(entry.poleLatitude),
+	"lat": entry.poleLatitude,
+	"plate": entry.plate,
+	"reference": entry.reference,
+	"color": getSeriesColor(entry.reference),
+	"age": entry.age
+  }
+
+}
+
+/*
+ * Function projectedInclination
+ *
+ * Projects a given inclination to equal area representation
+ *
+ */
+function projectedInclination(inc) {
+  return 90 - (Math.sqrt(2) * 90 * Math.sin(Math.PI * (90 -  Math.abs(inc)) / 360));
+}
+
+/*
+ * Function notify
+ *
+ * Plays notification message to user
+ *
+ * @param type {string} - type of notification
+ * @param msg {string} - message to display to user
+ *
+ */
+function notify(type, msg) {
+
+  // Check the type of the notification (success, note, or failure)
+  var theme;
+  if(type === "success") {
+    msg = "<b>&#x2714</b> " + msg;
+    theme = 'dark';
+  } else if(type === "failure") {
+    msg = "<b>&#10007</b> " + msg;
+    theme = "light";
+  } else if(type === "note") {
+    msg = "<b>&#8801</b> " + msg;
+    theme = "orange";
+  } else {
+    throw("Unexpected type of notification (" + type + ") expected (success, failure, note)");
+  }
+  
+  // Call the notiny plugin to do print the notification
+  $.notiny({
+    'text': msg,
+    'theme': theme,
+    'width': 'auto'
+  });
+
+}
+</script>
+
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCvJEx8MlU2o1YwBkDMx-xzZzsw9-8ssDc&libraries=geometry&callback=initMap"></script>
+
+</HTML>
