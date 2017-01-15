@@ -590,7 +590,11 @@ function eqAreaProjection() {
       'minorTickWidth': 1,
       'labels': {
         'formatter': function () {
-          return this.value + '\u00B0';
+			if(information !== 'Specimen Coordinates') {
+				return this.value + '\u00B0';
+		  	 } else {
+				return ["x", "y", "-x", "-y"][this.value / 90 | 0];
+			}
         }
       }
     },
@@ -608,7 +612,7 @@ function eqAreaProjection() {
           },
           'enabled': enableLabels,
           'formatter': function () {
-             return this.point.step;
+               return this.point.step;
           }
         }
       }
