@@ -259,13 +259,8 @@ function getExpectedLocation(skip) {
           // Throw error if ages do not match
           if(APWP.type === 'Euler Pole' && APWP.age[i] !== APWP.africanPolePath.age[i]) {
 
-            // Skip ages under 50 for Kent
-            if(APWP.age[i] < 50 && realRefName === "kent2010") {
-              continue;
-            }
-
             if(APWP.africanPolePath.age[i] !== undefined) {
-              notify('failure', 'Fatal: ages for Euler Poles does not match increments of 10 Myr starting from 0.');
+              notify('failure', 'Ages of Euler poles and reference frame are not compatible: ' + realRefName + ' and ' + plateName + '.');
             }
 
             break; 
