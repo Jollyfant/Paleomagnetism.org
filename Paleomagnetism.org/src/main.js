@@ -329,13 +329,10 @@ var addAPWP = function () {
   }	
 
   if(coordinateFrame === 'euler') {
-    var next = 0;
     for(var i = 0; i < age.length; i++) {
-      if(age[i] !== next) {
-        notify('failure', 'For compatibility with the African reference frames, all Euler Poles must start at 0 Myr and have 10 Myr increments.');
-        return;
+      if(age[i] % 10 !== 0) {
+        notify('failure', 'For compatibility with the African reference frames, all Euler Poles must start at 0 Myr and have 10 Myr increments.'); return;
       }
-      next += 10;
     }
   }
 
