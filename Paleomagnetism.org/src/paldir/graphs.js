@@ -87,7 +87,16 @@ function plotZijderveldDiagram() {
         var carts = cart(direction.dec, direction.inc, direction.R);	
         var projectionInformation = 'Up/West';				
       }
-
+ 
+      // Don't call projection what it is
+	  if(specFlag) {
+        if(nFlag) {
+		  var projectionInformation = '-z/x';
+        } else {
+		  var projectionInformation = '-z/-y';	
+		}			
+	  }
+	  
       // Horizontal projection is in the x, y plane
       decDat.push({
         'x': carts.x, 
