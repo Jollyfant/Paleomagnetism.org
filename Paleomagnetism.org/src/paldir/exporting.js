@@ -11,7 +11,7 @@ function dlItem (string, extension) {
 	
   var blob = new Blob([string], {'type': 'data:application/json;charset=utf-8'});
   var csvUrl = URL.createObjectURL(blob);
-  var name = data[0].name + ' et al.';
+  var name = 'export';
 
   // Download attribute supported
   if (downloadAttrSupported) {
