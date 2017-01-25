@@ -1316,9 +1316,16 @@ var processUserInput = function(data, type, name) {
       var outputIteration = new Array();
       var p = lines[j].split(/[,\t]+/).filter(function(x) {
         return x !== "";
-      });
-				
+      }).map(function(x) {
+		return Number(x);
+	  });
+	 
+	  if(p[0] < 0) {
+		p[0] += 360;
+	  }
+
       p[0] = p[0] % 360;
+	  
       if(Number(p[0]) >= 0 && Number(p[0]) <= 360 && Number(p[1]) >= -90 && Number(p[1]) <= 90) {
         var dec = Number(p[0]);
         var inc = Number(p[1]);
