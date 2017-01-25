@@ -1269,7 +1269,7 @@ var processUserInput = function(data, type, name) {
       // If user specified bedding is included
       if(includeBedding) {
         expected += 2;
-        var bedOrient = (Number(p.shift()) + 360)%360;
+        var bedOrient = (Number(p.shift()) + 360) % 360;
         var bedDip = Number(p.shift());
       }
 
@@ -1291,8 +1291,13 @@ var processUserInput = function(data, type, name) {
         break;
       };
 
+	  // Allow negative declinations
+	  if(declination < 0) {
+	    declination += 360;
+	  }
+	  
       // Check declination/inclination bounds (0, 360) and (-90, 90)
-      // If we find a problem, break the procedure
+      // If we find a problem, break the procedure	  
       if(declination >= 0 && declination <= 360 && inclination >= -90 && inclination <= 90 && bedOrient >= 0 && bedOrient <= 360)  {
         output.push([declination, inclination, bedOrient, bedDip, sampleName, stratLevel]);
       } else {
