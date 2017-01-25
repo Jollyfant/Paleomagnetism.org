@@ -1423,6 +1423,10 @@ var constructMetaData = function(edit) {
   var latitude = Number($('#siteLat').val());
   var longitude = Number($('#siteLng').val());
   
+  if(longitude < 0) {
+    longitude += 360;
+  }
+  
   var age = Number($('#siteAge').val());
   var minAge = Number($('#siteBoundMin').val());
   var maxAge = Number($('#siteBoundMax').val());
