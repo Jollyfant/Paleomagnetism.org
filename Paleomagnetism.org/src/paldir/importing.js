@@ -84,6 +84,89 @@ function importOxford(text) {
     
 }
 
+function importNGU(text) {
+
+  var lines = text.split(/[\n]/).filter(Boolean);
+  var parsedData = new Array();
+  console.log(lines);
+  for(var i = 0; i < lines.length; i++) {
+
+    // Reduce empty lines
+    var parameters = lines[i].split(/[,\s\t]+/);
+    parameters = parameters.filter(function(x) {
+      return x !== "";
+    });
+
+    // Get the header
+    if(i === 0) {
+
+      var name = parameters[0];
+
+      // Check if sample with name exists -> append copy text
+      for(var k = 0; k < data.length; k++) {
+        if(name === data[k].name) {
+          var skip = true;
+        }
+      }
+
+      // Different convention for core orientation than Utrecht
+      // Munich measures the hade angle
+      var coreAzi = Number(parameters[1]);
+      var coreDip = 90 - Number(parameters[2]);
+
+      // Bedding strike needs to be decreased by 90 for input convention
+      var bedStrike = (Number(parameters[3]) + 270) % 360;
+
+      var bedDip = Number(parameters[4]);
+      var info = parameters[5];
+
+    } else {
+
+    // Get Cartesian coordinates for specimen coordinates (intensities in mA -> bring to μA)
+    var intensity = Number(parameters[1]);
+    var dec = Number(parameters[2]);
+    var inc = Number(parameters[3]);
+
+    var cartesianCoordinates = cart(dec, inc, intensity * 1e3);
+
+    parsedData.push({
+      'visible': true,
+      'include': false,
+      'step': parameters[0],
+      'x': cartesianCoordinates.x,
+      'y': cartesianCoordinates.y,
+      'z': cartesianCoordinates.z,
+      'a95': Number(parameters[4]),
+      'info': info
+     });
+    }
+  }
+
+  if(skip) {
+    notify('failure', 'Found duplicate ' + name + '; skipping specimen');
+  }
+
+  // Now format specimen meta-data, parameters such as bedding and core orientation go here as well as previously interpreted directions.
+  data.push({
+    'volume': null,
+    'added': new Date().toISOString(),
+    'format': "NGU",
+    'demagType': "Unknown",
+    'strat': null,
+    'patch': PATCH_NUMBER,
+    'GEO': new Array(),
+    'TECT': new Array(),
+    'interpreted': false,
+    'name': name,
+    'coreAzi': Number(coreAzi),
+    'coreDip': Number(coreDip),
+    'bedStrike': Number(bedStrike),
+    'bedDip': Number(bedDip),
+    'data': parsedData
+  });
+
+}
+
 /*
  * Importing parser for Munich format
  * One sample per file, multiple files can be selected during importing

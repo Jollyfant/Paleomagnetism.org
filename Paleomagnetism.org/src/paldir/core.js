@@ -2366,6 +2366,8 @@ function importing(event, format) {
           patch();
         } else if(format === 'MUNICH') {
           importMunich(text);
+        } else if(format === 'NGU') {
+          importNGU(text);
         } else if(format === 'PALEOMAC') {
           importMac(text);
         } else if(format === 'OXFORD') {
