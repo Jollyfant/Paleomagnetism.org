@@ -223,7 +223,7 @@ function importMunich(text) {
       'x': cartesianCoordinates.x,
       'y': cartesianCoordinates.y,
       'z': cartesianCoordinates.z,
-      'a95': parameters[2],
+      'a95': Number(parameters[2]),
       'info': info
      });			
     }
