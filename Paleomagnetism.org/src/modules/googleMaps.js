@@ -139,7 +139,7 @@ function getPlateFromLocation(latitude, longitude) {
   }
   
   // No intersection
-  return null;
+  return {"id": 1001, "name": "unconstrained"};
   
 }
 
