@@ -703,10 +703,6 @@ function poles(slat, slong, data) {
   plat = plat / RADIANS;
   plong = plong / RADIANS;
 
-  if(plong < 0){
-    plong = plong + 360;
-  }
-
   var newData = JSON.parse(JSON.stringify(data));
   newData[0] = plong;
   newData[1] = plat;
