@@ -641,6 +641,15 @@ function invPoles(siteLat, siteLong, data) {
   var siteLat = Number(siteLat);
   var siteLong = Number(siteLong);
 
+  // Make sure siteLong and poleLongitude are similar
+  if(siteLong < 0) {
+    siteLong += 360;
+  }
+  
+  if(poleLong < 0) {
+    poleLong += 360;
+  }
+  
   // Get some standard variables
   var sinlats = Math.sin(RADIANS * siteLat);
   var coslats = Math.cos(RADIANS * siteLat);
@@ -703,6 +712,10 @@ function poles(slat, slong, data) {
   plat = plat / RADIANS;
   plong = plong / RADIANS;
 
+  if(plong < 0) {
+    plong += 360;
+  }
+  
   var newData = JSON.parse(JSON.stringify(data));
   newData[0] = plong;
   newData[1] = plat;
