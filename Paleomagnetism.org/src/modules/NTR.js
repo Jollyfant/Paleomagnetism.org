@@ -101,7 +101,8 @@ $(function() {
 	
 	//Number of points; this time we want to find the 4 points evenly spaced around the mean vector
 	//Therefore we take 0, 90, 180, and 270 degrees.
-	var nPoints = [0, Math.PI/2, Math.PI, 3*Math.PI/2];
+        // If dDx is set to 0 only take inclination pairs at 0 and 180.
+	var nPoints = dDx === 0 ? [0, Math.PI] : [0, Math.PI/2, Math.PI, 3*Math.PI/2];
 
 	//Same routine as usual (condensed)
 	R = [[0,0,0],[0,0,0],[0,0,0]];
