@@ -1065,7 +1065,7 @@ function drawGraph( plotSeries, container ) {
     },
     'credits': {
       'enabled': true,
-      'text': "Paleomagnetism.org (NTR Analysis) - <i> after Morris et al., 1998 </i>",
+      'text': "Paleomagnetism.org (NTR Analysis) - <i> after Allerton and Vine, 1987, Morris et al., 1998 </i>",
       'href': ''
     },
     'xAxis': {
@@ -1297,7 +1297,7 @@ function plotWindRose(dataOne, dataTwo, container) {
     },
     'credits': {
       'enabled': true,
-      'text': "Paleomagnetism.org (NTR Analysis) - <i> after Morris et al., 1998 </i>",
+      'text': "Paleomagnetism.org (NTR Analysis) - <i> after Allerton and Vine, 1987, Morris et al., 1998 </i>",
       'href': ''
     },
     'plotOptions': {
