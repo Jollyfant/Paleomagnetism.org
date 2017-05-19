@@ -459,7 +459,7 @@ $(function() {
   	  */
   	  if(this.userOptions.chart.id == 'ChRM') {
       
-  	  	columns = ['sample', 'dec', 'inc'];
+  	  	columns = ['sample', 'dec', 'inc', 'strat'];
   	  	csv += '"' + columns.join(itemDelimiter) + '"' + lineDelimiter;
   	  	
   	  	//Add all directions (first 2 series)
@@ -467,7 +467,7 @@ $(function() {
   	  	  for(var i = 0; i < this.series[k].data.length; i++) {
   	  	  
   	  	    //Sample name, declination, inclination, rejected/accepted on one line
-  	  	    row = [this.series[k].data[i].sample, this.series[k].data[i].x, this.series[k].data[i].inc, this.series[k].name];	
+  	  	    row = [this.series[k].data[i].sample, this.series[k].data[i].x, this.series[k].data[i].inc, this.series[k].data[i].strat, this.series[k].name];	
   	  	    csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
   	  	  
   	  	  }
@@ -564,7 +564,7 @@ $(function() {
   	  
   	  if(this.userOptions.chart.id == 'VGP') {
   	  	
-  	  	columns = ['Sample', 'Latitude', 'Longitude'];
+  	  	columns = ['Sample', 'Latitude', 'Longitude', 'strat'];
   	  	csv += '"' + columns.join(itemDelimiter) + '"' + lineDelimiter;
   	  	
   	  	// Add all directions (first 4 series)
@@ -572,7 +572,7 @@ $(function() {
   	  	  for(var i = 0; i < this.series[k].data.length; i++) {
   	  	  
   	  	  	// Sample name, declination, inclination, rejected/accepted on one line
-  	  	  	row = [this.series[k].data[i].sample, this.series[k].data[i].inc, this.series[k].data[i].x, this.series[k].name];	
+  	  	  	row = [this.series[k].data[i].sample, this.series[k].data[i].inc, this.series[k].data[i].x, this.series[k].data[i].strat, this.series[k].name];	
   	  	  	csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
   	  	  
   	  	  }

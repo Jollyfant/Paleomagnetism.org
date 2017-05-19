@@ -32,6 +32,7 @@ function formatDirections(object, color) {
       'y': eqArea(object[i][1]),
       'inc': object[i][1],
       'sample': object[i][4],
+      'strat': object[i][5],
       'marker': {
       'fillColor': object[i][1] < 0 ? 'white' : color,
         'lineColor': color
