@@ -2372,6 +2372,8 @@ function importing(event, format) {
           importMac(text);
         } else if(format === 'OXFORD') {
 		  importOxford(text);
+		} else if(format === "CENIEH") {
+		  importCenieh(text);
 		}
       } catch (ex) {
          notify('failure', 'An exception occured during importing, is the format correct?');

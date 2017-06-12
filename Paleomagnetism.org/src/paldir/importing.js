@@ -10,6 +10,69 @@
 
 "use strict"
 
+function importCenieh(text) {
+
+  notify("note", "Cenieh data importing is experimental and core orientation & bedding is missing.");
+  
+  var lines = text.split(/[\n]/).filter(Boolean);
+
+  var ceniehSamples = {}
+  
+  for(var i = 1; i < lines.length; i++) {
+
+	var parameters = lines[i].split(/\s+/);
+
+	var depth = parameters[13];
+	var sampleName = parameters[0] + "." + depth;
+	
+	if(!ceniehSamples.hasOwnProperty(sampleName)) {
+	  ceniehSamples[sampleName] = {
+	    "data": new Array(),
+		"volume": null,
+        "added": new Date().toISOString(),
+        "format": "Cenieh",
+        "demagType": null,
+        "strat": depth,
+        "patch": PATCH_NUMBER,
+        "GEO": new Array(),
+        "TECT": new Array(),
+        "interpreted": false,
+        "name": sampleName,
+        "coreAzi": 0,
+        "coreDip": 90,
+        "bedStrike": 0,
+        "bedDip": 0
+	  }
+    }
+
+	var step = parameters[1];
+	var intensity = Number(parameters[2]);	
+	var dec = Number(parameters[3]);
+	var inc = Number(parameters[4]);
+	
+    var cartesianCoordinates = cart(dec, inc, intensity / 1e-6);
+	
+	ceniehSamples[sampleName].data.push({
+      "visible": true, 
+      "include": false,
+      "step": step,
+      "x": cartesianCoordinates.x,
+      "y": cartesianCoordinates.y,
+      "z": cartesianCoordinates.z,
+      "a95": null,
+      "info": null		
+	});
+	
+  }
+  
+  // Add hashmap to the data arary
+  for(var samp in ceniehSamples) {
+    data.push(ceniehSamples[samp]);
+  }
+	
+}
+
+
 function importOxford(text) {
 	
   var lines = text.split(/[\n]/).filter(Boolean);
