@@ -1551,13 +1551,12 @@ function plotSiteDataExpected(type) {
         var elly = ellipseData(ellipseParameters, true);
 		
         ellipseDataNeg = ellipseDataNeg.concat(elly.neg);
-
         ellipseDataPos = ellipseDataPos.concat(elly.pos);
 		
       }
 	  
 	}
-    console.log(ellipseDataNeg)
+
     //Add polar series to polar map
     $("#polePath").highcharts().addSeries({
       'type': 'scatter',
