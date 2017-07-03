@@ -1449,10 +1449,10 @@ function EIbootstraps (data, time, nb, input, name) {
   }
 }
 
-function translateToSite(direction, from, to) {
+function translateToSite(polePosition, to) {
 
-  var polePosition = poles(from.lat, from.lon, [direction.dec, direction.inc]);
-  var siteDirectionsTransformed = invPoles(to.lat, to.lon, [polePosition[0], polePosition[1]]);
+  //var polePosition = poles(from.lat, from.lon, [direction.dec, direction.inc]);
+  var siteDirectionsTransformed = invPoles(to.lat, to.lon, [polePosition.lon, polePosition.lat]);
   var expectedDec = siteDirectionsTransformed[0];
   var expectedInc = siteDirectionsTransformed[1];
   var expectedPalat = diPalat(expectedInc);
@@ -1511,34 +1511,22 @@ function plotSiteDataExpected(type) {
         continue;
       }
       
-      //Get mean inclination/declination from site
-      var mInc = Number(sites[siteNames[i]][coordRef].params.mInc);
-      var mDec = Number(sites[siteNames[i]][coordRef].params.mDec);
+      //Get mean pole from the site
       var A95 = Number(sites[siteNames[i]][coordRef].params.A95);
+      var meanPole = sites[siteNames[i]][coordRef].params.meanPole;
 
-      //See if inversionflag -> convert to N polarity
-      if(inversionFlag) {
-        if(mInc < 0) {
-          var mInc = Math.abs(mInc);
-          var mDec = (mDec+180)%360;
-        }
-      }
-
-      if(latitude != null && longitude != null) {
-      
-        //Convert mean declination/inclination to pole position
-        var polePosition = poles(latitude, longitude, [mDec, mInc, 0, 0, 0]);
+      if(meanPole) {
         
-        var fillColor = (polePosition[1] < 0) ? 'white' : markerColor;
+        var fillColor = (meanPole.lat < 0) ? 'white' : markerColor;
         
         //Push particular site lat/lon pair to data array
         data.push({
-          'x': polePosition[0], 
-          'y': eqArea(polePosition[1]), 
+          'x': meanPole.lon,
+          'y': eqArea(meanPole.lat), 
           'name': name,
           'age': age,
           'A95': A95,
-          'inc': polePosition[1], 
+          'inc': meanPole.lat, 
           'marker': { 
             'radius': 4, 
             'symbol': 'circle', 
@@ -1550,24 +1538,26 @@ function plotSiteDataExpected(type) {
         
         //Construct ellipse parameters and request the ellipse
         var ellipseParameters = {
-          'xDec'   : polePosition[0],
-          'xInc'  : polePosition[1],
-          'yDec'  : polePosition[0],
-          'yInc'  : polePosition[1] - 90,
-          'zDec'  : polePosition[0] + 90,
+          'xDec'   : meanPole.lon,
+          'xInc'  : meanPole.lat,
+          'yDec'  : meanPole.lon,
+          'yInc'  : meanPole.lat - 90,
+          'zDec'  : meanPole.lon + 90,
           'zInc'  : 0,
           'beta'  : A95,
           'gamma'  : A95
         }  
         
         var elly = ellipseData(ellipseParameters, true);
-        
+		
         ellipseDataNeg = ellipseDataNeg.concat(elly.neg);
+
         ellipseDataPos = ellipseDataPos.concat(elly.pos);
 		
       }
-    }
-    
+	  
+	}
+    console.log(ellipseDataNeg)
     //Add polar series to polar map
     $("#polePath").highcharts().addSeries({
       'type': 'scatter',
@@ -1585,14 +1575,7 @@ function plotSiteDataExpected(type) {
       'id': 'ellipse', 
       'color': 'grey', 
       'name': 'Site Confidence Intervals', 
-      'data': ellipseDataPos, 
-      'enableMouseTracking': false 
-    }, {
-      'type': 'line', 
-      'linkedTo': 'ellipse', 
-      'color': 'grey', 
-      'name': 'Site Confidence Intervals', 
-      'data': ellipseDataNeg, 
+      'data': ellipseDataPos.concat(ellipseDataNeg), 
       'enableMouseTracking': false 
     });  
     
@@ -1624,7 +1607,7 @@ function plotSiteDataExpected(type) {
     
     // Translate the sites to the selected location
     var fromLoc = {'lat': latitude, 'lon': longitude}
-    var translatedDirection = translateToSite({'dec': siteParameters.mDec, 'inc': siteParameters.mInc}, fromLoc, requestedLoc);
+    var translatedDirection = translateToSite(siteParameters.meanPole, requestedLoc);
     var translatedButler = butler(translatedDirection.palat, siteParameters.A95, translatedDirection.inc);
 
     //For the paleolatitude the errors are non-symmetrical

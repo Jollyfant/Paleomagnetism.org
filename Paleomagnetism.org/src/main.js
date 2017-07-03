@@ -9,7 +9,7 @@
  */
  
  //Current application version
-version = 'v1.1.2';
+version = 'v1.1.3';
 
 //Create the modules object that will carry all functional modules
 module = new Object();
@@ -789,7 +789,7 @@ var site = function(metaData, inputData, notifyUser) {
   var cutoff = metaData.cutoff || 45;
 		
   // Start processing procedure in geographic coordinates
-  this.data = new processInput(JSON.parse(JSON.stringify(inputData)), cutoff);
+  this.data = new processInput(JSON.parse(JSON.stringify(inputData)), metaData);
 
   // Get the tilt corrected directions
   var dataCopy = JSON.parse(JSON.stringify(inputData));
@@ -818,7 +818,7 @@ var site = function(metaData, inputData, notifyUser) {
   }
 
   // Same processing in tilt corrected coordinates
-  this.dataTC = new processInput(rotatedInputData, cutoff);
+  this.dataTC = new processInput(rotatedInputData, metaData);
 
   // Ignore site TEMP (it is internally used for combining sites)
   // Add site to the site selector class that can be used to select sites in the modules
@@ -1005,8 +1005,10 @@ var transformEllipsePole = function (data, ellipse) {
  * Input: Sanitized input data
  * Output: (Constructor) site parameters, directions, and VGPs
  */
-var processInput = function(inputData, cutoffType) {
+var processInput = function(inputData, metadata) {
 
+  var cutoffType = metadata.cutoff;
+  
   // Get the relative VGP positions through the poles routine for the directions (site latitude and longitude are trivial and put to 0, 0 
   // because we are interested in relative VGP positions)
   var VGPs = new Array();
@@ -1121,7 +1123,39 @@ var processInput = function(inputData, cutoffType) {
   } else {
     $.extend(this.params, {'dDx': 0, 'dIx': 0});
   }
+
+  // If we have the site location we will calculate the actual poles
+  // per direction for this site	
+  if(metadata.latitude === null || metadata.longitude === null) {
+	  
+    this.params.meanPole = null;
+    this.poles = null;
 	
+  } else {
+	  
+    this.poles = {
+      accepted: new Array(),
+      rejected: new Array()
+    }
+
+    for(var i = 0; i < this.dir.accepted.length; i++) {
+      this.poles.accepted.push(poles(metadata.latitude, metadata.longitude, this.dir.accepted[i]));
+    }
+	
+    for(var i = 0; i < this.dir.rejected.length; i++) {
+      this.poles.rejected.push(poles(metadata.latitude, metadata.longitude, this.dir.rejected[i]));
+    }
+
+    // Get the average of the accepted poles
+    var fisherPole = new fisher(this.poles.accepted, "vgp");
+	
+    this.params.meanPole = {
+      "lon": fisherPole.mLon,
+      "lat": fisherPole.mLat
+    }
+
+  }
+  
   // Create a new method of rotated VGPs with the mean direction located at the pole.
   var vgpRotatedAccepted = new Array();
   var vgpRotatedRejected = new Array();

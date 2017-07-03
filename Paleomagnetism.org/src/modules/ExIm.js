@@ -148,9 +148,13 @@ module.IO.table = function(siteNames) {
   	//Get the entire list of parameters
   	var row = ['Site Name'];
   	for(parameter in sites[siteNames[0]][coordinates[j][0]].params) {
-  		if(parameter !== 'kentParameters') {
+  		if(parameter !== 'kentParameters' && parameter !== "meanPole") {
   			row.push(parameter);
   		}
+		if(parameter === "meanPole") {
+  			row.push("pLat");
+  			row.push("pLon");	
+		}
   	}
   	
   	row.push("latitude", "longitude", "author", "age", "min age", "max age");
@@ -166,9 +170,13 @@ module.IO.table = function(siteNames) {
   	  	
   	  	row = [key];
   	  	for(parameter in sites[key][coordinates[j][0]].params) {
-  	  	  if(parameter !== 'kentParameters') {
+  	  	  if(parameter !== 'kentParameters' && parameter !== "meanPole") {
   	        row.push(sites[key][coordinates[j][0]].params[parameter]);
   	  	  }
+		  if(parameter === "meanPole") {
+  			 row.push(sites[key][coordinates[j][0]].params[parameter].lat);
+  			 row.push(sites[key][coordinates[j][0]].params[parameter].lon);
+		  }
   	  	}
   	  	
   	  	row.push(sites[key].userInput.metaData['latitude'])
