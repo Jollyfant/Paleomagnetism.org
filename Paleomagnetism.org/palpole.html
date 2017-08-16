@@ -158,7 +158,7 @@ $(function () {
 	for(var i = 0; i < lines.length; i++) {
 	
 		// Split by comma, tab, spaces; require two parameters
-		var parameters = lines[i].split(/[\s\t,]+/);
+		var parameters = lines[i].split(/[\s\t,]+/).map(Number);
 		if(parameters.length !== 2) {
 			notify('failure', 'Got ' + parameters.length + ' parameter(s) at line ' + i + ' in Directions. Need 2.');
 			return;
@@ -202,11 +202,12 @@ $(function () {
 	var output = new Array();
 	var data = new Array();
 	for(var i = 0; i < lines.length; i++) {
-		var parameters = lines[i].split(/[\s\t,]+/);
+		var parameters = lines[i].split(/[\s\t,]+/).map(Number);
 		if(parameters.length !== 2) {
 			notify('failure', 'Got ' + parameters.length + ' parameter(s) at line ' + i + ' in VGPs. Need 2.');
 			return;
 		}
+
 		var p = invPoles(location[i].lat, location[i].lon, parameters.reverse());
 		output.push(p[0] + ', ' + p[1]);
 		data.push({
@@ -231,7 +232,7 @@ $(function () {
 	var lines = input.split("\n").filter(Boolean);
 	
 	var location = lines.map(function(x) {
-		var parameters = x.split(/[\s\t,]+/);
+		var parameters = x.split(/[\s\t,]+/).map(Number);
 		return {'lat': parameters[0], 'lon': parameters[1]};
 	});
 
