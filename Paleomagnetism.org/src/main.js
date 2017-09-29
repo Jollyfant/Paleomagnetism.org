@@ -1391,10 +1391,19 @@ var processUserInput = function(data, type, name) {
 				
       // Sample a Fisherian distribution with N and Kappa
       var sampled = sampleFisher(N, K);
-				
+
+      // Add beddings
+      if($("#addBeddingParametric").is(":checked")) {
+        var s = Number($("#parametricStrike").val());
+        var d = Number($("#parametricDip").val());
+      } else {
+        var s = 0;
+        var d = 0;
+      }
+
       // Pole longitude, pole latitude, bedding orientation, bedding dip, name, and stratigraphic level
       for(var i = 0; i < sampled.dec.length; i++) {
-        inputDataSampled.push([sampled.dec[i], sampled.inc[i], 0, 0, name + '.' + (i+1), 0]);
+        inputDataSampled.push([sampled.dec[i], sampled.inc[i], s, d, name + '.' + (i+1), 0]);
       }
 				
       // If the user wishes to sample VGPs instead of Fisherian directions

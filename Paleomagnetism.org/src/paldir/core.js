@@ -2216,7 +2216,7 @@ function exportInterpretation() {
   var lineDelimiter = '\n';
 	
   // Header row
-  row = ["Sample Name", "Declination", "Inclination", "Intensity", "MAD", "Forced", "Type", "Coordinates", "Bedding Strike", "Bedding Dip", "Num Step", "Min Step", "Max Step", "Remark", "Information"];
+  row = ["Sample Name", "Declination", "Inclination", "Intensity", "Strat", "MAD", "Forced", "Type", "Coordinates", "Bedding Strike", "Bedding Dip", "Num Step", "Min Step", "Max Step", "Remark", "Information"];
   csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
 	
   // Loop over the interpretations in Geographic Coordinates and add them to the CSV string
@@ -2225,7 +2225,7 @@ function exportInterpretation() {
       noData = false;
       for(var j = 0; j < data[i]['GEO'].length; j++) {
         var row = new Array();
-        row.push(data[i].name, data[i]['GEO'][j].dec, data[i]['GEO'][j].inc, data[i]['GEO'][j].intensity, data[i]['GEO'][j].MAD, data[i]['GEO'][j].forced, data[i]['GEO'][j].type, 'Geographic Coordinates', data[i].bedStrike, data[i].bedDip, data[i]['GEO'][j].nSteps, data[i]['GEO'][j].minStep, data[i]['GEO'][j].maxStep, data[i]['GEO'][j].remark, data[i].info);
+        row.push(data[i].name, data[i]['GEO'][j].dec, data[i]['GEO'][j].inc, data[i]['GEO'][j].intensity, data[i].strat, data[i]['GEO'][j].MAD, data[i]['GEO'][j].forced, data[i]['GEO'][j].type, 'Geographic Coordinates', data[i].bedStrike, data[i].bedDip, data[i]['GEO'][j].nSteps, data[i]['GEO'][j].minStep, data[i]['GEO'][j].maxStep, data[i]['GEO'][j].remark, data[i].info);
         csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
       }
     }
@@ -2238,7 +2238,7 @@ function exportInterpretation() {
       noData = false;
       for(var j = 0; j < data[i]['TECT'].length; j++) {
         var row = new Array();
-        row.push(data[i].name, data[i]['TECT'][j].dec, data[i]['TECT'][j].inc, data[i]['TECT'][j].intensity, data[i]['TECT'][j].MAD, data[i]['TECT'][j].forced, data[i]['TECT'][j].type, 'Tectonic Coordinates', data[i].bedStrike, data[i].bedDip, data[i]['TECT'][j].nSteps, data[i]['TECT'][j].minStep, data[i]['TECT'][j].maxStep, data[i]['TECT'][j].remark, data[i].info);
+        row.push(data[i].name, data[i]['TECT'][j].dec, data[i]['TECT'][j].inc, data[i]['TECT'][j].intensity, data[i].strat, data[i]['TECT'][j].MAD, data[i]['TECT'][j].forced, data[i]['TECT'][j].type, 'Tectonic Coordinates', data[i].bedStrike, data[i].bedDip, data[i]['TECT'][j].nSteps, data[i]['TECT'][j].minStep, data[i]['TECT'][j].maxStep, data[i]['TECT'][j].remark, data[i].info);
         csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
       }
     }
