@@ -2343,7 +2343,7 @@ function importing(event, format) {
   (function readFile(index) {
 
     // PGL input is a binary, the rest is plain text (UTF-8)
-    if(format === 'PGLBEIJING') {
+    if(format === 'PGLBEIJING' || format === "BCN2G") {
       reader.readAsBinaryString(input.files[index]);			
     } else {
        reader.readAsText(input.files[index]);
@@ -2361,7 +2361,9 @@ function importing(event, format) {
           importBeijing(text);  
         } else if(format === 'UTRECHT') {
           importUtrecht(text);
-        } else if(format === 'APP') {;
+        } else if(format === 'BCN2G') {
+          importBCN2G(text);
+        } else if(format === 'APP') {
           importApplication(text);
           patch();
         } else if(format === 'MUNICH') {

@@ -10,6 +10,74 @@
 
 "use strict"
 
+function importBCN2G(text) {
+
+  var text = text.split(/[\u0002]/);
+
+  var parameters = text[2].split(/\u0000+/);
+
+  //console.log(parameters)
+  var sampleName = text[2].slice(5, 12);
+  var sampleVolume = Number(text[2].slice(14, 16));
+
+  var coreAzi = Number(text[2].slice(101, 104).replace(/\u0000/, ''));
+  var coreDip = Number(text[2].slice(106,108).replace(/\u0000/, ''));
+  var bedStrike = (Number(text[2].slice(110, 113).replace(/\u0000/, '')) + 270) % 360;
+  var bedDip = Number(text[2].slice(115, 117).replace(/\u0000/, ''));
+  var overturned = text[2].charCodeAt(119) === 1;
+
+  // Bit flag is set, bedding is overturned
+  if(overturned) {
+    bedDip = bedDip + 180;
+  }
+
+  var parsedData = new Array();
+  
+  for(var i = 3; i < text.length; i++) {
+
+    var parameters = text[i].split(/\u0000+/);
+
+    var intensity = 1000;
+    var step = parameters[3];
+    var dec = Number(parameters[4]);
+    var inc = Number(parameters[5]);
+
+    var cartesianCoordinates = cart(dec, inc, intensity);
+
+    parsedData.push({
+      'visible': true,
+      'include': false,
+      'step': step,
+      'x': cartesianCoordinates.x / (sampleVolume * 1e-6),
+      'y': cartesianCoordinates.y / (sampleVolume * 1e-6),
+      'z': cartesianCoordinates.z / (sampleVolume * 1e-6),
+      'a95': null,
+      'info': null
+     });
+
+  }
+
+  data.push({
+    'volume': sampleVolume,
+    'added': new Date().toISOString(),
+    'format': "BCN2G",
+    'demagType': null,
+    'strat': null,
+    'patch': PATCH_NUMBER,
+    'GEO': new Array(),
+    'TECT': new Array(),
+    'interpreted': false,
+    'name': sampleName,
+    'coreAzi': coreAzi,
+    'coreDip': coreDip,
+    'bedStrike': bedStrike,
+    'bedDip': bedDip,
+    'data': parsedData
+  });
+
+
+}
+
 function importCenieh(text) {
 
   notify("note", "Cenieh data importing is experimental and core orientation & bedding is missing.");
