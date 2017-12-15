@@ -27,9 +27,9 @@ function importBCN2G(text) {
 
   var declinationCorrection = Number(text[2].slice(132, 136).replace(/\u0000/, ''))
 
-  // Overturned bit flag is set
+  // Overturned bit flag is set: subtract 180 to dip
   if(text[2].charCodeAt(119) === 1) {
-    bedDip = bedDip + 180;
+    bedDip = bedDip - 180;
   }
 
   var parsedData = new Array();
@@ -37,7 +37,7 @@ function importBCN2G(text) {
   for(var i = 3; i < text.length; i++) {
 
     var parameters = text[i].split(/\u0000+/);
-    var intensity = 1000;
+    var intensity = 1E9 * Number(parameters[11]);
     var step = parameters[3];
     var dec = Number(parameters[4]);
     var inc = Number(parameters[5]);
