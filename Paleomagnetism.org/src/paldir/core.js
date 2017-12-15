@@ -31,7 +31,7 @@ var li, liSelected;
 var data;
 var globalSticky = new Array();
 var exportData = new Array();
-var version = 'v1.1.0';
+var version = 'v1.1.1';
 
 var group = 'None';
 var PATCH_NUMBER = 1.1;

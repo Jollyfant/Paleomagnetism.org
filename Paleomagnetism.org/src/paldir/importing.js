@@ -16,7 +16,6 @@ function importBCN2G(text) {
   var parameters = text[2].split(/\u0000+/);
   text.shift();
 
-  //console.log(parameters)
   var sampleName = text[2].slice(5, 12);
   var sampleVolume = Number(text[2].slice(14, 16));
 
@@ -25,9 +24,9 @@ function importBCN2G(text) {
   var bedStrike = (Number(text[2].slice(110, 113).replace(/\u0000/, '')) + 270) % 360;
   var bedDip = Number(text[2].slice(115, 117).replace(/\u0000/, ''));
 
-  var declinationCorrection = Number(text[2].slice(132, 136).replace(/\u0000/, ''))
+  var declinationCorrection = Number(text[2].slice(132, 136).replace(/\u0000/, ''));
 
-  // Overturned bit flag is set: subtract 180 to dip
+  // Overturned bit flag is set: subtract 180 from the dip
   if(text[2].charCodeAt(119) === 1) {
     bedDip = bedDip - 180;
   }
@@ -37,6 +36,8 @@ function importBCN2G(text) {
   for(var i = 3; i < text.length; i++) {
 
     var parameters = text[i].split(/\u0000+/);
+	
+	// Intensity is in emu/cm^3 (0.001 A/m)
     var intensity = 1E9 * Number(parameters[11]);
     var step = parameters[3];
     var dec = Number(parameters[4]);
@@ -48,9 +49,9 @@ function importBCN2G(text) {
       'visible': true,
       'include': false,
       'step': step,
-      'x': cartesianCoordinates.x / (sampleVolume * 1e-6),
-      'y': cartesianCoordinates.y / (sampleVolume * 1e-6),
-      'z': cartesianCoordinates.z / (sampleVolume * 1e-6),
+      'x': cartesianCoordinates.x,
+      'y': cartesianCoordinates.y,
+      'z': cartesianCoordinates.z,
       'a95': null,
       'info': null
      });
@@ -465,13 +466,11 @@ function importUtrecht(text) {
   // Loop over all data blocks and split by new lines
   for(var i = 0; i < nSpecimens; i++) {
 		
-    var parameters = blocks[i].split(/[\n\r]/);
+    var parameters = blocks[i].split("\n");
 		
     // First and final can be ignored
     parameters.pop();
-    if(i === 0) {
-      parameters.shift();
-    }
+    parameters.shift();
 		
     // parsedData is the bucket that contains directional data
     var parsedData = new Array();
