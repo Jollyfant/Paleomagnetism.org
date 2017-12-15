@@ -465,11 +465,13 @@ function importUtrecht(text) {
   // Loop over all data blocks and split by new lines
   for(var i = 0; i < nSpecimens; i++) {
 		
-    var parameters = blocks[i].split('\n');
+    var parameters = blocks[i].split(/[\n\r]/);
 		
     // First and final can be ignored
     parameters.pop();
-    parameters.shift();
+    if(i === 0) {
+      parameters.shift();
+    }
 		
     // parsedData is the bucket that contains directional data
     var parsedData = new Array();
