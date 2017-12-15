@@ -12,9 +12,9 @@
 
 function importBCN2G(text) {
 
-  var text = text.split(/[\u0002]/);
-
+  var text = text.split(/[\u0002\u0003]/);
   var parameters = text[2].split(/\u0000+/);
+  text.shift();
 
   //console.log(parameters)
   var sampleName = text[2].slice(5, 12);
@@ -24,10 +24,11 @@ function importBCN2G(text) {
   var coreDip = Number(text[2].slice(106,108).replace(/\u0000/, ''));
   var bedStrike = (Number(text[2].slice(110, 113).replace(/\u0000/, '')) + 270) % 360;
   var bedDip = Number(text[2].slice(115, 117).replace(/\u0000/, ''));
-  var overturned = text[2].charCodeAt(119) === 1;
 
-  // Bit flag is set, bedding is overturned
-  if(overturned) {
+  var declinationCorrection = Number(text[2].slice(132, 136).replace(/\u0000/, ''))
+
+  // Overturned bit flag is set
+  if(text[2].charCodeAt(119) === 1) {
     bedDip = bedDip + 180;
   }
 
@@ -36,7 +37,6 @@ function importBCN2G(text) {
   for(var i = 3; i < text.length; i++) {
 
     var parameters = text[i].split(/\u0000+/);
-
     var intensity = 1000;
     var step = parameters[3];
     var dec = Number(parameters[4]);
@@ -58,6 +58,7 @@ function importBCN2G(text) {
   }
 
   data.push({
+    'declinationCorrection': declinationCorrection,
     'volume': sampleVolume,
     'added': new Date().toISOString(),
     'format': "BCN2G",

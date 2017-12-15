@@ -78,6 +78,11 @@ function plotZijderveldDiagram() {
         var direction = correctBedding(beddingStrike, beddingDip, direction);
       }
 
+      // Apply the declination correction for BCN2G
+      if(!specFlag && samples.format === "BCN2G") {
+        direction.dec += samples.declinationCorrection;
+      }
+
       // Check the projection flag, if we wish to show Up/North subtract 90 from the declination
       // x and y axes are swapped in Highcharts (to our Cartesian definition [see core.cart])
       if(nFlag) {
@@ -484,12 +489,17 @@ function eqAreaProjection() {
 			
       //Rotate samples to geographic coordinates using the core orientation parameters
       var direction = rotateTo(coreAzi, coreDip - 90, [sample.data[i].x, sample.data[i].y, sample.data[i].z]);
-			
+
       // If a tilt correction is requested, rotate again
       // Only do this if NOT viewing in specimen coordinates
       if(tcFlag && !specFlag) {
         information = 'Tectonic Coordinates';
         var direction = correctBedding(beddingStrike, beddingDip, direction);
+      }
+
+      // Apply the declination correction for BCN2G
+      if(!specFlag && sample.format === "BCN2G") {
+        direction.dec += sample.declinationCorrection;
       }
 	
       dataSeries.push({

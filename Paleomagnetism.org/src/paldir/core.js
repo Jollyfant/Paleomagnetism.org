@@ -875,6 +875,11 @@ $(function() {
       } else {
         var dataD = [rotatedGeographic.dec, rotatedGeographic.inc, rotatedGeographic.R];
       }
+
+      // Apply the declination correction for BCN2G
+      if(!specFlag && sampleData.format === "BCN2G") {
+        dataD[0] += sampleData.declinationCorrection;
+      }
 			
       var coords = cart(dataD[0], dataD[1], dataD[2]);
       fdata.push(dataD);
@@ -1620,6 +1625,12 @@ function showDataInformation() {
       direction = correctBedding(specimen.bedStrike, specimen.bedDip, direction);
     }
   }
+
+  // Apply the declination correction for BCN2G
+  if(!specFlag && specimen.format === "BCN2G") {
+    direction.dec += specimen.declinationCorrection;
+  }
+
 
   if(specimen.data[step].visible) {
     var information = [specimen.data[step].step, direction.dec, direction.inc, direction.R, specimen.data[step].a95, specimen.coreAzi, specimen.coreDip, specimen.bedStrike, specimen.bedDip, specimen.strat, specimen.format];
