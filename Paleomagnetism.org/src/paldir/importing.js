@@ -15,7 +15,7 @@ function importBCN2G(text) {
   var text = text.split(/[\u0002\u0003]/);
   var parameters = text[2].split(/\u0000+/);
   text.shift();
-
+  console.log(text)
   //console.log(parameters)
   var sampleName = text[2].slice(5, 12);
   var sampleVolume = Number(text[2].slice(14, 16));
@@ -25,7 +25,7 @@ function importBCN2G(text) {
   var bedStrike = (Number(text[2].slice(110, 113).replace(/\u0000/, '')) + 270) % 360;
   var bedDip = Number(text[2].slice(115, 117).replace(/\u0000/, ''));
 
-  var declinationCorrection = Number(text[2].slice(132, 136).replace(/\u0000/, ''))
+  var declinationCorrection = Number(text[2].slice(132, 136).replace(/\u0000+/, ''))
 
   // Overturned bit flag is set: subtract 180 to dip
   if(text[2].charCodeAt(119) === 1) {
