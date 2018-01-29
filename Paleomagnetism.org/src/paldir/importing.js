@@ -80,6 +80,63 @@ function importBCN2G(text) {
 
 }
 
+function importCeniehRegular(text) {
+
+  var lines = text.split(/[\n]/).filter(Boolean);
+
+  var beddingString = prompt("Please enter: {core azimuth,core dip,bedding strike,bedding dip}");
+
+  var coreAzi = Number(beddingString.split(",")[0]);
+  var coreDip = Number(beddingString.split(",")[1]);
+  var bedStrike = Number(beddingString.split(",")[2]);
+  var bedDip = Number(beddingString.split(",")[3]);
+
+  var parsedData = new Array();
+
+  for(var i = 1; i < lines.length; i++) {
+
+    var parameters = lines[i].split(/[\t]+/);
+    var sampleName = parameters[0];
+    var step = parameters[1];
+    var intensity = Number(parameters[2]);
+    var dec = Number(parameters[3]);
+    var inc = Number(parameters[4]);
+
+    var cartesianCoordinates = cart(dec, inc, intensity / 1E-6);
+
+    parsedData.push({
+      "visible": true,
+      "include": false,
+      "step": step,
+      "x": cartesianCoordinates.x,
+      "y": cartesianCoordinates.y,
+      "z": cartesianCoordinates.z,
+      "a95": null,
+      "info": null
+     });
+
+  }
+
+  data.push({
+    "volume": null,
+    "added": new Date().toISOString(),
+    "format": "Cenieh Regular",
+    "demagType": null,
+    "strat": null,
+    "patch": PATCH_NUMBER,
+    "GEO": new Array(),
+    "TECT": new Array(),
+    "interpreted": false,
+    "name": sampleName,
+    "coreAzi": coreAzi,
+    "coreDip": coreDip,
+    "bedStrike": bedStrike,
+    "bedDip": bedDip,
+    "data": parsedData
+  });
+
+}
+
 function importCenieh(text) {
 
   notify("note", "Cenieh data importing is experimental and core orientation & bedding is missing.");

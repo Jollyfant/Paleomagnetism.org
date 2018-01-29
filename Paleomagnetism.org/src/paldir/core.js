@@ -2384,11 +2384,14 @@ function importing(event, format) {
         } else if(format === 'PALEOMAC') {
           importMac(text);
         } else if(format === 'OXFORD') {
-		  importOxford(text);
-		} else if(format === "CENIEH") {
-		  importCenieh(text);
-		}
+          importOxford(text);
+	} else if(format === "CENIEH") {
+          importCenieh(text);
+        } else if(format === "CENIEHREG") {
+          importCeniehRegular(text);
+        }
       } catch (ex) {
+         console.log(ex)
          notify('failure', 'An exception occured during importing, is the format correct?');
       }
 
