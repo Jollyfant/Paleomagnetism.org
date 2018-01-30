@@ -84,14 +84,8 @@ function importCeniehRegular(text) {
 
   var lines = text.split(/[\n]/).filter(Boolean);
 
-  var beddingString = prompt("Please enter: {core azimuth,core dip,bedding strike,bedding dip}");
-
-  var coreAzi = Number(beddingString.split(",")[0]);
-  var coreDip = Number(beddingString.split(",")[1]);
-  var bedStrike = Number(beddingString.split(",")[2]);
-  var bedDip = Number(beddingString.split(",")[3]);
-
   var parsedData = new Array();
+  var rotatedVectors = new Array();
 
   for(var i = 1; i < lines.length; i++) {
 
@@ -101,8 +95,10 @@ function importCeniehRegular(text) {
     var intensity = Number(parameters[2]);
     var dec = Number(parameters[3]);
     var inc = Number(parameters[4]);
+    rotatedVectors.push({"dec": Number(parameters[5]), "inc": Number(parameters[6])});
 
-    var cartesianCoordinates = cart(dec, inc, intensity / 1E-6);
+    // Given intensity is in emu/cc (1E3 A/m)
+    var cartesianCoordinates = cart(dec, inc, intensity / 1E-9);
 
     parsedData.push({
       "visible": true,
@@ -117,8 +113,35 @@ function importCeniehRegular(text) {
 
   }
 
+  var beddingString = prompt("Sample " + sampleName + " - please enter: core azimuth,core dip,bedding strike,bedding dip (e.g. 121,24,0,0)");
+
+  var coreAzi = Number(beddingString.split(",")[0]);
+  var coreDip = Number(beddingString.split(",")[1]);
+  var bedStrike = Number(beddingString.split(",")[2]);
+  var bedDip = Number(beddingString.split(",")[3]);
+ 
+  if(beddingString.split(",").length !== 4) {
+    throw("Not enough parameters!");
+  }
+
+  // The input format has the rotated vectors
+  // We check if the user input core azi & dip match what is expected 
+  var b = parsedData.map(function(x) {
+    return [x.x, x.y, x.z];
+  }).map(function(x) {
+    return rotateTo(coreAzi, coreDip - 90, x)
+  });
+
+  // Check and raise if discrepancy
+  rotatedVectors.forEach(function(_, i) {
+    if(Math.round(b[i].dec) !== Math.round(rotatedVectors[i].dec) || Math.round(b[i].inc) !== Math.round(rotatedVectors[i].inc)) {
+      notify("failure", "Core parameters incorrect for Cenieh Regular import.");
+      throw("Parameters incorrect for Cenieh Regular import.");
+    }
+  });
+
   data.push({
-    "volume": null,
+    "volume": 10, //10cc @ Mark Sier
     "added": new Date().toISOString(),
     "format": "Cenieh Regular",
     "demagType": null,
