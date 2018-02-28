@@ -133,12 +133,14 @@ function importCeniehRegular(text) {
   });
 
   // Check and raise if discrepancy
-  rotatedVectors.forEach(function(_, i) {
+  for(var i = 0; i < rotatedVectors.length; i++) {
     if(Math.round(b[i].dec) !== Math.round(rotatedVectors[i].dec) || Math.round(b[i].inc) !== Math.round(rotatedVectors[i].inc)) {
-      notify("failure", "Core parameters incorrect for Cenieh Regular import.");
-      throw("Parameters incorrect for Cenieh Regular import.");
+      notify("failure", "WARNING: Core parameters incorrect for Cenieh Regular import. Continue on own risk.");
+	  break;
+      //throw("Parameters incorrect for Cenieh Regular import.");
     }
-  });
+  }
+
 
   data.push({
     "volume": 10, //10cc @ Mark Sier
