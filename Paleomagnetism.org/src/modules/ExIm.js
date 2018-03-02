@@ -174,8 +174,13 @@ module.IO.table = function(siteNames) {
   	        row.push(sites[key][coordinates[j][0]].params[parameter]);
   	  	  }
 		  if(parameter === "meanPole") {
+                    if(sites[key][coordinates[j][0]].params[parameter] === null) {
+                      row.push(null);
+                      row.push(null);
+                    } else {
   			 row.push(sites[key][coordinates[j][0]].params[parameter].lat);
   			 row.push(sites[key][coordinates[j][0]].params[parameter].lon);
+                    }
 		  }
   	  	}
   	  	
