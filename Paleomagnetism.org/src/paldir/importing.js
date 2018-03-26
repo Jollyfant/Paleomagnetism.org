@@ -89,7 +89,7 @@ function importCeniehRegular(text) {
 
   for(var i = 1; i < lines.length; i++) {
 
-    var parameters = lines[i].split(/[\t]+/);
+    var parameters = lines[i].split(/[\t\s]+/);
     var sampleName = parameters[0];
     var step = parameters[1];
     var intensity = Number(parameters[2]);
