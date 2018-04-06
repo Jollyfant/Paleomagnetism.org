@@ -13,16 +13,15 @@
 function importBCN2G(text) {
 
   var text = text.split(/[\u0002\u0003]/);
-  var parameters = text[2].split(/\u0000+/);
   text.shift();
 
   var sampleName = text[2].slice(5, 12);
   var sampleVolume = Number(text[2].slice(14, 16));
 
-  var coreAzi = Number(text[2].slice(101, 104).replace(/\u0000/, ''));
-  var coreDip = Number(text[2].slice(106,108).replace(/\u0000/, ''));
-  var bedStrike = (Number(text[2].slice(110, 113).replace(/\u0000/, '')) + 270) % 360;
-  var bedDip = Number(text[2].slice(115, 117).replace(/\u0000/, ''));
+  var coreAzi = Number(text[2].slice(101, 104).replace(/\u0000/g, ''));
+  var coreDip = Number(text[2].slice(106,108).replace(/\u0000/g, ''));
+  var bedStrike = (Number(text[2].slice(110, 113).replace(/\u0000/g, '')) + 270) % 360;
+  var bedDip = Number(text[2].slice(115, 117).replace(/\u0000/g, ''));
 
   var declinationCorrection = Number(text[2].slice(132, 136).replace(/\u0000+/, ''))
 
