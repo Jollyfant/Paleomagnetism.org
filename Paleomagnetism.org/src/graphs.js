@@ -222,7 +222,7 @@ var eqAreaDirections = function(siteName) {
       'type': 'area', 
       'name': '∆Dx', 
       'id': 'conf', 
-      'color': 'rgba(119, 152, 191, 1)'
+      'color': 'rgba(119, 152, 191)'
     }]
   };
   
