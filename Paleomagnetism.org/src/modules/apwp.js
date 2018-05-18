@@ -173,8 +173,8 @@ function getRotatedPole (APWP, i) {
 function getExpectedLocation(skip) {
 	
   // Site location (latitude and longitude) check
-  var siteLat = $("#palatLat").val() * RADIANS;
-  var siteLon = $("#palatLon").val() * RADIANS;
+  var siteLat = Number($("#palatLat").val());
+  var siteLon = Number($("#palatLon").val());
   
   // Age filter (get minimum and maximum)
   var ageMin = $("#ageRange").slider("values", 0);
@@ -273,7 +273,7 @@ function getExpectedLocation(skip) {
           // Only do the Euler rotation for non-custom APWPs
           // Custom paths should already be transformed
           // For custom APWPs, just take specified lat/lon 
-          if(custom && APWP.type === 'APWP') {
+          if(custom && APWP.type === "APWP") {
             var latPoleRot = APWP.lat[i] * RADIANS;
             var phiPoleRot = APWP.lon[i] * RADIANS;
           } else {
@@ -282,26 +282,21 @@ function getExpectedLocation(skip) {
             var phiPoleRot = rotParameters.phiPoleRot;			
           }
 
-          // Lisa Tauxe Book, 2.4.2 Virtual geomagnetic poles	
-          var upper = Math.sin(latPoleRot) * Math.sin(siteLat) + Math.cos(latPoleRot) * Math.cos(siteLat) * Math.cos(phiPoleRot - siteLon);
-          var C = Math.abs(1 - upper * upper);
-          var lower = Math.sqrt(C);
+          // Convert poles, site to expected dec, inc
+          var dirs = invPoles(siteLat, siteLon, [
+            rotParameters.phiPoleRot / RADIANS,
+            rotParameters.latPoleRot / RADIANS
+          ]);
           
           // Take either the user specified A95 or the one from the africanPolePath
-          var A95 = (custom && APWP.type === 'APWP') ? APWP.A95[i] * RADIANS : APWP.africanPolePath.A95[i] * RADIANS
+          var A95 = (custom && APWP.type === "APWP") ? APWP.A95[i] * RADIANS : APWP.africanPolePath.A95[i] * RADIANS
           
           // Get paleolatitude (degrees), declination (degrees), and inclination (radians)
-          var palat = Math.atan2(upper, lower) / RADIANS;
-          var inc = Math.atan2(2 * upper, lower);					
-          var dec = Math.acos((Math.sin(latPoleRot) - Math.sin(siteLat) * upper) / (Math.cos(siteLat) * lower)) / RADIANS;
-        
-          //Check delta phi and fix the declination if necessary
-          var delPhi = (phiPoleRot - siteLon) / RADIANS;
-          if(delPhi < 0 || delPhi > 180) {
-            dec = 360 - dec;
-          }
+          var dec = dirs[0];
+          var palat = diPalat(dirs[1])
+          var inc = dirs[1] * RADIANS;
           
-          //Keep the declination between -180 and 180
+          // Bounds declination between -180 & 180 
           //If we take declintion between 0 and 360 it switches polarity often and ruins the look of the chart
           //Axes swaps between 180 to -180 are much more uncommon as it requires huge rotations
           if(dec > 180) {
@@ -472,8 +467,8 @@ function getExpectedLocation(skip) {
       	  'fillColor': color
       	},
       	'frame': realRefName2,
-      	'lat': siteLat / RADIANS,
-      	'lon': siteLon / RADIANS,
+      	'lat': siteLat, 
+      	'lon': siteLon
       }, {
       	'linkedTo': ':previous', 
       	'type': 'arearange', 
@@ -505,8 +500,8 @@ function getExpectedLocation(skip) {
   
   //Call paleo plotting functions
   //Age vs. parameter plots
-  var latitude = (siteLat / RADIANS).toFixed(3);
-  var longitude = (siteLon / RADIANS).toFixed(3);
+  var latitude = (siteLat);
+  var longitude = (siteLon);
   	
   //Call plotting function for the expected declination, inclination, and paleolatitude
   plotExpectedLocation(palatData, 'palatContainer', 'Paleolatitude', latitude, longitude);
