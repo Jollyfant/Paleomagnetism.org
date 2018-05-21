@@ -1626,11 +1626,11 @@ function showDataInformation() {
     }
   }
 
+
   // Apply the declination correction for BCN2G
   if(!specFlag && specimen.format === "BCN2G") {
     direction.dec += specimen.declinationCorrection;
   }
-
 
   if(specimen.data[step].visible) {
     var information = [specimen.data[step].step, direction.dec, direction.inc, direction.R, specimen.data[step].a95, specimen.coreAzi, specimen.coreDip, specimen.bedStrike, specimen.bedDip, specimen.strat, specimen.format];
