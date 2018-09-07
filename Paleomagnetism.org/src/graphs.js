@@ -1326,8 +1326,10 @@ function EIbootstraps (data, time, nb, input, name) {
           var temp = $.extend(this.options.myTooltip, this.options.tooltip);
           this.myTooltip = new Highcharts.Tooltip(this, temp);                    
         }, 
-        'click': function() {
-          this.myTooltip.hide()
+        'click': function(event) {
+          if(event.target.nodeName === "rect") {
+            this.myTooltip.hide()
+          }
         }
       }
     },
@@ -2262,8 +2264,10 @@ function plotFoldtestCDF (cdfdat, data, lower, upper, begin, end, sub, input ) {
           var temp = $.extend(this.options.tooltip, this.options.myTooltip);
           this.myTooltip = new Highcharts.Tooltip(this, temp);                    
         }, 
-        'click': function() {
-          this.myTooltip.hide()
+        'click': function(event) {
+          if(event.target.nodeName === "rect") {
+            this.myTooltip.hide()
+          }
         }
       }
     },
