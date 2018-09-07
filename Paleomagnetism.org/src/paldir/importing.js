@@ -10,6 +10,80 @@
 
 "use strict"
 
+function importCaltech(text) {
+
+  /* Function importCaltech
+   * Parses for Caltech Institute of Technology format
+   */
+
+  var lines = text.split("\n").filter(Boolean);
+
+  // Sample name is specified at the top
+  var sampleName = lines[0].trim();
+
+  // First line has the core & bedding parameters
+  var coreParameters = lines[1].split(/\s+/).filter(Boolean);
+
+  // Correct core strike to azimuth and hade to plunge
+  var coreAzi = (Number(coreParameters[0].trim()) + 270) % 360;
+  var coreDip = 90 - Number(coreParameters[1].trim());
+  var bedStrike = Number(coreParameters[2].trim());
+  var bedDip = Number(coreParameters[3].trim());
+  var volume = Number(coreParameters[4].trim());
+ 
+  var line;
+  var parsedData = new Array();
+
+  for(var i = 2; i < lines.length; i++) {
+
+    line = lines[i];
+
+    var stepType = line.slice(0, 2);
+    var step = line.slice(2, 6).trim() || "0";
+    var dec = Number(line.slice(46, 51));
+    var inc = Number(line.slice(52, 57));
+
+    // Intensity in emu/cm3 -> convert to micro A/m (1E9)
+    var intensity = 1E9 * Number(line.slice(31, 39));
+    var a95 = Number(line.slice(40, 45));
+    var info = line.slice(85, 113).trim();
+
+    var cartesianCoordinates = cart(dec, inc, intensity);
+
+    parsedData.push({
+      "visible": true,
+      "include": false,
+      "step": step,
+      "x": cartesianCoordinates.x,
+      "y": cartesianCoordinates.y,
+      "z": cartesianCoordinates.z,
+      "a95": a95,
+      "info": info
+     });
+
+  }
+
+  data.push({
+    "volume": volume,
+    "added": new Date().toISOString(),
+    "format": "Caltech",
+    "demagType": null,
+    "strat": null,
+    "patch": PATCH_NUMBER,
+    "GEO": new Array(),
+    "TECT": new Array(),
+    "interpreted": false,
+    "name": sampleName,
+    "coreAzi": coreAzi,
+    "coreDip": coreDip,
+    "bedStrike": bedStrike,
+    "bedDip": bedDip,
+    "data": parsedData
+  });
+
+
+}
+
 function importBCN2G(text) {
 
   var text = text.split(/[\u0002\u0003]/);

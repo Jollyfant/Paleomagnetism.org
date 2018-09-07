@@ -31,7 +31,7 @@ var li, liSelected;
 var data;
 var globalSticky = new Array();
 var exportData = new Array();
-var version = 'v1.1.1';
+var version = 'v1.1.2';
 
 var group = 'None';
 var PATCH_NUMBER = 1.1;
@@ -2389,6 +2389,8 @@ function importing(event, format) {
           importCenieh(text);
         } else if(format === "CENIEHREG") {
           importCeniehRegular(text);
+        } else if(format === "CALTECH") {
+          importCaltech(text);
         }
       } catch (ex) {
          console.log(ex)
