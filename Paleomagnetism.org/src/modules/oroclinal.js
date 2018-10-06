@@ -1145,6 +1145,8 @@ function weighedData(getParams) {
 	}, {
 		'name': 'Weighed Regression',
 		'type': 'line',
+        visible: false,
+        showInLegend: false,
 		'data': [{x: minPlot, y: minPlot*slope + intercept}, {x: maxPlot, y: maxPlot*slope + intercept}],
 		'color': 'rgb(191, 119, 152)',
 		'dashStyle': 'ShortDash',
@@ -1715,6 +1717,8 @@ function callFunc(sampledStuff) {
 		'name': 'Weighed Regression',
 		'type': 'line',
 		'data': weighedDat,
+        visible: false,
+        showInLegend: false,
 		'color': 'rgb(152, 119, 191)',
 		'dashStyle': 'ShortDash',
 		'lineWidth': 2,
@@ -1909,7 +1913,7 @@ function getCDF ( type ) {
 	plotCDF(dataSlope, 'CDFContainerSlope', 'Slope Cumulative Distribution Function', lr['slope'], slopeAverage, weighedParameters['slope'], 'Slope of Regression');
 	plotCDF(dataIntercept, 'CDFContainerIntercept', 'Intercept Cumulative Distribution Function', lr['intercept'], interceptAverage, weighedParameters['intercept'], 'Intercept of Regression');
 	
-	$("#bootTable").html('<table class="sample" style="text-align: center"><thead> <th> Type </th> <th> Total Least Squares Regression </th> <th> Average Bootstrap </th> <th> Bootstrapped Confidence Interval </th> <th> Least Squares </th> <th> Weighed Regression </thead> <tbody> <td> Slope </td> <td> ' + lr.slope.toFixed(3) + ' </td> <td> ' + slopeAverage.toFixed(3) + ' </td> <td> ' + dataSlope[lower].toFixed(3) + ' - ' + dataSlope[upper].toFixed(3) + ' </td> <td> ' + oldLr['slope'].toFixed(3) + ' </td> <td> ' + weighedParameters['slope'].toFixed(3) + ' </td> <tr> <td> Intercept </td> <td> ' + lr.intercept.toFixed(3) + ' </td> <td> ' + interceptAverage.toFixed(3) + ' </td> <td> ' + dataIntercept[lower].toFixed(3) + ' - ' + dataIntercept[upper].toFixed(3) + ' </td> <td> ' + oldLr['intercept'].toFixed(3) + ' </td> <td> ' + weighedParameters['intercept'].toFixed(3) + ' </td> </tr> </tbody> </table>')
+	$("#bootTable").html('<table class="sample" style="text-align: center"><thead> <th> Type </th> <th> Total Least Squares Regression </th> <th> Average Bootstrap </th> <th> Bootstrapped Confidence Interval </th> <th> Least Squares </th> </thead> <tbody> <td> Slope </td> <td> ' + lr.slope.toFixed(3) + ' </td> <td> ' + slopeAverage.toFixed(3) + ' </td> <td> ' + dataSlope[lower].toFixed(3) + ' - ' + dataSlope[upper].toFixed(3) + ' </td> <td> ' + oldLr['slope'].toFixed(3) + ' </td> <tr> <td> Intercept </td> <td> ' + lr.intercept.toFixed(3) + ' </td> <td> ' + interceptAverage.toFixed(3) + ' </td> <td> ' + dataIntercept[lower].toFixed(3) + ' - ' + dataIntercept[upper].toFixed(3) + ' </td> <td> ' + oldLr['intercept'].toFixed(3) + ' </td> </tr> </tbody> </table>')
 
 }
 
@@ -1990,6 +1994,8 @@ function plotCDF (one, container, title, dataR, averageR, weighedR, type) {
 		name: 'Weighted Regression',
 		data: [{x: weighedR, y: 0}, {x: weighedR, y: 1}],
 		enableMouseTracking: false,
+        visible: false,
+        showInLegend: false,
 		marker: {
 			enabled: false
 		}
@@ -2080,7 +2086,7 @@ function plotGraph(plotSeries, min, max, b) {
             text: 'Oroclinal Test (Pearsons ρ = ' + pear.toFixed(3) + ')'
         },
         subtitle: {
-            text: 'Bootstrapped at 95% Confidence Interval'
+            text: 'Bootstrapped at 95% Confidence Interval (Slope: ' + lr.slope.toFixed(3) + ')'
         },
 		legend: {
 			itemHoverStyle: null

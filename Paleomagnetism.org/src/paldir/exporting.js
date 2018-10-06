@@ -81,7 +81,7 @@ function getZijderveldCSV(self) {
   csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
 	
   for(var j = 0; j < self.series[0].data.length; j++) {
-    row = [self.series[0].data[j].step, self.series[0].data[j].x, self.series[0].data[j].y, self.series[1].data[j].y];
+    row = [self.series[0].data[j].step, self.series[0].data[j].x, self.series[0].data[j].y, self.series[2].data[j].y];
     csv += '"' + row.join(itemDelimiter) + '"' + lineDelimiter;
   }
 

@@ -166,6 +166,7 @@ function plotZijderveldDiagram() {
     'text': 'Zijderveld Diagram (' + samples.name + ')'
   },
   'tooltip': {
+    'enabled': false,
     'useHTML': true,
       'formatter': function () {
         return generateZijderveldTooltip(this);

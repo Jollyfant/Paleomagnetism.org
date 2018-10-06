@@ -729,7 +729,7 @@ function CTMDheatMap( labels, data, time ) {
      "use strict";
   
   //Get the coordinate reference frame    
-  var coordinates = $('#tcFlagCTMD').prop('checked') ? 'Tectonic' : 'Geographic' + ' Coordinates';
+  var coordinates = ($("#CTMDRadio input[type='radio']:checked").val() === "TECT" ? 'Tectonic' : 'Geographic') + ' Coordinates';
 
   //Scaling for the font-size of the letters on the grid
   var fontSize = (180/parseInt(Math.sqrt(data.length))) + 'px';
