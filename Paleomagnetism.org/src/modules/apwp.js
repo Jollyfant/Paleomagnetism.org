@@ -269,10 +269,10 @@ function getExpectedLocation(skip) {
 
           // Check if within age bounds
           if(APWP.age[i] >= ageMin && APWP.age[i] <= ageMax) {
-          
+
           // Only do the Euler rotation for non-custom APWPs
           // Custom paths should already be transformed
-          // For custom APWPs, just take specified lat/lon 
+          // For custom APWPs, just take specified lat/lon
           if(custom && APWP.type === "APWP") {
             var latPoleRot = APWP.lat[i] * RADIANS;
             var phiPoleRot = APWP.lon[i] * RADIANS;
@@ -284,13 +284,13 @@ function getExpectedLocation(skip) {
 
           // Convert poles, site to expected dec, inc
           var dirs = invPoles(siteLat, siteLon, [
-            rotParameters.phiPoleRot / RADIANS,
-            rotParameters.latPoleRot / RADIANS
+            phiPoleRot / RADIANS,
+            latPoleRot / RADIANS
           ]);
           
           // Take either the user specified A95 or the one from the africanPolePath
           var A95 = (custom && APWP.type === "APWP") ? APWP.A95[i] * RADIANS : APWP.africanPolePath.A95[i] * RADIANS
-          
+
           // Get paleolatitude (degrees), declination (degrees), and inclination (radians)
           var dec = dirs[0];
           var palat = diPalat(dirs[1])
