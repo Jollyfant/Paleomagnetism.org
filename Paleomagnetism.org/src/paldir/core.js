@@ -2391,6 +2391,8 @@ function importing(event, format) {
           importCeniehRegular(text);
         } else if(format === "CALTECH") {
           importCaltech(text);
+        } else if(format === "HELSINKI") {
+          importHelsinki(text);
         }
       } catch (ex) {
          console.log(ex)

@@ -10,6 +10,74 @@
 
 "use strict"
 
+function importHelsinki(text) {
+
+  /*
+   * Function importHelsinki
+   * Imports demagnetization data in the Helsinki format (plain-text csv)
+   */
+
+  var lines = text.split(/[\n\r]/).filter(Boolean);
+
+  // Get some header metadata
+  var sampleName = lines[5].split(",")[1]
+  var coreAzi = Number(lines[5].split(",")[7])
+  var coreDip = Number(lines[6].split(",")[7])
+  var volume = Number(lines[7].split(",")[2]);
+  var demagType = lines[7].split(",")[7];
+
+  // Bedding is not included: always set to 0, 0
+  var bedStrike = 0;
+  var bedDip = 0;
+
+  var line;
+  var parsedData = new Array();
+
+  // Skip the header (12 lines)
+  lines.slice(12).forEach(function(line) {
+
+    var parameters = line.split(",");
+
+    var step = parameters[1];
+
+    // Take mA/m and set to microamps
+    var x = Number(parameters[13]) * 1E3;
+    var y = Number(parameters[14]) * 1E3;
+    var z = Number(parameters[15]) * 1E3;
+
+    parsedData.push({
+      "visible": true,
+      "include": false,
+      "step": step,
+      "x": x,
+      "y": y,
+      "z": z,
+      "a95": 0,
+      "info": null
+     });
+
+  });
+
+  data.push({
+    "volume": volume,
+    "added": new Date().toISOString(),
+    "format": "Helsinki",
+    "demagType": demagType,
+    "strat": null,
+    "patch": PATCH_NUMBER,
+    "GEO": new Array(),
+    "TECT": new Array(),
+    "interpreted": false,
+    "name": sampleName,
+    "coreAzi": coreAzi,
+    "coreDip": coreDip,
+    "bedStrike": bedStrike,
+    "bedDip": bedDip,
+    "data": parsedData
+  });
+
+}
+
 function importCaltech(text) {
 
   /* Function importCaltech
