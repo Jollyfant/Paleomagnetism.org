@@ -20,11 +20,11 @@ function importHelsinki(text) {
   var lines = text.split(/[\n\r]/).filter(Boolean);
 
   // Get some header metadata
-  var sampleName = lines[5].split(",")[1]
-  var coreAzi = Number(lines[5].split(",")[7])
-  var coreDip = Number(lines[6].split(",")[7])
-  var volume = Number(lines[7].split(",")[2]);
-  var demagType = lines[7].split(",")[7];
+  var sampleName = lines[5].split(";")[1]
+  var coreAzi = Number(lines[5].split(";")[7])
+  var coreDip = Number(lines[6].split(";")[7])
+  var volume = Number(lines[7].split(";")[2]);
+  var demagType = lines[7].split(";")[7];
 
   // Bedding is not included: always set to 0, 0
   var bedStrike = 0;
@@ -36,8 +36,8 @@ function importHelsinki(text) {
   // Skip the header (12 lines)
   lines.slice(12).forEach(function(line) {
 
-    var parameters = line.split(",");
-
+    var parameters = line.split(";");
+	console.log(parameters);
     var step = parameters[1];
 
     // Take mA/m and set to microamps
