@@ -1399,6 +1399,7 @@ function fitCirclesToDirections() {
 
   }
 
+
     // Start with the sum of all set points and add all the iteratively fitted directions to the mean vector
     // Calculate the mean direction for all fitted directions and set points together
     meanVector = {
@@ -1414,6 +1415,8 @@ function fitCirclesToDirections() {
     }
 
     var newMean = dir(meanVector.x, meanVector.y, meanVector.z);
+    var R = Math.sqrt(meanVector.x*meanVector.x + meanVector.y*meanVector.y + meanVector.z*meanVector.z);
+
     var pointsCircle = new Array();
 
     //Loop over all great circles and get fitted directions in Highcharts data array
@@ -1467,7 +1470,7 @@ function fitCirclesToDirections() {
     //Other statistical parameters (McFadden & McElhinny, 1988)
     var k = (2*nPoints + nCircles - 2)/(2*(nPoints + nCircles - R));
     var t95 = Math.acos(1 - ((nPrime - 1)/k) * (Math.pow(20, (1/(nPrime - 1))) - 1)) / RADIANS;
-	
+
     //Standard Fisher parameters (k, a95);
     var k = (nTotal - 1) / (nTotal - R);
     var a95 = Math.acos(1 - ((nTotal - R)/R) * (Math.pow(20, (1/(nTotal - 1))) - 1)) / RADIANS;
