@@ -1580,8 +1580,8 @@ function fitCirclesToDirections() {
   $("#eqAreaFitted").css('display', 'inline-block');
   $("#fitCirclesDivText").html('<b>Great circle solutions have been fitted in ' + nIterations + ' iteration(s).</b>');
 	
-  $("#fittingTable").html('<table class="sample" id="fittingTableInfo"><tr><th> N<small> (setpoints) </small> </th> <th> N<small> (great circle solutions) </small> </th> <th> N<small> (total) </small> </th> <th>Mean Declination </th> <th>Mean Inclination </th>  </tr>');
-  $("#fittingTableInfo").append('<tr> <td> ' + nPoints + ' </td> <td> ' + nCircles + '<td> ' + (nPoints + nCircles) + ' </td> <td> ' + newMean.dec.toFixed(1) + ' </td> <td> ' + newMean.inc.toFixed(1) + ' </td> </tr> </table>');
+  $("#fittingTable").html('<table class="sample" id="fittingTableInfo"><tr><th> N<small> (setpoints) </small> </th> <th> N<small> (great circle solutions) </small> </th> <th> N<small> (total) </small> </th> <th>Mean Declination </th> <th>Mean Inclination </th>  <th>a95</th><th>t95</th></tr>');
+  $("#fittingTableInfo").append('<tr> <td> ' + nPoints + ' </td> <td> ' + nCircles + '<td> ' + (nPoints + nCircles) + ' </td> <td> ' + newMean.dec.toFixed(1) + ' </td> <td> ' + newMean.inc.toFixed(1) + ' </td><td>' + a95.toFixed(1) + '</td><td>' + t95.toFixed(1) + '</td></tr> </table>');
   $("#fittingTable").show();
 
 }
