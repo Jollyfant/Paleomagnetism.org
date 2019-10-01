@@ -590,6 +590,7 @@ function NTRAnalysis (referencePole, magnetizationVector, dykePole, iterate) {
         // To calculate point after rotation around axis.
         var vVector = {'x': 0, 'y': 0, 'z': 1};
         var kVector = cart(intS.dec, intS.inc);
+console.log(intS, kVector);
         var crossProd = getCross(kVector, vVector);
         var dot = kVector.x * vVector.x + kVector.y * vVector.y + kVector.z * vVector.z;
         

@@ -796,64 +796,52 @@ function importUtrecht(text) {
  */
 function importMac(text) {
 	
-  var lines = text.split(/[\n\r]/);
-  lines.shift();
-  lines = $.grep(lines, function(n) { 
-    return n;
-  });	
+  // Get lines in the file
+  var lines = text.split(/\r?\n/).slice(1).filter(Boolean).filter(x => x.length > 1);
 
-  var header = lines[0].split(/[,\s\t]+/);
-  var sampleName = header[0];
-	
-  // Get header values
-  // values will be [a, b, s, d, [v]]
-  var parameters = lines[0].split('=');
-  var values = new Array();
-  for(var i = 1; i < parameters.length; i++) {
-    var value = parameters[i].match(/[+-]?\d+(\.\d+)?/g);
-    values.push(value);
-  }
+  // The line container all the header information
+  var header = lines[0];
+  var sampleName = header.slice(0, 9).trim();
 
-  // Get specimenVolume from file or default to 10cc (in m3)
-  var specimenVolume = Math.abs(Number(values[4][0]) * Math.pow(10, Number(values[4][1]))) || 10e-6;
+  var coreAzimuth = Number(header.slice(12, 17));
+  var sampleVolume = Number(header.slice(52, 59));
 
-  // core hade is measured, we use plunge (90 - hade)
-  var coreAzi = Number(values[0]);	
-  var coreDip = 90 - Number(values[1]);
-  var bedStrike = Number(values[2]);
-  var bedDip = Number(values[3]);
+  // core hade is measured, we use the plunge (90 - hade)
+  var coreDip = 90 - Number(header.slice(22, 27));
+  var beddingStrike = Number(header.slice(32, 37));
+  var beddingDip = Number(header.slice(42, 47));
 
-  var parsedData = new Array();
-	
   // Skip first two and last line
-  for(var i = 2; i < lines.length - 1; i++) {
+  var parsedData = lines.slice(2).filter(function(line) {
 
-    // Empty parameters as 0
-    var parameters = lines[i].split(/[,\s\t]+/).map(function(x) {
-      if(x === "") {
-        return "0";
-      }
-      return x;
-    });
+    // Skip empty intensities..
+    return Number(line.slice(36, 44)) !== 0;
 
-    // Skip these
-    if(Number(parameters[4]) === 0) continue;
+  }).map(function(line) {
 
-    parsedData.push({
+    // Get the measurement parameters
+    var step = line.slice(0, 5).trim();
+    var x = 1E6 * Number(line.slice(5, 14)) / sampleVolume;
+    var y = 1E6 * Number(line.slice(16, 25)) / sampleVolume;
+    var z = 1E6 * Number(line.slice(25, 34)) / sampleVolume;
+    var a95 = Number(line.slice(69, 73));
+
+     return {
       'visible': true, 
       'include': false,
-      'step': parameters[0],
-      'x': 1e6 * Number(parameters[1]) / specimenVolume,
-      'y': 1e6 * Number(parameters[2]) / specimenVolume,
-      'z': 1e6 * Number(parameters[3]) / specimenVolume,
-      'a95': Number(parameters[9]),
+      'step': step,
+      'x': x,
+      'y': y,
+      'z': z,
+      'a95': a95,
       'info': null
-    });	
-  }
+    }	
+
+  });
 
   // Add the data to the application
   data.push({
-	'volume': specimenVolume * 1e6,
+	'volume': sampleVolume * 1e6,
     'added': new Date().toISOString(),
     'format': "PaleoMac",
     'strat': null,
@@ -863,10 +851,10 @@ function importMac(text) {
     'patch': PATCH_NUMBER,
     'interpreted': false,
     'name': sampleName,
-    'coreAzi': coreAzi,
+    'coreAzi': coreAzimuth,
     'coreDip': coreDip,
-    'bedStrike': bedStrike,
-    'bedDip': bedDip,
+    'bedStrike': beddingStrike,
+    'bedDip': beddingDip,
     'data': parsedData
   });
 
