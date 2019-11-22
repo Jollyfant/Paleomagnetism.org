@@ -797,7 +797,9 @@ function importUtrecht(text) {
 function importMac(text) {
 	
   // Get lines in the file
-  var lines = text.split(/\r?\n/).slice(1).filter(Boolean).filter(x => x.length > 1);
+  var lines = text.split(/\r?\n/).slice(1).filter(Boolean).filter(function(x) {
+    return x.length > 1;
+  });
 
   // The line container all the header information
   var header = lines[0];
@@ -841,7 +843,7 @@ function importMac(text) {
 
   // Add the data to the application
   data.push({
-	'volume': sampleVolume * 1e6,
+	'volume': sampleVolume * 1E6,
     'added': new Date().toISOString(),
     'format': "PaleoMac",
     'strat': null,
