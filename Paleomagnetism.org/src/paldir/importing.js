@@ -824,7 +824,7 @@ function importMac(text) {
     // Get the measurement parameters
     var step = line.slice(0, 5).trim();
     var x = 1E6 * Number(line.slice(5, 14)) / sampleVolume;
-    var y = 1E6 * Number(line.slice(16, 25)) / sampleVolume;
+    var y = 1E6 * Number(line.slice(15, 25)) / sampleVolume;
     var z = 1E6 * Number(line.slice(25, 34)) / sampleVolume;
     var a95 = Number(line.slice(69, 73));
 
